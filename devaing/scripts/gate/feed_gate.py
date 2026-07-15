@@ -31,7 +31,7 @@ ZERO_SHA = "0" * 40
 DOC_RE = re.compile(r"(^|/)(CONTEXT\.md|AGENTS\.md)$|(^|/)docs/")
 TEST_RE = re.compile(r"([._-]test|[._-]spec|/tests?/|/__tests__/)", re.IGNORECASE)
 CONFIG_RE = re.compile(
-    r"^(\.github/|package(-lock)?\.json$|.*\.lock$|tsconfig.*\.json$|"
+    r"^(\.github/|\.devaing/|package(-lock)?\.json$|.*\.lock$|tsconfig.*\.json$|"
     r"\.env(\.|$)|\.gitignore$|eslint|prettier|README\.md$|"
     r"CHECKPOINTS\.md$|\.devaing\.md$)"
 )
