@@ -186,7 +186,7 @@ Codex, Aider, Cursor, or any agent that can read files can drive the full devain
 |----------|---------|
 | `CONTEXT.md` | Living truth: domain glossary, architecture, constraints, known limitations, phase state |
 | `CHECKPOINTS.md` | Objective health criteria. Director audits them on every run. Human-readable for manual audits. |
-| `.devaing.md` | Per-project config: granularity, prototyper, GitHub Project number, subagent_cli |
+| `.devaing.md` | Per-project config: granularity, prototyper, GitHub Project number, subagent_cli, enforcement (gate/off) |
 | `AGENTS.md` | Agent execution conventions: issue tracker, triage labels, domain docs, workflow spec, guardrails |
 | `DESIGN.md` | Design system from Stitch: colors, typography, spacing, components (if using Stitch) |
 | `.devaing/skills/` | Portable skill bodies for Codex/Aider/Cursor and other LLM runtimes |
@@ -195,6 +195,8 @@ Codex, Aider, Cursor, or any agent that can read files can drive the full devain
 | `docs/agents/` | Supporting agent docs: issue-tracker.md, triage-labels.md, domain.md |
 | `prisma/seeds/` (or `db/seeds/`) | Seed migration runner + `_seed_migrations` tracking table |
 | `.github/workflows/ci.yml` | CI pipeline created by init based on detected stack |
+| `.github/workflows/devaing-gate.yml` (optional) | Docs-sync + migration-collision checks — installed only if you opt in during init (`enforcement: gate`) |
+| `.devaing/gate/*.py` (optional) | Stdlib checker scripts the gate workflow runs; copied in only when the gate is enabled |
 | `CONTEXT_ARCHIVE.md` | Shipped phases moved here by devaing-ship (keeps CONTEXT.md lean across many phases) |
 
 ---

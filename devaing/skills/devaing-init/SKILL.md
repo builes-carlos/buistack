@@ -651,6 +651,9 @@ Claude Code: `/devaing-work #N`
 
 **Guardrail:** If the user asks to implement a feature or fix without invoking `/devaing-work`, do not implement it directly. Instead, ask: "¿Querés crear un issue primero y trabajarlo con `/devaing-work`?" Only proceed without the workflow if the user explicitly confirms they want to skip it.
 
+<if `.devaing.md` has `enforcement: gate`, include:>
+**Gate:** `.github/workflows/devaing-gate.yml` checks CONTEXT.md sync and migration numbering on every push/PR — this is a backstop for changes that don't go through `/devaing-work`, not a replacement for it. It doesn't change what you do here.
+
 ### Review
 
 Before opening a PR, run a code review in a fresh context (not the implementation context).
@@ -869,6 +872,80 @@ jobs:
 
 **Unknown stack** — skip CI creation, note "ci.yml pendiente (stack no detectado)" in the final report.
 
+## Step 6b — devaing gate (optional)
+
+Instruction (a rule in AGENTS.md, a step inside a skill) is not enforcement — it's skipped the moment a change doesn't go through the skill that carries it. The gate is the backstop: it runs in CI, with no agent session present, and catches drift regardless of how the change landed.
+
+Always ask, never enable silently — the follow-up step touches branch protection, a repo-wide setting:
+
+```
+¿Activar el gate de docs-sync (CONTEXT.md) y colisión de migraciones en este repo?
+Esto instala .github/workflows/devaing-gate.yml y, si confirmás, lo marca como
+required check en main vía branch protection. (y/n, default n)
+```
+
+If `n`: skip to Step 7b and write `enforcement: off`.
+
+If `y`:
+
+1. Copy the checker scripts into the target repo:
+
+```bash
+mkdir -p .devaing/gate
+cp <devaing-repo>/scripts/gate/feed_gate.py .devaing/gate/feed_gate.py
+cp <devaing-repo>/scripts/gate/migration_collision.py .devaing/gate/migration_collision.py
+```
+
+2. Write `.github/workflows/devaing-gate.yml`, replacing `<branch>`:
+
+```yaml
+name: devaing-gate
+
+on:
+  push:
+    branches: [<branch>]
+  pull_request:
+    branches: [<branch>]
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    env:
+      DEVAING_GATE_BRANCH: <branch>
+      DEVAING_GATE_BASE_SHA: ${{ github.event.before }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Docs-sync feed gate
+        run: python3 .devaing/gate/feed_gate.py
+      - name: Migration numbering collision
+        run: python3 .devaing/gate/migration_collision.py
+```
+
+3. Ask a **second, separate** confirmation before touching branch protection (installing the workflow and making `main` un-mergeable without it passing are different blast radii):
+
+```
+¿Marcar devaing-gate como required check en <branch>? Esto puede bloquear
+pushes/PRs de cualquier colaborador hasta que el gate pase. (y/n, default n)
+```
+
+If confirmed:
+
+```bash
+gh api repos/<owner>/<name>/branches/<branch>/protection \
+  --method PUT \
+  --field required_status_checks='{"strict":true,"contexts":["gate"]}' \
+  --field enforce_admins=false \
+  --field required_pull_request_reviews=null \
+  --field restrictions=null
+```
+
+If this fails (e.g. branch protection needs a paid plan on a private repo): note "gate instalado, required check pendiente (manual)" in the final report and continue — do not stop the flow over it.
+
 ## Step 7 — CONTEXT.md
 
 Skip if any of the following:
@@ -933,8 +1010,11 @@ granularity: <granularity>
 prototyper: <prototyper>
 project: <project-number>
 subagent_cli: claude -p --model claude-sonnet-4-6
+enforcement: <gate|off>
 
 Runtime-agnostic spec. For Claude Code, use the `/devaing-*` skills directly.
+
+`enforcement: gate` means `.github/workflows/devaing-gate.yml` is installed and checks CONTEXT.md sync and migration numbering on every push/PR — see `.devaing/gate/*.py`. `enforcement: off` means those stay instruction only (the skill steps below still write CONTEXT.md, but nothing outside a skill session catches a change that skips them).
 
 ## devaing-work — Implement a slice
 

@@ -53,6 +53,13 @@ Parallelism happens between epics, not within them: Dev A on `epic/auth`, Dev B 
 
 Branch lifecycle: created lazily when the first issue of the epic is claimed. Auto-merged to main when the last issue closes. Branch deleted after merge.
 
+### Enforcement gate (optional)
+Instruction is not enforcement: a rule in AGENTS.md, or a documentation step inside a skill, only fires when that skill actually runs. Any change that bypasses it — an ad-hoc fix, a collaborator not using devaing, a different agent entirely — feeds nothing back into CONTEXT.md, and nothing downstream notices. The epic-ownership lock above has the same shape: it's a check inside devaing-work, advisory only, easy to race if two people run the skill at the same moment.
+
+The gate is the one layer that doesn't depend on a skill running at all: `.github/workflows/devaing-gate.yml`, installed by init only if the user opts in (`enforcement: gate` in `.devaing.md`, default off). It runs in CI with no agent session present and checks two things, stdlib-only, no framework dependency: (1) domain code changed past a line floor without CONTEXT.md/AGENTS.md/docs/** also changing in the same range — an explicit `[skip-docs-check]` marker in a commit message opts out; (2) a numbered migration file (`migrations/NNN_*.sql`) collides with one already on the target branch under a different name — the actual failure mode observed once two people numbered migrations from their own local checkouts without seeing each other's branch. If confirmed a second time, init also marks the gate as a required status check via branch protection — asked separately from installing the workflow, since blocking merges repo-wide is a bigger commitment than adding a check that merely reports.
+
+Off by default because most devaing projects are solo, where the skill runs every time and the gate adds process for no benefit. Exists for the moment a second committer (human or agent) starts landing changes outside the skill.
+
 ### Working mode choice
 After the opening issue list, the user picks: One (single issue), All (all issues in the epic), Cascade (implement all epics in sequence), or Hotfix (off-backlog fix). Cascade repeats until zero open issues remain in the phase. Hotfix uses a separate `hotfix/<slug>` branch and auto-merges without issue tracking (retroactive issue optional).
 
