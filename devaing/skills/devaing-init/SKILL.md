@@ -96,6 +96,18 @@ Wait for response. If `1`: edit CONTEXT.md surgically to add each item to the ap
 
 If `<orphaned-pendings>` is empty, skip this sub-step entirely — do not mention it.
 
+1c. **Enforcement gate offer (once).** Skip entirely if `.devaing.md` already has a line starting with `enforcement:` — the project was already asked, respect whatever was chosen (`gate` or `off`), do not re-ask on every re-run.
+
+Otherwise this project predates the gate feature. Resolve the same placeholders Step 2 resolves (`<owner>` via `gh api user --jq '.login'`, `<branch>` via `git branch --show-current`, `<name>` via `gh repo view --json name --jq '.name'` or the current directory), then run **Step 6b — devaing gate (optional)** below exactly as written (same questions, same file writes). Once it completes, append the resulting `enforcement: gate` or `enforcement: off` line to the existing `.devaing.md`, immediately after its `subagent_cli:` line — a surgical edit, not a rewrite of the file:
+
+```bash
+git add .devaing.md .github/workflows/devaing-gate.yml .devaing/gate/ 2>/dev/null
+git commit -m "feat: add devaing enforcement gate"
+git push
+```
+
+(Omit the workflow/gate files from `git add` if the answer to Step 6b was `n` — only `.devaing.md` changed in that case.)
+
 2. Run `gh issue list --state open --json number,title,milestone --jq '.[] | "#\(.number) [\(.milestone.title)] \(.title)"'` to get open issues grouped by milestone.
 3. Output the message below. Do not continue past this point.
 
