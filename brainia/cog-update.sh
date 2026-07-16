@@ -15,8 +15,8 @@ set -euo pipefail
 # ── Configuration ────────────────────────────────────────────────────
 # An instance can override the upstream it pulls framework files from by
 # creating a gitignored `.cog-update.local` next to this script, e.g.:
-#   COG_REMOTE_NAME="cbrain-upstream"
-#   COG_REMOTE_URL="https://github.com/builes-carlos/Brainia.git"
+#   COG_REMOTE_NAME="brainia-upstream"
+#   COG_REMOTE_URL="https://github.com/builes-carlos/brainia.git"
 # This file is NOT in FRAMEWORK_FILES, so updates never reset an instance's
 # upstream. The defaults below point at the canonical COG repo.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
