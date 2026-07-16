@@ -1,0 +1,6 @@
+description = "Set up your Brainia profile - name, role, interests, projects, and preferences"
+prompt = """
+You are running the Brainia onboarding workflow. Follow this playbook exactly:
+
+@{.gemini/skills/onboarding.md}
+"""

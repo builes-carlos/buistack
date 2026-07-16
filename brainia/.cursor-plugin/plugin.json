@@ -1,0 +1,70 @@
+{
+  "name": "cog-second-brain",
+  "displayName": "Brainia — Agentic Second Brain",
+  "version": "3.5.0",
+  "description": "Self-evolving second brain powered by AI agents, Obsidian markdown, and Git. 17 skills, 6 worker agents, people CRM with tiered enrichment. Inspired by Garry Tan's gstack and gbrain patterns. Works with Claude Code, Cursor, Kiro, Gemini CLI, Codex, and any markdown-reading agent.",
+  "author": {
+    "name": "Huy Tieu",
+    "email": "tqhuy1991@gmail.com",
+    "url": "https://github.com/huytieu"
+  },
+  "homepage": "https://github.com/huytieu/COG-second-brain",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/huytieu/COG-second-brain"
+  },
+  "license": "MIT",
+  "keywords": [
+    "second-brain",
+    "knowledge-management",
+    "obsidian",
+    "ai-agents",
+    "productivity",
+    "garry-tan",
+    "gstack",
+    "gbrain",
+    "worker-agents",
+    "people-crm",
+    "braindump",
+    "daily-brief",
+    "team-intelligence",
+    "claude-code",
+    "cursor",
+    "kiro",
+    "gemini-cli",
+    "codex",
+    "agentic",
+    "self-evolving",
+    "markdown",
+    "note-taking",
+    "personal-intelligence"
+  ],
+  "category": "productivity",
+  "skills": [
+    "onboarding",
+    "braindump",
+    "daily-brief",
+    "weekly-checkin",
+    "knowledge-consolidation",
+    "url-dump",
+    "update-cog",
+    "team-brief",
+    "meeting-transcript",
+    "comprehensive-analysis",
+    "auto-research",
+    "create-user-story",
+    "generate-prd",
+    "generate-release-notes",
+    "export-open-issues",
+    "publish-to-confluence",
+    "update-knowledge-base"
+  ],
+  "agents": [
+    "worker-data-collector",
+    "worker-researcher",
+    "worker-file-ops",
+    "worker-executor",
+    "worker-publisher",
+    "brief-people-updater"
+  ]
+}

@@ -1,0 +1,56 @@
+# Obsidian
+vault/.obsidian/workspace*
+vault/.obsidian/cache/
+vault/.obsidian/plugins/
+vault/.obsidian/community-plugins.json
+
+# Per-instance cog-update upstream override (never tracked)
+.cog-update.local
+
+# Trash
+.trash/
+*.tmp
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Personal Content — NOT ignored by default
+# The update script (cog-update.sh) uses file-by-file extraction, not git merge,
+# so there is no risk of merge conflicts with your personal content.
+# Users who fork COG to a private repo can freely track their content via git.
+#
+# If you are using the PUBLIC upstream repo directly (not a fork), uncomment
+# the lines below to keep your personal content out of git:
+#
+# vault/00-inbox/*
+# !vault/00-inbox/.gitkeep
+# vault/01-daily/*
+# !vault/01-daily/.gitkeep
+# vault/02-personal/*
+# !vault/02-personal/.gitkeep
+# vault/03-professional/*
+# !vault/03-professional/.gitkeep
+# vault/04-projects/*
+# !vault/04-projects/.gitkeep
+# vault/05-knowledge/*
+# !vault/05-knowledge/.gitkeep
+# 06-templates/*
+# !06-templates/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Backup files
+*.bak
+*~
+*.backup.* # created by cog-update.sh
+
+# Submission and marketplace tracking (keep private)
+.github/SUBMISSION-CHECKLIST.md
+.github/SUBMISSION-TEMPLATES.md
+.github/MARKETPLACE.md

@@ -1,0 +1,204 @@
+{
+  "name": "cog-second-brain",
+  "displayName": "Brainia",
+  "version": "3.5.0",
+  "description": "Self-evolving second brain with 17 AI agent skills, 6 worker agents, and people CRM. Inspired by Garry Tan's gstack specialist sessions and gbrain knowledge patterns. Works with Claude Code, Cursor, Kiro, Gemini CLI, Codex, and any markdown-reading agent.",
+  "author": {
+    "name": "Huy Tieu",
+    "url": "https://github.com/huytieu"
+  },
+  "homepage": "https://github.com/huytieu/COG-second-brain",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/huytieu/COG-second-brain"
+  },
+  "license": "MIT",
+  "keywords": [
+    "second-brain",
+    "knowledge-management",
+    "obsidian",
+    "ai-agents",
+    "productivity",
+    "garry-tan",
+    "gstack",
+    "gbrain",
+    "worker-agents",
+    "people-crm",
+    "braindump",
+    "daily-brief",
+    "team-intelligence",
+    "claude-code",
+    "cursor",
+    "kiro",
+    "gemini-cli",
+    "codex",
+    "agentic",
+    "self-evolving",
+    "personal-intelligence",
+    "note-taking",
+    "specialist-sessions"
+  ],
+  "category": "productivity",
+  "tags": [
+    "knowledge-management",
+    "obsidian",
+    "second-brain",
+    "ai-agents",
+    "productivity",
+    "garry-tan",
+    "gstack",
+    "gbrain",
+    "worker-agents",
+    "people-crm",
+    "claude-code",
+    "cursor",
+    "specialist-sessions"
+  ],
+  "skills": [
+    {
+      "name": "onboarding",
+      "path": ".claude/skills/onboarding/SKILL.md",
+      "description": "Personalize COG for your workflow - creates profile, interests, and watchlist files (run this first!)"
+    },
+    {
+      "name": "braindump",
+      "path": ".claude/skills/braindump/SKILL.md",
+      "description": "Quick capture of raw thoughts with intelligent domain classification and competitive intelligence extraction"
+    },
+    {
+      "name": "daily-brief",
+      "path": ".claude/skills/daily-brief/SKILL.md",
+      "description": "Generate personalized news intelligence with verified sources (7-day freshness requirement)"
+    },
+    {
+      "name": "weekly-checkin",
+      "path": ".claude/skills/weekly-checkin/SKILL.md",
+      "description": "Cross-domain pattern analysis and strategic reflection for weekly review"
+    },
+    {
+      "name": "knowledge-consolidation",
+      "path": ".claude/skills/knowledge-consolidation/SKILL.md",
+      "description": "Build frameworks from scattered insights across all braindumps and notes"
+    },
+    {
+      "name": "url-dump",
+      "path": ".claude/skills/url-dump/SKILL.md",
+      "description": "Quick capture URLs with automatic content extraction, insights, and categorization into knowledge booklets"
+    },
+    {
+      "name": "team-brief",
+      "path": ".claude/skills/team-brief/SKILL.md",
+      "description": "Cross-reference GitHub, Linear, Slack, PostHog, meetings, and braindumps into a daily team intelligence brief with Linear sync-back"
+    },
+    {
+      "name": "meeting-transcript",
+      "path": ".claude/skills/meeting-transcript/SKILL.md",
+      "description": "Process meeting recordings into structured decisions, action items, and team dynamics"
+    },
+    {
+      "name": "comprehensive-analysis",
+      "path": ".claude/skills/comprehensive-analysis/SKILL.md",
+      "description": "Deep 7-day analysis for weekly reviews, board prep, or strategic planning"
+    },
+    {
+      "name": "update-cog",
+      "path": ".claude/skills/update-cog/SKILL.md",
+      "description": "Check for and apply upstream COG framework updates without touching personal content"
+    },
+    {
+      "name": "auto-research",
+      "path": ".claude/skills/auto-research/SKILL.md",
+      "description": "Deep strategic research engine with parallel research threads and actionable analysis"
+    },
+    {
+      "name": "create-user-story",
+      "path": ".claude/skills/create-user-story/SKILL.md",
+      "description": "Create user stories with duplicate checking across Linear, GitHub Issues, or Jira"
+    },
+    {
+      "name": "generate-prd",
+      "path": ".claude/skills/generate-prd/SKILL.md",
+      "description": "Draft PRDs with approval gate before publishing to Confluence or Notion"
+    },
+    {
+      "name": "generate-release-notes",
+      "path": ".claude/skills/generate-release-notes/SKILL.md",
+      "description": "Generate release notes from GitHub milestones, Linear cycles, or manual input"
+    },
+    {
+      "name": "export-open-issues",
+      "path": ".claude/skills/export-open-issues/SKILL.md",
+      "description": "Audit and export open issues from any project tracker"
+    },
+    {
+      "name": "publish-to-confluence",
+      "path": ".claude/skills/publish-to-confluence/SKILL.md",
+      "description": "Publish vault markdown files to Confluence"
+    },
+    {
+      "name": "update-knowledge-base",
+      "path": ".claude/skills/update-knowledge-base/SKILL.md",
+      "description": "Maintain product knowledge base from releases and feature updates"
+    }
+  ],
+  "metadata": {
+    "pluginRoot": ".",
+    "architecture": "multi-agent-skill-pack",
+    "features": [
+      "Self-evolving intelligence with pattern recognition",
+      "Self-healing system with auto-updating cross-references",
+      "Verification-first approach (no AI hallucinations)",
+      "Privacy-first architecture with strict domain separation",
+      "Plain text markdown files (no database, no vendor lock-in)",
+      "Multi-device sync via iCloud (iPhone, iPad, Mac)",
+      "Git version control for tracking thinking evolution",
+      "Agent-surface validator for manifest/docs consistency",
+      "Worker agent architecture with model routing (Sonnet workers, Opus lead)",
+      "People CRM with tiered enrichment and evidence-based profiles"
+    ],
+    "requirements": {
+      "obsidian": "Recommended for markdown file management",
+      "git": "Optional but recommended for version control and safe updates",
+      "claudeCode": "Recommended for the full 17-skill native experience",
+      "kiro": "Optional - ships 7 native core powers",
+      "geminiCli": "Optional - ships 7 native core commands",
+      "agentsMd": "Universal fallback surface for Codex and other markdown-reading agents"
+    },
+    "installation": {
+      "quickStart": "Clone the repo, cd into COG-second-brain, then run onboarding in your agent of choice",
+      "setupTime": "2-5 minutes",
+      "onboardingTime": "2 minutes",
+      "validation": "Run ./scripts/validate-agent-surface.sh before publishing or after framework updates"
+    },
+    "directoryStructure": {
+      ".claude/skills": "17 Claude Code skills (full surface)",
+      ".claude/agents": "6 worker agent definitions for specialist sessions",
+      ".claude/roles": "7 role packs for personalized skill and integration recommendations",
+      ".kiro/powers": "7 Kiro powers (core workflows)",
+      ".gemini/commands": "7 Gemini CLI commands (core workflows)",
+      ".gemini/skills": "Detailed Gemini command playbooks",
+      "AGENTS.md": "Universal command surface for Codex and other agents",
+      "00-inbox": "Temporary processing area with profile and interests files",
+      "01-daily": "Daily briefs and check-ins",
+      "02-personal": "Personal domain (strict privacy)",
+      "03-professional": "Professional domain with competitive watchlist",
+      "04-projects": "Project-specific tracking",
+      "05-knowledge": "Consolidated insights and patterns"
+    },
+    "skillArchitecture": {
+      "type": "agent-skills",
+      "skills": 17,
+      "workerAgents": 6,
+      "rolePacks": 7,
+      "invocation": "model-invoked",
+      "progressiveDisclosure": true,
+      "nativeSurfaces": {
+        "claudeCode": 17,
+        "kiro": 7,
+        "geminiCli": 7,
+        "agentsMd": 17
+      },
+      "description": "Self-contained skills with worker agent delegation, full Claude Code surface, core native Kiro/Gemini surfaces, and AGENTS.md as the universal fallback"
+    }
+  }
+}
