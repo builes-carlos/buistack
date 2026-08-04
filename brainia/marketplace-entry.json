@@ -1,7 +1,7 @@
 {
   "name": "cog-second-brain",
   "displayName": "Brainia",
-  "source": "https://github.com/huytieu/COG-second-brain",
+  "source": "https://github.com/builes-carlos/brainia",
   "owner": {
     "name": "Huy Tieu",
     "email": "tqhuy1991@gmail.com",
@@ -24,5 +24,5 @@
     "specialist-sessions"
   ],
   "category": "productivity",
-  "homepage": "https://github.com/huytieu/COG-second-brain"
+  "homepage": "https://github.com/builes-carlos/brainia"
 }

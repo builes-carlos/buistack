@@ -283,8 +283,9 @@ Git is optional but recommended for version history. Brainia works fine with jus
 
 | | | |
 |---|---|---|
-| [Contribute](CONTRIBUTING.md) | [Report bugs](https://github.com/huytieu/COG-second-brain/issues) | [Discussions](https://github.com/huytieu/COG-second-brain/discussions) |
-| [Sponsor on GitHub](https://github.com/sponsors/huytieu) | [Buy me a coffee](https://buymeacoffee.com/0xlight) | [MIT License](LICENSE) |
+| [Contribute](CONTRIBUTING.md) | [Report a Brainia bug](https://github.com/builes-carlos/brainia/issues) | [MIT License](LICENSE) |
+
+Bugs in Brainia belong in this repo's issues. For the COG engine underneath, use [upstream issues](https://github.com/huytieu/COG-second-brain/issues) and [upstream discussions](https://github.com/huytieu/COG-second-brain/discussions) — and if you want to support the engine's author, [sponsor huytieu](https://github.com/sponsors/huytieu) or [buy them a coffee](https://buymeacoffee.com/0xlight).
 
 ## Acknowledgments & Inspiration
 
@@ -299,7 +300,7 @@ Built with [Claude Code](https://claude.ai/code), [Cursor](https://cursor.com/),
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=huytieu/COG-second-brain&type=date&legend=top-left)](https://www.star-history.com/#huytieu/COG-second-brain&type=date&legend=top-left)
+[![Star History Chart](https://api.star-history.com/svg?repos=builes-carlos/brainia&type=date&legend=top-left)](https://www.star-history.com/#builes-carlos/brainia&type=date&legend=top-left)
 
 ---
 
