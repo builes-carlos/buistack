@@ -23,17 +23,17 @@ This document defines the available commands/skills for AI agents interacting wi
 
 **How it works:**
 1. Asks ONE open-ended question: "Tell me about yourself - name, role, and what you're interested in"
-2. Intelligently parses the response to extract name, role, interests, projects, news sources, and competitive watchlist
-3. Only asks a follow-up if required info (name, role, interests) is still missing
+2. Intelligently parses the response to extract name, interests, projects, news sources, and competitive watchlist. Occupation is optional free text if volunteered, and it gates nothing
+3. Only asks a follow-up if required info (name, interests) is still missing. **It never asks what the user does for a living**
 4. Asks about agent mode preference (solo vs team) during confirmation
 5. Confirms extracted info before creating files
-6. Matches role to a role pack (`.claude/roles/*.md`) for personalized skill and integration recommendations
-7. Discovers integrations — presents role-specific recommendations, asks which tools the user already uses
-8. Creates `vault/00-inbox/MY-PROFILE.md` with role_pack, agent_mode, and preferences
+6. Resolves fronts from the filesystem: matches the sibling folders next to `Brain/` against `front_id` and `aliases` in `fronts/*.md`. A sibling with no pack is still a front
+7. Discovers integrations — presents whatever the active fronts declare, asks which tools the user already uses
+8. Creates `vault/00-inbox/MY-PROFILE.md` with active_fronts, agent_mode, and preferences
 9. Creates `vault/00-inbox/MY-INTERESTS.md` with topics for daily briefs
 10. Creates `vault/00-inbox/MY-INTEGRATIONS.md` with active/disabled integrations
 11. Optionally creates project structures in `vault/04-projects/` and `vault/03-professional/COMPETITIVE-WATCHLIST.md` (only if mentioned)
-12. Generates a welcome guide with role-ordered skills and integration status
+12. Generates a welcome guide with the core skills plus one block per active front
 
 **Agent modes:**
 - **Solo** (default): All skills handle everything directly in one conversation
@@ -212,6 +212,9 @@ This document defines the available commands/skills for AI agents interacting wi
 
 ### /team-brief
 
+> **Owned by the Work front, not the core.** Lives in `fronts/work/skills/` and is only available
+> once the Work front is activated.
+
 **Description:** Generate a daily team intelligence brief by cross-referencing Linear, Slack, GitHub, PostHog, meetings, and braindumps — then sync the resulting intelligence back into Linear.
 
 **Triggers:**
@@ -305,6 +308,29 @@ This document defines the available commands/skills for AI agents interacting wi
 
 ---
 
+### /front-sync
+
+**Description:** Distill the artifacts an active front declares in `reads_back` into vault notes, and correct any claim the source now contradicts.
+
+**Triggers:**
+- `/front-sync` (all active fronts) or `/front-sync <front_id>`
+- "sync my fronts", "pull in my project state", "what changed in my projects"
+- Before answering a question that depends on current front state when the last sync is stale
+
+**What it does:**
+1. Reads `active_fronts` from `vault/00-inbox/MY-PROFILE.md`
+2. For each active front, reads its pack's `reads_back`, `sibling` and `writes_to` declarations. Filenames are never hardcoded; the pack is the contract
+3. Locates the declared artifacts in the sibling folder, one set per unit of work (the software front has one per project)
+4. Writes a **distilled** note per unit at `writes_to`, with a source citation and real date per factual claim
+5. Diffs against the previous note and reports what is new, changed, **invalidated**, or merely stale. Invalidated claims are corrected in place
+6. Reports missing artifacts instead of inferring them
+
+**Hard boundaries:** read-only on the sibling folder; never copies a source artifact into the vault (see the reference-layer HARD RULE); never does the front's work. If a front's artifacts are stale, the fix is to run that front's methodology, not to have Brainia guess.
+
+**Output location:** each front's declared `writes_to` (for the software front, `vault/04-projects/<project>/`)
+
+---
+
 ### /update-cog
 
 **Description:** Check for and apply upstream COG framework updates without touching personal content.
@@ -370,7 +396,12 @@ This document defines the available commands/skills for AI agents interacting wi
 
 ---
 
-### PM Workflow Skills
+### PM Workflow Skills — owned by the Work front, not the core
+
+> **These are not core commands.** They live in `fronts/work/skills/` and only exist in
+> `.claude/skills/` once the Work front is activated. If the user has no Work front, do not
+> offer them, do not mention them, and do not treat their absence as a broken install.
+> See "Front Packs" for how activation works.
 
 The following 6 skills form a complete product management lifecycle:
 **Research** → **PRD** → **Stories** → Development → **Release Notes** → **Knowledge Base**
@@ -559,7 +590,7 @@ This repo is the `Brain/` of an `AI-Coached-Life` container — the cognition en
 ```
 AI-Coached-Life/Brain/
 ├── .claude/agents/        # Worker agent definitions (6)
-├── .claude/roles/         # Role packs for personalized recommendations
+├── fronts/                # Front packs, optional per front (+ front-owned skills and profiles)
 ├── vault/00-inbox/              # Landing zone, profile files
 │   ├── MY-PROFILE.md      # User profile with role pack (created by onboarding)
 │   ├── MY-INTERESTS.md    # User interests (created by onboarding)
@@ -598,10 +629,16 @@ AI-Coached-Life/Brain/
 5. **Save a link?** Use `/url-dump` with the URL
 6. **Evaluate a tool?** Use `/scout` to check relevance before saving
 7. **Build knowledge?** Run `/knowledge-consolidation` periodically
-8. **Create user stories?** Use `/create-user-story` with a problem/solution
-9. **Draft a PRD?** Use `/generate-prd` with your problem context
-10. **Release notes?** Use `/generate-release-notes` with a version
-11. **Strategic research?** Use `/auto-research` with your question
+8. **Process a meeting?** Use `/meeting-transcript` with the recording
+9. **Deep review?** Use `/comprehensive-analysis` for a 7-day pass
+10. **Strategic research?** Use `/auto-research` with your question
+11. **Project state gone stale?** Run `/front-sync` to pull each front's own artifacts back in
+
+Those are the core commands and they work for everyone. Anything beyond them belongs to a front:
+
+- **Writing code?** The software front hands off to devaing. Start with `/devaing-director`. Brainia does not build software itself.
+- **PM and delivery work?** Activate the Work front for `/create-user-story`, `/generate-prd`, `/generate-release-notes`, `/export-open-issues`, `/publish-to-confluence`, `/update-knowledge-base` and `/team-brief`.
+- **Anything else?** Declare it in a front pack. See `fronts/_template.md`.
 
 ---
 
@@ -615,14 +652,20 @@ All configuration is stored as readable markdown files:
 
 Edit these files anytime - changes take effect immediately.
 
-### Role Packs
+### Front Packs
 
-Brainia matches your role to a role pack during onboarding. Role packs (in `.claude/roles/`) define:
-- Which skills are most relevant for your role
-- Which integrations to recommend
-- Suggested agent mode (solo vs team)
+Brainia personalizes by **front**, never by job title. It never asks what the user does for a living, and it never gives less to someone whose work is not software.
 
-Available packs: Product Manager, Engineering Lead, Engineer, Designer, Founder, Marketer. Create custom packs from `_template.md`.
+Fronts are detected from the filesystem: the sibling folders next to `Brain/`. A front pack (`fronts/<id>.md`) is optional and declares:
+- `writes_to` — which vault paths this front's knowledge lands in
+- `skills` — front-owned skills under `fronts/<id>/skills/`, copied into `.claude/skills/` only on activation
+- `methodology` — an external tool this front delegates execution to, plus how to detect it
+- `reads_back` — artifacts Brainia ingests from the sibling folder
+- `profiles` — optional sub-profiles for recommendation ordering inside that front
+
+**The filesystem is the source of truth, not `fronts/`.** A sibling folder is a front whether or not a pack exists for it, and a front with no pack is never "unconfigured". The set is open and changes over time.
+
+Two packs ship with content: `fronts/code.md` delegates to **devaing** (<https://github.com/builes-carlos/devaing>) and reads each project's `CONTEXT.md` and `CHECKPOINTS.md` back into `vault/04-projects/`; `fronts/work.md` owns the seven PM and delivery skills. Write your own from `fronts/_template.md`, and front-local profiles from `fronts/_profile-template.md`.
 
 ## Version & Updates
 

@@ -8,34 +8,31 @@ This document is the packaging contract: it tells contributors and maintainers w
 
 | Surface | Shipped format | Coverage | Status |
 |---|---|---:|---|
-| Claude Code | `.claude/skills/*/SKILL.md` | 17 skills | Full native surface |
-| Universal agent docs | `AGENTS.md` | 17 commands | Full documented fallback |
+| Claude Code | `.claude/skills/*/SKILL.md` | 12 core skills | Full native surface |
+| Universal agent docs | `AGENTS.md` | 12 core commands | Full documented fallback |
 | Kiro | `.kiro/powers/*/POWER.md` | 7 powers | Core workflows only |
 | Gemini CLI | `.gemini/commands/*.toml` + `.gemini/skills/*.md` | 7 commands | Core workflows only |
 
 ## What “Full” vs “Core” Means
 
 ### Full surfaces
-These surfaces should expose the complete public Brainia command set:
+These surfaces should expose the complete **core** command set, which is domain-agnostic by contract:
 - `onboarding`
 - `braindump`
 - `daily-brief`
 - `weekly-checkin`
 - `knowledge-consolidation`
 - `url-dump`
-- `team-brief`
+- `scout`
 - `meeting-transcript`
 - `comprehensive-analysis`
-- `update-cog`
+- `front-sync`
 - `auto-research`
-- `create-user-story`
-- `generate-prd`
-- `generate-release-notes`
-- `export-open-issues`
-- `publish-to-confluence`
-- `update-knowledge-base`
+- `update-cog`
 
 Today, **Claude Code** and **`AGENTS.md`** are the full surfaces.
+
+**Front-owned commands are not part of this contract.** Skills staged under `fronts/<id>/skills/` only exist in `.claude/skills/` while that front is activated, so no surface is expected to ship them and their absence is never drift. The Work front currently owns `create-user-story`, `generate-prd`, `generate-release-notes`, `export-open-issues`, `publish-to-confluence`, `update-knowledge-base` and `team-brief`; they are documented in `AGENTS.md` with an explicit front-ownership marker.
 
 ### Core surfaces
 These surfaces intentionally cover the most common personal workflows first:

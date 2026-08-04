@@ -1,6 +1,11 @@
-﻿# Brainia — The Agentic Second Brain That Actually Self-Evolves
+﻿# Brainia — A Second Brain for Your Whole Life, Not Your Job Title
 
 **Built on the COG engine (Cognition + Obsidian + Git)** — a self-evolving second brain powered by AI agents, markdown files, and version control. No database, no vendor lock-in — just `.md` files that think.
+
+Two rules make it different from other agentic second brains:
+
+1. **It never asks what you do for a living.** No job-title taxonomy, no role questionnaire, and no smaller product for people whose work is not software. A nurse, a teacher and a staff engineer get the same full core.
+2. **The core carries no domain tooling.** Capture, synthesis and knowledge are core. Anything domain-specific belongs to a **front**, meaning one area of your life, and a front that needs real machinery points at an external tool rather than bundling one. The software front is the worked example: it hands off to [devaing](#fronts--where-domain-work-lives) and Brainia itself contains no development tooling at all.
 
 [Quick Start](#quick-start) | [Skills](#skills) | [Features](#features-at-a-glance) | [FAQ](#faq) | [SETUP.md](SETUP.md)
 
@@ -11,11 +16,13 @@
 ```mermaid
 graph LR
     A[You] -- natural language --> B[AI Agent]
-    B -- runs --> C[17 Skills]
+    B -- runs --> C[12 Core Skills]
     C -- delegates to --> W[6 Worker Agents]
     C -- reads & writes --> D[.md Files]
     W -- reads & writes --> D
-    C -- syncs with --> G[GitHub / Linear / Slack / PostHog]
+    B -- activates --> P[Front Packs]
+    P -- hand off to --> X[External methodologies]
+    P -- read back into --> D
     D --> E[Git]
     D --> F[iCloud]
 ```
@@ -35,14 +42,18 @@ AI-Coached-Life/        # your whole life, AI-coached   (required)
 └── ...                 # whatever fronts your life has
 ```
 
-`Brain/` is the only required folder besides the container root. Sources, documentation, and artifacts live in each sibling folder; `.md` knowledge lives only in `Brain/vault/` and points back to them. The `Code/` front is execution only — a venture's strategy, ownership, co-founders, and finances live in other fronts. The brand of the brain (it runs on the **COG** engine today, **gbrain** later) lives inside `Brain/`; the container itself is engine-agnostic.
+`Brain/` is the only required folder besides the container root. Sources, documentation, and artifacts live in each sibling folder; `.md` knowledge lives only in `Brain/vault/` and points back to them. The `Code/` front is execution only, so a venture's strategy, ownership, co-founders, and finances live in other fronts. The brand of the brain (it runs on the **COG** engine today, **gbrain** later) lives inside `Brain/`; the container itself is engine-agnostic.
+
+**Name it whatever you want.** `Brain/` above is just the clearest name for the role. Yours can be `my-brain/`, `segundo-cerebro/`, your own name, anything. Brainia finds the brain by its contents, never by its folder name, so nothing breaks if you rename it later.
+
+**Your fronts are yours, and they move.** Which fronts exist varies per person and changes over the life of the brain: fronts get added, renamed, merged and dropped. The filesystem is the source of truth, not any registry inside `Brain/`. A new sibling folder is the model working as intended, never something to ratify. `fronts/` holds optional declarations for the fronts that need one, and Brain itself is never a front, it is the engine that thinks across all of them.
 
 ## Quick Start
 
 **1. Clone it as the `Brain/` of your life container:**
 ```bash
 mkdir AI-Coached-Life
-git clone https://github.com/huytieu/COG-second-brain.git AI-Coached-Life/Brain
+git clone https://github.com/builes-carlos/brainia.git AI-Coached-Life/Brain
 cd AI-Coached-Life/Brain
 ```
 
@@ -57,11 +68,6 @@ cd AI-Coached-Life/Brain
 | OpenAI Codex | `codex` → "Run onboarding" | `AGENTS.md` |
 | Other agents | Point at `AGENTS.md` → "Run onboarding" | `AGENTS.md` |
 
-**Or install via [skills.sh](https://skills.sh):**
-```bash
-npx skills add huytieu/COG-second-brain
-```
-
 Done — Brainia is personalized and ready in ~2 minutes. See [SETUP.md](SETUP.md) for optional config (Git sync, iCloud, Obsidian Tasks, etc.).
 
 ## Agent Support Matrix
@@ -70,54 +76,52 @@ Brainia ships a **full Claude Code surface** plus **core native surfaces** for K
 
 | Surface | Current support | Notes |
 |---|---|---|
-| Claude Code | 17 native skills + 6 worker agents | Full first-class surface |
+| Claude Code | 12 core skills + 6 worker agents + front packs | Full first-class surface |
 | Cursor | Plugin manifest + rules | `.cursor-plugin/plugin.json` + `.cursorrules` |
 | Kiro | 7 native powers | Core workflows today |
 | Gemini CLI | 7 native commands | Core workflows today |
-| `AGENTS.md` | 17 documented commands | Universal fallback for Codex and other agents |
+| `AGENTS.md` | 12 documented core commands | Universal fallback for Codex and other agents |
 
 Before publishing or updating framework files, run `./scripts/validate-agent-surface.sh` to catch drift between manifests, docs, and shipped files. See [docs/AGENT-SUPPORT.md](docs/AGENT-SUPPORT.md) for the detailed support matrix and contributor rules.
 
 ## Skills
 
-### Core Skills (Personal Knowledge)
+### Core Skills — everyone, every front
+
+These twelve ship in the core and behave the same whatever your fronts are. Nothing here presumes a job, an industry, or a toolchain.
 
 | Skill | What it does | Try saying... |
 |---|---|---|
-| **onboarding** | Personalize Brainia for your workflow (run first!) | "Run onboarding" |
+| **onboarding** | Detect your fronts and set up your vault (run first!) | "Run onboarding" |
 | **braindump** | Capture raw thoughts with intelligent classification | "I need to braindump" |
 | **daily-brief** | Verified news intelligence (7-day freshness) | "Give me my daily brief" |
 | **url-dump** | Save URLs with auto-extracted insights | "Save this URL" |
-| **weekly-checkin** | Cross-domain pattern analysis | "Weekly review" |
+| **scout** | Triage a URL or tool before deciding to save it | "Is this worth saving?" |
+| **weekly-checkin** | Cross-front pattern analysis | "Weekly review" |
+| **comprehensive-analysis** | Deep 7-day analysis for reviews and planning (~8-12 min) | "Weekly analysis" |
+| **meeting-transcript** | Turn a recording into decisions, action items, and dynamics | "Process this meeting" |
 | **knowledge-consolidation** | Build frameworks from scattered notes | "Consolidate my knowledge" |
+| **auto-research** | Decompose a question into parallel research threads | "Research the future of X" |
+| **front-sync** | Pull each front's own artifacts back into the vault, correcting what stopped being true | "Sync my fronts" |
 | **update-cog** | Update framework files without touching your content | "Update COG" |
 
-### Team Intelligence Skills (for Product & Engineering Leads)
+### Fronts — where domain work lives
 
-| Skill | What it does | Try saying... |
-|---|---|---|
-| **team-brief** | Cross-reference GitHub + Linear + Slack + PostHog into a daily team intelligence brief with two-way Linear sync-back | "Team brief" / "What did we ship?" |
-| **meeting-transcript** | Process meeting recordings into structured decisions, action items, and team dynamics | "Process this meeting" |
-| **comprehensive-analysis** | Deep 7-day analysis for weekly reviews, board prep, or strategic planning (~8-12 min) | "Weekly analysis" / "Board prep" |
+A **front** is one area of your life, and it is a physical sibling folder of `Brain/`. Fronts are detected from the filesystem, never from a questionnaire. A front pack (`fronts/<id>.md`) is **optional**: it exists only when a front needs to declare something, and a front with no pack at all is completely normal.
 
-### PM Workflow Skills (for Product Managers)
+A pack can do two things the core deliberately will not do for you:
 
-| Skill | What it does | Try saying... |
-|---|---|---|
-| **create-user-story** | Create user stories with duplicate checking across Linear, GitHub Issues, or Jira | "Create a user story for..." |
-| **generate-prd** | Draft PRDs with approval gate before publishing to Confluence/Notion | "Generate a PRD for..." |
-| **generate-release-notes** | Generate release notes from GitHub milestones, Linear cycles, or manual input | "Generate release notes for v2.1" |
-| **export-open-issues** | Audit and export open issues from any tracker into a structured vault summary | "Export open issues" |
-| **publish-to-confluence** | Publish any vault markdown file to Confluence | "Publish this to Confluence" |
-| **update-knowledge-base** | Maintain product knowledge base from releases, features, and project changes | "Update the knowledge base with v2.1 changes" |
+- **Own skills.** Staged under `fronts/<id>/skills/` and copied into `.claude/skills/` only when you activate that front. A front you do not have never installs anything.
+- **Delegate to an external methodology.** The pack names the tool, how to detect it, and which of its artifacts Brainia reads back into the vault.
 
-> **PM Workflow:** These skills form a complete product management lifecycle: **Research** (`/auto-research`) → **PRD** (`/generate-prd`) → **Stories** (`/create-user-story`) → Development → **Release Notes** (`/generate-release-notes`) → **Knowledge Base** (`/update-knowledge-base`). Use `/export-open-issues` for audits and `/publish-to-confluence` to share externally.
+Two packs ship with real content:
 
-### Strategic Research
+| Front | What it does |
+|---|---|
+| **`fronts/code.md`** | Delegates to **[devaing](https://github.com/builes-carlos/devaing)**, an external framework for building products with AI. Brainia does not plan, build, review, or ship code. It hands off to `/devaing-director` and stops. It reads each project's `CONTEXT.md` and `CHECKPOINTS.md` back into `vault/04-projects/`, which is how execution feeds the brain without the brain owning execution. |
+| **`fronts/work.md`** | Owns the PM and delivery skills that used to sit in the core: `create-user-story`, `generate-prd`, `generate-release-notes`, `export-open-issues`, `update-knowledge-base`, `publish-to-confluence`, `team-brief`. They install only if you activate the Work front. |
 
-| Skill | What it does | Try saying... |
-|---|---|---|
-| **auto-research** | Deep strategic research engine — decomposes questions into parallel research threads with multiple agents | "Research the future of AI testing tools" |
+Every other front (`health`, `finances`, `people`, `learning`, `career`, `strategy`, `biz`, `personal`) ships as a thin declaration with no tooling, which is the intended default rather than an omission. Write your own from `fronts/_template.md`.
 
 ### Worker Agents (Specialist Sessions)
 
@@ -144,11 +148,13 @@ Track the people you work with using progressive, evidence-based profiles in `va
 
 Every observation includes a source citation with confidence level. See `vault/05-knowledge/people/README.md` for details.
 
-### Role Packs (Personalized Recommendations)
+### Front-Local Profiles (Optional Recommendation Ordering)
 
-Brainia matches your role during onboarding to a **role pack** that prioritizes the most relevant skills and integrations for you. Available role packs: Product Manager, Engineering Lead, Engineer, Designer, Founder, Marketer — or create your own from the template.
+A front may carry sub-profiles under `fronts/<id>/profiles/` that order recommendations *inside* that front. The software front ships `engineer` and `engineering-lead`; the Work front ships `product-manager`, `designer`, `marketer` and `founder`. Add your own from `fronts/_profile-template.md`.
 
-> **New to team skills?** These require GitHub CLI (`gh`) and work best with Linear, Slack, and PostHog MCP integrations. They degrade gracefully — start with just GitHub and add integrations over time. See [SETUP.md](SETUP.md) for configuration.
+These are reachable only when their front is active, they are never a gate, and they are never a prerequisite. If you never activate those fronts, Brainia never mentions a job title.
+
+> **Front-owned skills and integrations degrade gracefully.** The Work front's skills work best with GitHub CLI (`gh`) plus Linear, Slack and PostHog MCP integrations, but start with one and add the rest over time. See [SETUP.md](SETUP.md) for configuration.
 
 ## The Evolution Cycle
 
@@ -185,7 +191,7 @@ graph TD
 |---|---|---|
 | **Self-Evolving** — Learns your patterns, auto-organizes content, builds frameworks | **Self-Healing** — Rename files or restructure; cross-references update automatically | **Verification-First** — Sources required, 7-day freshness, confidence levels on all analysis |
 | **Privacy-First** — Local `.md` files, strict domain separation, no external servers | **Multi-Device** — iCloud sync to iPhone/iPad/Mac; Git for version history | **Obsidian Tasks** — `📅 YYYY-MM-DD` emoji format works with Tasks plugin dashboards |
-| **Garry Tan Inspired** — gstack specialist sessions + gbrain knowledge patterns | **Multi-Platform** — Listed on [skills.sh](https://skills.sh), [agentskill.sh](https://agentskill.sh), [cursor.directory](https://cursor.directory) | **Worker Agents** — Sonnet handles I/O, Opus handles thinking |
+| **Garry Tan Inspired** — gstack specialist sessions + gbrain knowledge patterns | **Multi-Agent** — Claude Code, Cursor, Kiro, Gemini CLI, Codex, or any agent that reads markdown | **Worker Agents** — Sonnet handles I/O, Opus handles thinking |
 
 ## Your Vault
 
@@ -193,9 +199,12 @@ The cloned repo is your `Brain/` — inside it:
 
 ```
 AI-Coached-Life/Brain/       # the second brain (this repo)
-├── .claude/skills/          # Claude Code skills (17)
+├── .claude/skills/          # core skills, domain-agnostic only (12)
 ├── .claude/agents/          # Worker agent definitions (6)
-├── .claude/roles/           # Role packs (7) — personalized recommendations
+├── fronts/                  # Front packs (optional per front)
+│   ├── _template.md         # write your own front
+│   ├── code.md              # delegates to devaing
+│   └── work/                # front-owned skills + profiles
 ├── .kiro/powers/            # Kiro powers
 ├── .gemini/commands/        # Gemini CLI commands
 ├── AGENTS.md                # Universal agent docs
@@ -261,7 +270,8 @@ Git is optional but recommended for version history. Brainia works fine with jus
 
 - [x] ~~Gemini CLI + OpenAI Codex support~~ (shipped in v3.1)
 - [x] ~~Upstream update system~~ (shipped in v3.2)
-- [x] ~~Role packs & integration discovery~~ (shipped in v3.3)
+- [x] ~~Role packs & integration discovery~~ (shipped in COG v3.3, **superseded by front packs** in Brainia)
+- [x] ~~Fronts architecture: agnostic core, optional front packs, delegation to external methodologies~~
 - [x] ~~PM workflow skills & auto-research~~ (shipped in v3.4)
 - [x] ~~Worker agents, people CRM & specialist sessions~~ (shipped in v3.5)
 - [ ] Web interface for knowledge graph visualization

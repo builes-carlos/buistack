@@ -7,7 +7,7 @@ Complete step-by-step instructions for setting up your Brainia agentic second br
 ### What You Need
 
 1. **AI Agent** (choose one or more):
-   - [Claude Code](https://claude.ai/download) - Uses `.claude/skills/` (full 17-skill native surface)
+   - [Claude Code](https://claude.ai/download) - Uses `.claude/skills/` (12 core skills, full native surface)
    - [Kiro](https://kiro.dev/) - Uses `.kiro/powers/` (7 core native powers)
    - [Gemini CLI](https://github.com/google-gemini/gemini-cli) - Uses `GEMINI.md` + `.gemini/commands/` (7 core native commands)
    - Any OpenAI-compatible or markdown-reading agent - Uses `AGENTS.md`
@@ -47,7 +47,7 @@ That's it! You now have a working second brain.
 **What just happened?**
 - The cloned folder is the `Brain/` of your `AI-Coached-Life` container — the second brain
 - Brainia now exposes a clear multi-agent support matrix:
-  - `.claude/skills/` - 17 Claude Code skills (full surface)
+  - `.claude/skills/` - 12 core Claude Code skills (domain-agnostic)
   - `.kiro/powers/` - 7 Kiro powers (core workflows)
   - `.gemini/commands/` + `.gemini/skills/` - 7 Gemini CLI commands (core workflows)
   - `AGENTS.md` - 17 documented commands for Codex and other agents
@@ -78,7 +78,7 @@ Brainia generates tasks with [Obsidian Tasks emoji format](https://publish.obsid
 
 Onboarding will ask you:
 - Your name
-- What you do (role/job)
+- What you do (optional free text, gates nothing)
 - Topics you're interested in (3-5 areas)
 - Where you get your news
 - Active projects (optional)
@@ -87,13 +87,13 @@ Onboarding will ask you:
 **Takes 2 minutes. Everything is stored as markdown files you can edit.**
 
 Onboarding creates:
-- `vault/00-inbox/MY-PROFILE.md` - Your info, role pack, and projects
+- `vault/00-inbox/MY-PROFILE.md` - Your info, active fronts, and projects
 - `vault/00-inbox/MY-INTERESTS.md` - Topics for daily briefs
 - `vault/00-inbox/MY-INTEGRATIONS.md` - Active/disabled external service integrations
 - `vault/03-professional/COMPETITIVE-WATCHLIST.md` - Tracking list (if any)
 - Project folders in `vault/04-projects/`
 
-**Role-based personalization:** Brainia matches your role to a role pack that prioritizes the most relevant skills and integrations for you. Available packs: Product Manager, Engineering Lead, Engineer, Designer, Founder, Marketer.
+**Front-based personalization:** Brainia detects your fronts from the sibling folders next to `Brain/` and orders skill and integration recommendations by your active fronts. See `fronts/*.md` for the available front packs.
 
 ### Test Your Setup
 
@@ -156,8 +156,7 @@ AI-Coached-Life/Brain/         # the second brain folder
 ├── AGENTS.md                  # Universal agent documentation
 ├── .claude/
 │   ├── agents/                # 6 worker agent definitions
-│   ├── roles/                 # 7 role packs for personalized recommendations
-│   └── skills/                # 17 Claude Code skills
+│   └── skills/                # 12 core Claude Code skills
 │       ├── onboarding/
 │       ├── braindump/
 │       ├── daily-brief/
@@ -165,12 +164,18 @@ AI-Coached-Life/Brain/         # the second brain folder
 │       ├── knowledge-consolidation/
 │       ├── url-dump/
 │       ├── auto-research/
-│       ├── create-user-story/
-│       ├── generate-prd/
-│       ├── generate-release-notes/
-│       ├── export-open-issues/
-│       ├── publish-to-confluence/
-│       └── update-knowledge-base/
+│       ├── comprehensive-analysis/
+│       ├── meeting-transcript/
+│       ├── scout/
+│       └── update-cog/
+├── fronts/                    # front packs (optional per front)
+│   ├── code.md
+│   ├── work.md
+│   ├── code/profiles/         # engineer, engineering-lead
+│   └── work/
+│       ├── profiles/          # product-manager, designer, marketer, founder
+│       └── skills/            # create-user-story, generate-prd, generate-release-notes,
+│                               # export-open-issues, publish-to-confluence, update-knowledge-base, team-brief
 ├── .kiro/
 │   └── powers/                # 7 Kiro powers (core workflows)
 │       ├── cog-onboarding/
@@ -183,7 +188,7 @@ AI-Coached-Life/Brain/         # the second brain folder
 ├── .gemini/
 │   ├── commands/              # 7 Gemini CLI commands (core workflows)
 │   └── skills/                # Detailed Gemini command playbooks
-├── CLAUDE.md                  # Framework instructions (role packs, integrations)
+├── CLAUDE.md                  # Framework instructions (front packs, integrations)
 ├── vault/00-inbox/                  # Profiles, interests, integrations (created by onboarding)
 ├── vault/01-daily/                  # Daily briefs and check-ins
 │   ├── briefs/

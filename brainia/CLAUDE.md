@@ -8,6 +8,8 @@ The product is **Brainia**; **COG** is the engine it runs on (gbrain later). The
 
 This repo is the `Brain/` of an `AI-Coached-Life` container — the cognition engine for a person's whole life. `Brain/` is the only required folder besides the container root. The engine brand lives inside `Brain/` (COG today, gbrain later); the container itself is engine-agnostic.
 
+> **`Brain/` is a role, not a required name.** The README clones it as `Brain/` for clarity, but the folder name belongs to the user: `brainia-alex/`, `mi-cerebro/`, anything. **Never identify the brain by its name.** Identify it by its contents: the sibling that holds `vault/00-inbox/MY-PROFILE.md`. A name check silently turns the brain into an eleventh front and misresolves the container for anyone who did not use the default name.
+
 Every life front is a **physical sibling folder** of `Brain/` (`Code/`, `Strategy/`, `Health/`, … — they vary per person). Sources, documentation, and artifacts live in the sibling folder. **`.md` knowledge lives ONLY in `Brain/vault/`**: a vault note synthesizes and points to the relevant sibling, citing its sources (`[Source: ../../People/<x>/file.pdf | YYYY-MM-DD | confidence]`); it never duplicates them. Brain is the engine that thinks across every front — it is not itself a front.
 
 > **HARD RULE — Brain is a reference layer, never a storage drawer.** The vault holds distilled, queryable knowledge ONLY. Never move or import working folders, source files, or raw artifacts INTO `Brain/vault/`. When a working artifact is misplaced, the fix is to move it to the correct front sibling **outside** Brain — never into the vault. Before choosing a destination for any file, decide: working artifact/source → a front sibling outside Brain; distilled knowledge → a vault note that cites the sibling. Never the inverse.
@@ -96,27 +98,33 @@ Before using any external integration in a skill, check `vault/00-inbox/MY-INTEG
 - **Disabled integrations**: Skip silently. Do not attempt to call their tools, do not suggest setting them up, do not mention them in output.
 - **Unknown integrations** (not listed in either section): Ask the user if they want to set it up. If they say no, add it to the Disabled section.
 
-## Role Packs
+## Front packs
 
-COG uses role packs (`.claude/roles/*.md`) to personalize skill recommendations and integration suggestions per user role.
+Brainia personalizes by **front**, never by job title. Front packs live in `fronts/*.md`.
 
-### How role matching works
-1. During onboarding, the user's role text is matched against `role_id` and `aliases` in each role pack's YAML frontmatter.
-2. The matched role pack is stored as `role_pack` in `vault/00-inbox/MY-PROFILE.md` frontmatter.
-3. When suggesting skills or workflows, check the user's `role_pack` and order recommendations by role relevance.
+### Two rules that define the core
 
-### Role-aware behavior
-- **Skill suggestions**: When a user asks "what can COG do?" or similar, prioritize skills listed in their role pack. Show role-specific explanations from the pack.
-- **Integration prompts**: When a skill needs an integration the user hasn't set up, check their role pack to provide role-specific context for why it matters.
-- **No role pack match**: If the user's role doesn't match any pack, recommend core skills (`roles: [all]`) and let them discover team skills organically.
+1. **The core never asks what the user does for a living.** Fronts are detected from the filesystem — the sibling folders next to `Brain/`. There is no job-title taxonomy, no role questionnaire, and no reduced experience for someone whose work is not software. A nurse, a teacher and a staff engineer all get the same full core.
+2. **The core contains no domain tooling.** Capture, synthesis and knowledge are core. Anything specific to one front belongs to that front: either as front-owned skills staged under `fronts/<id>/skills/`, or delegated to an external tool the front points at. The core never grows a domain harness.
 
-### Available role packs
-Role packs live in `.claude/roles/`. New roles can be added by dropping a file following the `_template.md` format.
+### How front resolution works
+1. During onboarding, the sibling folders next to `Brain/` are matched against `front_id` and `aliases` in each front pack's YAML frontmatter.
+2. The detected set is stored as `active_fronts` in `vault/00-inbox/MY-PROFILE.md` frontmatter.
+3. When suggesting skills or workflows, order recommendations by the user's active fronts. Never surface a front the user does not have.
+
+### Front packs are optional
+The filesystem is the source of truth for which fronts exist — not the `fronts/` directory. A sibling folder is a front whether or not it has a pack file. A pack exists only when a front needs something declared: an external methodology, front-owned skills, front-local profiles, or a non-obvious `writes_to` mapping. A front with no pack is fully valid, never "unconfigured". This follows directly from *Fronts are dynamic, not static* above.
+
+### Delegation over ownership
+When a front needs execution machinery, the pack names an external tool and Brainia hands off. The worked example is the software front: `fronts/code.md` delegates to **devaing** (<https://github.com/builes-carlos/devaing>) and Brainia contains no development tooling. A methodology is always referenced by its public source, never by a local path that only exists on one machine. The handoff is two-way — Brainia reads the artifacts the external methodology already maintains (for devaing, each project's `CONTEXT.md` and `CHECKPOINTS.md`) back into `vault/04-projects/<project>/`. That is how execution feeds the brain without the brain owning execution.
+
+### Front-local profiles
+A front may carry job-level sub-profiles under `fronts/<id>/profiles/` for recommendation ordering *inside* that front. These are reachable only when the front is active. Use `fronts/_profile-template.md` to add one. They are never a gate and never a prerequisite.
 
 ## Vault Structure
 
 ### User configuration files (`vault/00-inbox/`)
-- `MY-PROFILE.md` — User info, role pack, agent mode, active projects
+- `MY-PROFILE.md` — User info, active fronts, agent mode, active projects
 - `MY-INTERESTS.md` — Topics for daily briefs
 - `MY-INTEGRATIONS.md` — Active/disabled external service integrations
 
@@ -124,9 +132,9 @@ Role packs live in `.claude/roles/`. New roles can be added by dropping a file f
 - `COMPETITIVE-WATCHLIST.md` — Companies/people being tracked
 
 ### Framework files (updated via `cog-update.sh` or `/update-cog`)
-- `.claude/skills/` — Claude Code skills (17 skills)
+- `.claude/skills/` — core Claude Code skills, domain-agnostic only (12 skills)
 - `.claude/agents/` — Worker agent definitions (6 agents)
-- `.claude/roles/` — Role packs for personalized recommendations
+- `fronts/` — Front packs, optional per front. Front-owned skills and profiles live under `fronts/<id>/`
 - `.kiro/powers/` — Kiro powers
 - `.gemini/commands/` — Gemini CLI commands
 - `AGENTS.md` — Universal agent documentation

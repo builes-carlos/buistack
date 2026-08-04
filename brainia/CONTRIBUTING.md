@@ -52,15 +52,23 @@ We welcome ideas for new features or improvements:
    - Add the file to `FRAMEWORK_FILES` in `cog-update.sh`
    - Document in `AGENTS.md` under "Worker Agents"
 2. **Skills**: New skills should be added in every surface that claims to support them:
-   - `.claude/skills/[name]/SKILL.md` - Claude Code format (required; include `roles` and `integrations` in frontmatter)
+   - `.claude/skills/[name]/SKILL.md` - Claude Code format (required; include `front` and `integrations` in frontmatter)
    - `AGENTS.md` - Universal documentation (required)
    - `.claude-plugin/plugin.json` - Packaged skill manifest (required)
    - `.kiro/powers/cog-[name]/POWER.md` - Kiro format (if Kiro supports the skill)
    - `.gemini/commands/[name].toml` + `.gemini/skills/[name].md` - Gemini CLI format (if Gemini supports the skill)
-   - If the skill is role-specific, add it to relevant role packs in `.claude/roles/`
-2. **Templates**: Follow existing YAML frontmatter conventions
-3. **Documentation**: Update README.md if adding major features
-4. **Examples**: Provide examples of your feature in action
+   - Domain-specific skills do not go in the core at all. They belong to a front, staged under `fronts/<id>/skills/`, and declared in that front's `skills` field in `fronts/<id>.md`.
+3. **Fronts**: A new front is the main extension path, and it is deliberately cheap:
+   - Copy `fronts/_template.md` to `fronts/<id>.md` and fill the frontmatter. `front_id` must match the filename.
+   - A front pack is **optional**. The filesystem decides which fronts exist; a pack exists only to declare something (owned skills, an external methodology, `reads_back` artifacts, a non-obvious `writes_to`).
+   - If the front owns skills, stage them under `fronts/<id>/skills/<name>/SKILL.md` and list them in `skills`. Never also place them in `.claude/skills/`; activation copies them there.
+   - If the front delegates, set `methodology` and document the tool in the pack body: where it lives, how to install it, how to detect it, and which artifacts `reads_back` should distill. `fronts/code.md` is the worked example.
+   - Front-local profiles go in `fronts/<id>/profiles/` from `fronts/_profile-template.md`. They order recommendations inside that front and are never a gate.
+   - Declaration and disk must agree in both directions; the validator fails on an undeclared directory as well as on a declared file that is missing.
+   - **Two rules a contribution must never break:** the core never asks what the user does for a living, and the core contains no domain tooling.
+4. **Templates**: Follow existing YAML frontmatter conventions
+5. **Documentation**: Update README.md if adding major features
+6. **Examples**: Provide examples of your feature in action
 
 #### Code Style
 
@@ -127,7 +135,7 @@ Before submitting:
 ---
 name: skill-name
 description: What this skill does
-roles: [all]
+front: all
 integrations: [github, slack]
 ---
 

@@ -20,7 +20,7 @@ vault/05-knowledge/      → consolidated/, patterns/, timeline/, booklets/
 
 ## User Profile
 
-Read `vault/00-inbox/MY-PROFILE.md` for user name, role, role pack, and active projects.
+Read `vault/00-inbox/MY-PROFILE.md` for user name, occupation, active fronts, and active projects.
 Read `vault/00-inbox/MY-INTERESTS.md` for topics and preferred news sources.
 Read `vault/00-inbox/MY-INTEGRATIONS.md` for active/disabled external service integrations.
 Read `vault/03-professional/COMPETITIVE-WATCHLIST.md` for companies to track.
