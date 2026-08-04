@@ -1,7 +1,7 @@
 ﻿---
 name: create-user-story
 description: Create user stories with duplicate checking across any project tracker (Linear, GitHub Issues, Jira)
-roles: [product-manager, engineering-lead, founder]
+front: work
 integrations: [linear, github, jira]
 ---
 

@@ -1,7 +1,7 @@
 ﻿---
 name: generate-release-notes
 description: Generate categorized release notes from any source (GitHub, Linear, Jira, or manual input) with optional publishing
-roles: [product-manager, engineering-lead, founder]
+front: work
 integrations: [github, linear, jira, confluence, notion, hackmd]
 ---
 

@@ -1,7 +1,7 @@
 ﻿---
 name: team-brief
 description: Generate daily team intelligence brief by cross-referencing GitHub, Linear, Slack, PostHog, meetings, and braindumps with two-way Linear sync-back
-roles: [product-manager, engineering-lead, founder]
+front: work
 integrations: [github, linear, slack, posthog, hackmd]
 ---
 

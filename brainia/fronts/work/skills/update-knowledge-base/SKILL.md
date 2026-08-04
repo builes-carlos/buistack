@@ -1,7 +1,7 @@
 ﻿---
 name: update-knowledge-base
 description: Maintain and update product knowledge base from releases, features, and project changes with optional wiki sync
-roles: [product-manager, engineering-lead, founder]
+front: work
 integrations: [github, linear, jira, confluence, notion]
 ---
 

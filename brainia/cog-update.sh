@@ -63,14 +63,9 @@ FRAMEWORK_FILES=(
   ".claude/skills/publish-to-confluence/SKILL.md"
   ".claude/skills/update-knowledge-base/SKILL.md"
 
-  # Role packs
-  ".claude/roles/_template.md"
-  ".claude/roles/product-manager.md"
-  ".claude/roles/engineer.md"
-  ".claude/roles/engineering-lead.md"
-  ".claude/roles/designer.md"
-  ".claude/roles/founder.md"
-  ".claude/roles/marketer.md"
+  # Front pack templates
+  "fronts/_template.md"
+  "fronts/_profile-template.md"
 
   # Worker agents
   ".claude/agents/worker-data-collector.md"

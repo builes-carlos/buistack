@@ -4,10 +4,11 @@ display_name: My Role
 aliases: []
 ---
 
-# Role Pack: My Role
+# Profile Pack: My Role
 
 > Copy this file, rename it to `your-role-id.md`, and customize the sections below.
 > The `role_id` must be lowercase with hyphens. `aliases` are alternative strings that match during onboarding (case-insensitive).
+> This profile is local to the front that declares it in its `profiles` field (see `fronts/<front-id>.md`).
 
 ## Recommended Skills
 

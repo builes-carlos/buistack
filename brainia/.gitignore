@@ -11,6 +11,9 @@ vault/.obsidian/community-plugins.json
 .trash/
 *.tmp
 
+# Front activation state (machine-local, never travels with the repo)
+fronts/.activated.json
+
 # OS Files
 .DS_Store
 Thumbs.db

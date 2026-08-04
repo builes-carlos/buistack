@@ -1,7 +1,7 @@
 ﻿---
 name: onboarding
 description: Personalize Brainia for your workflow - creates profile, interests, and watchlist files with guided setup (run this first!)
-roles: [all]
+front: all
 integrations: []
 ---
 
@@ -24,7 +24,7 @@ Key rules:
 - **Ask open-ended questions, not option-pickers.** Never present numbered lists of choices for the user to pick from.
 - **Ask as few questions as possible.** Infer what you can from context and the user's natural responses.
 - **Never ask redundant questions.** If you can extract the answer from something the user already said, don't ask again.
-- **Parse intelligently.** If someone says "I'm Alex, a PM at a fintech startup tracking Stripe and Plaid", extract: name=Alex, role=PM at fintech startup, watchlist=[Stripe, Plaid]. Don't ask follow-up questions for info already given.
+- **Parse intelligently.** If someone says "I'm Alex, a midwife, following the WHO perinatal guidelines", extract: name=Alex, occupation=midwife (optional context), watchlist=[WHO guidelines]. Don't ask follow-up questions for info already given, and never ask for occupation at all.
 - **Confirm, don't re-ask.** If you're unsure about something the user said, confirm your interpretation rather than asking the question fresh.
 
 ## Process Flow
@@ -55,7 +55,7 @@ Brainia helps you capture thoughts, get daily intelligence briefings, and build 
 Let's get you set up. Tell me a bit about yourself - your name, what you do, and what topics or areas you're most interested in staying sharp on. Feel free to share as much or as little as you'd like.
 ```
 
-**This single open-ended prompt replaces the old sequential questions.** The user can naturally mention their name, role, interests, sources, projects, and competitors all at once - or just share a few things.
+**This single open-ended prompt replaces the old sequential questions.** The user can naturally mention their name, occupation, interests, sources, projects, and competitors all at once - or just share a few things.
 
 ### 2. Check for Existing Profile
 
@@ -73,8 +73,8 @@ After the user responds, extract as much as possible from their natural language
 | Field | How to Extract |
 |-------|---------------|
 | **Name** | Look for self-introduction patterns ("I'm Alex", "My name is...", "Call me..."). Use first name by default. |
-| **Role** | Look for job/activity mentions ("I'm a PM", "I work in...", "software engineer at..."). |
-| **Interests** | Look for topic mentions ("interested in AI", "following crypto", "love design"). Also infer from role context. |
+| **Occupation** | *Optional context only.* If they volunteer what they do, keep it as free text. Never ask for it, never gate anything on it, never use it to decide which skills they get. |
+| **Interests** | Look for topic mentions ("interested in AI", "following crypto", "love design"). Also infer from whatever context they gave. |
 | **News Sources** | Look for source mentions ("I read HN", "follow on Twitter"). If not mentioned, skip - it's optional. |
 | **Projects** | Look for project mentions ("working on a SaaS app", "building..."). If not mentioned, skip. |
 | **Competitive Watch** | Look for company/person mentions ("tracking Stripe", "watching what OpenAI does"). If not mentioned, skip. |
@@ -83,12 +83,13 @@ After the user responds, extract as much as possible from their natural language
 
 After extracting what you can, check what's missing from the **required** fields only:
 - **Name** (required)
-- **Role** (required)
 - **Interests** (required - need at least 2-3 topics)
+
+Occupation is **not** a required field and never generates a follow-up. Nothing in Brainia depends on knowing what the user does for a living.
 
 If any required field is missing, ask ONE follow-up that covers all gaps. For example:
 ```
-Thanks! I got your name and role. What topics are you most interested in staying updated on? (e.g., AI, startups, design, health - whatever matters to you)
+Thanks! I got your name. What topics are you most interested in staying updated on? (e.g., AI, startups, design, health - whatever matters to you)
 ```
 
 **Optional fields** (news sources, projects, competitive watch) should NEVER generate follow-up questions. If the user didn't mention them, skip them. They can always add them later by editing the files or running onboarding again.
@@ -100,10 +101,13 @@ Before creating files, briefly confirm what you captured, ask what they'd like t
 Here's what I've got:
 
 - **Name**: Alex
-- **Role**: Product Manager at a fintech startup
-- **Interests**: AI/ML, fintech trends, product strategy, UX design
-- **Projects**: Payments dashboard revamp
-- **Tracking**: Stripe, Plaid
+- **Occupation**: Midwife at a public hospital *(optional, only because they mentioned it)*
+- **Interests**: Perinatal care research, nutrition, hospital policy, choral music
+- **Projects**: Rewriting the ward's intake protocol
+- **Tracking**: WHO guidelines, two research groups
+
+(Deliberately not a software job. If your examples are all engineers and PMs, the skill teaches the
+opposite of the rule above.)
 
 Two quick things before I set up your vault:
 
@@ -118,43 +122,43 @@ Two quick things before I set up your vault:
 
 **Wait for confirmation**, then generate everything. If they say "looks good" or similar, proceed. If they correct something, update and proceed without re-confirming. Default to `solo` for agent mode and **Brainia** for the assistant name if they don't express a preference.
 
-### 5.5. Role Pack Matching
+### 5.5. Front Resolution
 
-After extracting the user's role text in Step 3, scan `.claude/roles/*.md` for a matching role pack:
+Fronts are detected from the **filesystem**, never from a job interview. **Never ask what the user does for a living in order to unlock functionality, and never reduce what they get based on their occupation.** A nurse, a teacher and a staff engineer all receive the same full core.
 
-1. Read each role pack file's YAML frontmatter (`role_id` and `aliases`)
-2. Compare the user's extracted role text (case-insensitive) against:
-   - Exact `role_id` match (e.g., "product-manager")
-   - Any string in `aliases` (e.g., "pm", "product lead", "head of product")
-   - Fuzzy substring match (e.g., "product manager at a fintech startup" contains "product manager")
-3. If a match is found:
-   - Store the matched `role_id` as `role_pack` in the MY-PROFILE.md frontmatter
-   - Present role-specific recommendations:
+1. List the sibling folders of the brain in the container root. Skip dotfiles.
+
+   **Identify the brain by its contents, not by its name.** The README shows it cloned as `Brain/`, but a real instance may be named anything (`brainia-alex/`, `my-brain/`). The brain is the sibling that contains a `vault/` directory alongside `.claude/skills/`. Excluding it matters because **Brain is not a front**: it is the engine that thinks across all of them. A name-only check silently turns the brain into an eleventh front.
+
+   Anything else at the container root is a candidate front, including things that look like stray repos or tooling. Do not filter them out on your own judgment: list them and let the user say what to ignore in step 4. A folder you think is "not a life domain" may be exactly how they organize one.
+2. For each sibling, scan `fronts/*.md` and match the folder name (case-insensitive) against `front_id` and `aliases` in the pack's YAML frontmatter.
+3. **A sibling with no matching pack is still a front.** Record it. Never call it unconfigured, never ask the user to justify it, never drop it from the list.
+4. Present the detected set for correction, not for ratification:
    ```
-   As a [Role Display Name], here are the skills and integrations that'll be most useful for you:
+   I can see these fronts in your life container:
 
-   **Recommended skills** (ordered by relevance for your role):
-   [List top 5-6 skills from the role pack with the "Why it matters for you" context]
+   Code, Strategy, Health, Finances, People
 
-   **Recommended integrations**:
-   [List integrations from the role pack with role-specific explanations]
+   Anything there I should ignore, or a front you keep somewhere else?
    ```
-   - Use the role pack's suggested `agent_mode` as the default (instead of `solo`)
-4. If no match is found:
-   - Set `role_pack: custom` in MY-PROFILE.md
-   - Recommend core skills only (those with `roles: [all]`)
-   - Ask about common integrations: "Do you use GitHub, Slack, or any other tools you'd like Brainia to connect with?"
+5. Store the confirmed list as `active_fronts` in the MY-PROFILE.md frontmatter.
+6. For each active front whose pack declares `skills`: those live in `fronts/<id>/skills/` and are copied into `.claude/skills/` on activation. Offer it, never activate unasked, and never activate skills belonging to an inactive front.
+7. For each active front whose pack declares a `methodology`: check whether the external tool is present and report what you found. **Do not install it.** Example — the software front delegates to devaing, detected by `devaing-*` directories in `~/.claude/skills/`. If it is missing, say where it lives and how to install it, then move on.
+8. If a pack declares `profiles`, those order recommendations *inside* that front only. Do not surface them during onboarding and never require one.
+9. If any active front declares a non-empty `reads_back`, tell the user that `/front-sync` pulls those artifacts into the vault, and offer to run it once now. Do not run it unasked.
+
+**There is no fallback branch.** No "custom" state, no reduced skill set, no consolation tier. Capture, synthesis and knowledge are core and work for everyone, whatever their fronts turn out to be.
 
 ### 5.6. Integration Discovery
 
-After role pack matching, set up the user's integration preferences:
+After front resolution, set up the user's integration preferences:
 
-1. If a role pack was matched, present its recommended integrations with role-specific context:
+1. If any active front's pack declares `integrations`, present those with front-specific context:
    ```
-   Based on your role, these integrations would give Brainia the most context:
+   Based on your fronts, these integrations would give Brainia the most context:
 
-   [For each integration in role pack:]
-   - **[Integration]** — [Why it matters for you, from role pack]
+   [For each integration declared by an active front:]
+   - **[Integration]** — [Why it matters for that front]
 
    Which of these do you already use? And are there any other tools you'd like to connect?
    ```
@@ -190,10 +194,11 @@ After role pack matching, set up the user's integration preferences:
    *Move services between Active and Disabled sections to control what Brainia connects to.*
    ```
 
-4. If no role pack was matched, ask about common integrations conversationally:
+4. If no active front declares integrations, ask conversationally without presuming a domain:
    ```
-   Brainia can connect with tools like GitHub, Slack, Linear, Notion, and PostHog for richer analysis. Do you use any of these? (Totally optional - Brainia works great without them too.)
+   Brainia can connect to outside tools to pull in more context. Do you use anything you'd like me to read from? (Totally optional - Brainia works great without them too.)
    ```
+   Do not recite a list of software-industry tools here. Let the user name their own.
 
 ### 6. Generate Profile Documents
 
@@ -206,8 +211,8 @@ type: profile
 created: YYYY-MM-DD
 onboarding_completed: true
 assistant_name: [chosen name, default "Brainia"]
-role_pack: [matched role_id or "custom"]
-agent_mode: [solo or team, based on role pack suggestion]
+active_fronts: [detected front ids, e.g. code, health, finances]
+agent_mode: [solo or team]
 tags: ["#profile", "#config", "#cog"]
 ---
 
@@ -215,8 +220,8 @@ tags: ["#profile", "#config", "#cog"]
 
 ## About Me
 - **Name**: [Name]
-- **Role**: [Job/role/main activity]
-- **Role Pack**: [Display name from matched role pack, or "Custom" if no match]
+- **Occupation**: [Only if volunteered — free text, never a gate]
+- **Active Fronts**: [Detected life fronts]
 - **Profile Created**: [Date]
 
 ## Settings
@@ -396,32 +401,35 @@ Your Brainia is now personalized and ready to use. Here's how to get started:
 
 I've created these documents to store your preferences:
 
-- **[[MY-PROFILE]]** - Your basic info, role pack, and workflow preferences
+- **[[MY-PROFILE]]** - Your basic info, active fronts, and workflow preferences
 - **[[MY-INTERESTS]]** - Topics for your daily briefs
 - **[[MY-INTEGRATIONS]]** - Your active and disabled integrations
 - **[[vault/03-professional/COMPETITIVE-WATCHLIST]]** - Companies you're tracking *(if applicable)*
 
 **You can edit these files anytime.** Brainia reads them when you use skills, so your changes take effect immediately.
 
-## Skills for Your Role
+## Your Skills
 
-[If role pack was matched:]
-As a **[Role Display Name]**, these skills are ordered by relevance for you:
-
-[List skills from role pack in order, with brief "why it matters" from the role pack. Format as:]
-1. **[skill-name]** — [Role-specific explanation]
-2. **[skill-name]** — [Role-specific explanation]
-[...continue for all recommended skills]
-
-[If no role pack match:]
-Here are Brainia's core skills available to everyone:
+These are the core skills. They work the same for everyone, whatever your fronts are:
 
 1. **daily-brief** — Personalized news intelligence
 2. **braindump** — Capture and classify thoughts
 3. **weekly-checkin** — Weekly pattern analysis
 4. **knowledge-consolidation** — Build frameworks from scattered notes
 5. **url-dump** — Save URLs with auto-extracted insights
-6. **update-cog** — Keep COG framework current
+6. **scout** — Triage a URL or tool before saving it
+7. **update-cog** — Keep the framework current
+
+[If any active front declares skills or a methodology, add a section per front:]
+
+## Your Fronts
+
+[For each active front, one short block:]
+- **[Front display name]** — [what Brainia does for this front]
+  - [If the pack declares `skills`: list them and note they were activated into `.claude/skills/`]
+  - [If the pack declares a `methodology`: name the external tool, its entry command, and whether it was detected. Example: the software front hands off to devaing — start with `/devaing-director`.]
+
+[Fronts with no pack, or a pack that declares neither, are still listed. They simply have no extra tooling, which is normal.]
 
 ## Your Integrations
 
@@ -527,13 +535,14 @@ Then intelligently handle whatever they say - whether it's adding projects, chan
 ## Success Criteria
 
 Onboarding is successful when:
-1. `MY-PROFILE.md` created in `vault/00-inbox/` with `role_pack` and `assistant_name` in frontmatter
+1. `MY-PROFILE.md` created in `vault/00-inbox/` with `active_fronts` and `assistant_name` in frontmatter
 2. `MY-INTERESTS.md` created in `vault/00-inbox/`
 3. `MY-INTEGRATIONS.md` created in `vault/00-inbox/` with active/disabled sections
-4. Role pack matched (or set to `custom`) and recommendations presented
+4. Fronts resolved from the filesystem, confirmed with the user, and stored — including any front that has no pack file
 5. Project directories and overviews created (if applicable)
-6. `WELCOME-TO-BRAINIA.md` guide created with role-specific skill ordering
+6. `WELCOME-TO-BRAINIA.md` guide created, listing the core skills plus one block per active front
 7. User understands next steps and where their profile is stored
+8. **The user was never asked what they do for a living, and nothing was withheld based on their occupation**
 
 ## Error Handling
 
@@ -555,7 +564,7 @@ Onboarding is successful when:
 ## Privacy & Data
 
 All configuration data is stored as markdown files in:
-- `vault/00-inbox/MY-PROFILE.md` - Basic profile with role pack
+- `vault/00-inbox/MY-PROFILE.md` - Basic profile with active fronts
 - `vault/00-inbox/MY-INTERESTS.md` - Interest areas
 - `vault/00-inbox/MY-INTEGRATIONS.md` - Active/disabled external service integrations
 - `vault/03-professional/COMPETITIVE-WATCHLIST.md` - Competitive tracking

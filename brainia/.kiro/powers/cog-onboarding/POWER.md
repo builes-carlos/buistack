@@ -22,7 +22,8 @@ Welcome new users and collect essential information to personalize their Brainia
 - Ask open-ended questions, never numbered option lists
 - Ask as few questions as possible - infer from natural responses
 - Never ask redundant questions - if info was already given, don't re-ask
-- Parse intelligently - extract name, role, interests, projects, watchlist from a single paragraph if the user provides them
+- Parse intelligently - extract name, occupation (if mentioned), interests, projects, watchlist from a single paragraph if the user provides them
+- Occupation is optional free text only - never ask for it, never gate skills or recommendations on it
 - Confirm your interpretation rather than asking the question fresh
 
 ## Onboarding Steps
@@ -47,15 +48,16 @@ Tell me a bit about yourself - your name, what you do, and what topics you're mo
 
 From the user's response, extract:
 - **Name** (required) - from self-introduction patterns
-- **Role** (required) - from job/activity mentions
-- **Interests** (required, 2-3 minimum) - from topic mentions, also infer from role
+- **Occupation** (optional) - from job/activity mentions, only if shared; never required, never gates anything
+- **Interests** (required, 2-3 minimum) - from topic mentions, also infer from context shared
 - **News Sources** (optional) - from source mentions, skip if not mentioned
 - **Projects** (optional) - from project mentions, skip if not mentioned
 - **Competitive Watch** (optional) - from company/person mentions, skip if not mentioned
+- **Active Fronts** (auto-detected) - never asked as a question; scan the sibling folders next to `Brain/` and match them against `fronts/*.md`, then store the result as `active_fronts`
 
 ### 4. Smart Follow-Up (Only If Needed)
 
-Only ask a follow-up if required fields (name, role, interests) are missing. Ask ONE question covering all gaps. Never ask about optional fields the user didn't mention.
+Only ask a follow-up if required fields (name, interests) are missing. Ask ONE question covering all gaps. Never ask about optional fields the user didn't mention.
 
 ### 5. Confirm and Create
 
@@ -69,7 +71,7 @@ Default to `solo` if user doesn't express a preference. Store as `agent_mode: so
 
 Create these markdown files:
 
-**`vault/00-inbox/MY-PROFILE.md`** - Basic profile with name, role, active projects
+**`vault/00-inbox/MY-PROFILE.md`** - Basic profile with name, occupation (if shared), active fronts, active projects
 **`vault/00-inbox/MY-INTERESTS.md`** - Topics and preferred news sources
 **`vault/03-professional/COMPETITIVE-WATCHLIST.md`** - Only if they mentioned competitors
 **`vault/04-projects/[project-slug]/PROJECT-OVERVIEW.md`** - Only if they mentioned projects

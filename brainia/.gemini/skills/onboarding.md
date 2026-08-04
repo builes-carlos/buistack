@@ -21,8 +21,9 @@ Tell me a bit about yourself - your name, what you do, and what topics you're mo
 ```
 
 ### 3. Extract from Response
-Required: **Name**, **Role**, **Interests** (2-3 minimum)
-Optional (only if mentioned): News Sources, Projects, Competitive Watchlist
+Required: **Name**, **Interests** (2-3 minimum)
+Optional (only if mentioned): **Occupation** (free text, never gates anything), News Sources, Projects, Competitive Watchlist
+Active Fronts: auto-detected, never asked - scan sibling folders next to `Brain/` and match them against `fronts/*.md`, then store as `active_fronts`
 
 ### 4. Follow-Up (Only If Needed)
 Only ask ONE follow-up if required fields are missing. Never ask about optional fields.
@@ -43,7 +44,7 @@ onboarding_completed: true
 agent_mode: solo
 tags: ["#profile", "#config", "#cog"]
 ```
-Include: Name, Role, Profile Created date, Agent Mode setting, Active Projects (if any)
+Include: Name, Occupation (if shared), Active Fronts, Profile Created date, Agent Mode setting, Active Projects (if any)
 
 **`vault/00-inbox/MY-INTERESTS.md`** with topics and preferred sources
 

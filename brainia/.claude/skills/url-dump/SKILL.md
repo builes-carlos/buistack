@@ -1,7 +1,7 @@
 ﻿---
 name: url-dump
 description: Quick capture URLs with automatic content extraction, insights, and categorization into knowledge booklets
-roles: [all]
+front: all
 integrations: [web-fetch]
 ---
 

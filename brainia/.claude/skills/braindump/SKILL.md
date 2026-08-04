@@ -1,7 +1,7 @@
 ﻿---
 name: braindump
 description: Quick capture of raw thoughts with intelligent domain classification and competitive intelligence extraction
-roles: [all]
+front: all
 integrations: []
 ---
 

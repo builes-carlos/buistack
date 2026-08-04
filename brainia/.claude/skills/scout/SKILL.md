@@ -1,7 +1,7 @@
 ﻿---
 name: scout
 description: Evaluate URLs and tools — check vault coverage, assess relevance, recommend save or skip
-roles: [all]
+front: all
 integrations: [web-fetch, web-search]
 ---
 
