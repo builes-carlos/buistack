@@ -7,7 +7,7 @@ tags: ["#mentor", "#growth", "#learning"]
 
 # Mentorship Thread — Growth
 
-*Living doc; worked across sessions. Charter: [[COG-MENTOR-CHARTER]].*
+*Living doc; worked across sessions. Charter: [[BRAINIA-MENTOR-CHARTER]].*
 
 ## The goal
 What you want to get better at next — a skill, a discipline, a depth — and the path to it. Learn by doing, using your real work and projects as practice.

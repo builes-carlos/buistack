@@ -27,8 +27,6 @@ graph LR
     D --> F[iCloud]
 ```
 
-> **New to Brainia?** Watch the [2-minute walkthrough](https://youtube.com/PLACEHOLDER) to see it in action.
-
 ## Where this fits — your AI-coached life
 
 This second brain is the **`Brain/`** of a larger container: your whole life, coached by AI. `Brain/` is the cognition engine that thinks across everything. Every life front is a **physical sibling folder** of `Brain/` — they vary per person.
@@ -103,7 +101,7 @@ These twelve ship in the core and behave the same whatever your fronts are. Noth
 | **knowledge-consolidation** | Build frameworks from scattered notes | "Consolidate my knowledge" |
 | **auto-research** | Decompose a question into parallel research threads | "Research the future of X" |
 | **front-sync** | Pull each front's own artifacts back into the vault, correcting what stopped being true | "Sync my fronts" |
-| **update-cog** | Update framework files without touching your content | "Update COG" |
+| **update-brainia** | Update framework files without touching your content | "Update COG" |
 
 ### Fronts — where domain work lives
 
@@ -227,11 +225,11 @@ COG separates **framework files** (skills, docs, scripts) from **your content** 
 
 | Method | Command |
 |---|---|
-| AI Agent (any) | "Update COG" or `/update-cog` |
-| Shell script | `./cog-update.sh` (interactive) &bull; `--check` &bull; `--dry-run` &bull; `--force` |
-| Manual Git | `git fetch cog-upstream main` then checkout specific files |
+| AI Agent (any) | "Update COG" or `/update-brainia` |
+| Shell script | `./brainia-update.sh` (interactive) &bull; `--check` &bull; `--dry-run` &bull; `--force` |
+| Manual Git | `git fetch upstream main` then checkout specific files |
 
-Check your version: `cat COG-VERSION`  
+Check your version: `cat BRAINIA-VERSION`  
 Validate packaged surfaces: `./scripts/validate-agent-surface.sh`
 
 ## FAQ

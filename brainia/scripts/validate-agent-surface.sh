@@ -137,15 +137,17 @@ with open('marketplace-entry.json') as f:
     print(json.load(f)['version'])
 PY
 )
-cog_version=$(tr -d '[:space:]' < COG-VERSION)
+cog_version=$(tr -d '[:space:]' < BRAINIA-VERSION)
 
 if [[ "$plugin_version" == "$marketplace_version" && "$plugin_version" == "$cog_version" ]]; then
-  ok "Version is aligned across plugin.json, marketplace-entry.json, and COG-VERSION ($cog_version)"
+  ok "Version is aligned across plugin.json, marketplace-entry.json, and BRAINIA-VERSION ($cog_version)"
 else
-  record_failure "Version mismatch: plugin.json=$plugin_version marketplace-entry.json=$marketplace_version COG-VERSION=$cog_version"
+  record_failure "Version mismatch: plugin.json=$plugin_version marketplace-entry.json=$marketplace_version BRAINIA-VERSION=$cog_version"
 fi
 
-if rg -n "agents\.md" README.md SETUP.md CONTRIBUTING.md .github/MARKETPLACE.md >/dev/null 2>&1; then
+# .github/MARKETPLACE.md is gitignored, so listing it here made rg fail on a fresh
+# clone and the check pass silently. Only tracked docs belong in this list.
+if rg -n "agents\.md" README.md SETUP.md CONTRIBUTING.md >/dev/null 2>&1; then
   record_failure "Found lowercase 'agents.md' references in packaging docs; use AGENTS.md consistently"
 else
   ok "Packaging docs consistently use AGENTS.md casing"

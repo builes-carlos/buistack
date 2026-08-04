@@ -174,7 +174,7 @@ After front resolution, set up the user's integration preferences:
    ---
    type: integrations
    created: YYYY-MM-DD
-   tags: ["#integrations", "#config", "#cog"]
+   tags: ["#integrations", "#config", "#brainia"]
    ---
 
    # My Integrations
@@ -213,7 +213,7 @@ onboarding_completed: true
 assistant_name: [chosen name, default "Brainia"]
 active_fronts: [detected front ids, e.g. code, health, finances]
 agent_mode: [solo or team]
-tags: ["#profile", "#config", "#cog"]
+tags: ["#profile", "#config", "#brainia"]
 ---
 
 # My Brainia Profile
@@ -390,7 +390,7 @@ Generate: `vault/00-inbox/WELCOME-TO-BRAINIA.md`
 ---
 type: guide
 created: YYYY-MM-DD
-tags: ["#welcome", "#getting-started", "#cog"]
+tags: ["#welcome", "#getting-started", "#brainia"]
 ---
 
 # Welcome to Your Second Brain, [Name]! I'm [assistant_name].
@@ -418,7 +418,7 @@ These are the core skills. They work the same for everyone, whatever your fronts
 4. **knowledge-consolidation** — Build frameworks from scattered notes
 5. **url-dump** — Save URLs with auto-extracted insights
 6. **scout** — Triage a URL or tool before saving it
-7. **update-cog** — Keep the framework current
+7. **update-brainia** — Keep the framework current
 
 [If any active front declares skills or a methodology, add a section per front:]
 
@@ -484,11 +484,11 @@ When you use the braindump skill, select the project to automatically file your 
 ## Keeping COG Updated
 
 COG separates your content from framework files. When new versions are released:
-- Run `/update-cog` to check for and apply updates
-- Or use the shell script: `./cog-update.sh --check`
+- Run `/update-brainia` to check for and apply updates
+- Or use the shell script: `./brainia-update.sh --check`
 - Your braindumps, profiles, and notes are **never** touched by updates
 
-Check your current version: `cat COG-VERSION`
+Check your current version: `cat BRAINIA-VERSION`
 
 ## Tips for Success
 
@@ -496,7 +496,7 @@ Check your current version: `cat COG-VERSION`
 - **Be consistent**: Daily briefs and braindumps work best as habits
 - **Review weekly**: Use the weekly-checkin skill to see patterns emerge
 - **Evolve your setup**: Edit your profile files anytime or run onboarding again to add projects
-- **Stay updated**: Run `/update-cog` periodically to get new skills and improvements
+- **Stay updated**: Run `/update-brainia` periodically to get new skills and improvements
 
 ## Getting Help
 

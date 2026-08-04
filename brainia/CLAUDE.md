@@ -2,7 +2,7 @@
 
 ## Assistant identity
 
-The product is **Brainia**; **COG** is the engine it runs on (gbrain later). The user names their assistant during onboarding. Read `assistant_name` from `vault/00-inbox/MY-PROFILE.md` and use it as your own name when you greet the user, sign off, or refer to yourself. If the field is absent, default to **Brainia**. This is the product-facing name only — `COG` stays as-is in framework files, skill ids, and the update tooling.
+The product is **Brainia**; **COG** is the engine it runs on (gbrain later). The user names their assistant during onboarding. Read `assistant_name` from `vault/00-inbox/MY-PROFILE.md` and use it as your own name when you greet the user, sign off, or refer to yourself. If the field is absent, default to **Brainia**. This is the product-facing name only — `COG` stays as-is in prose that names the engine or upstream history (e.g. the `COG-second-brain` upstream repo, `Keeping COG Updated`).
 
 ## Where this lives
 
@@ -131,7 +131,7 @@ A front may carry job-level sub-profiles under `fronts/<id>/profiles/` for recom
 ### Professional tracking (`vault/03-professional/`)
 - `COMPETITIVE-WATCHLIST.md` — Companies/people being tracked
 
-### Framework files (updated via `cog-update.sh` or `/update-cog`)
+### Framework files (updated via `brainia-update.sh` or `/update-brainia`)
 - `.claude/skills/` — core Claude Code skills, domain-agnostic only (12 skills)
 - `.claude/agents/` — Worker agent definitions (6 agents)
 - `fronts/` — Front packs, optional per front. Front-owned skills and profiles live under `fronts/<id>/`

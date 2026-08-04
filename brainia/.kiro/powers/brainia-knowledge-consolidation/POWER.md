@@ -1,5 +1,5 @@
 ﻿---
-name: "cog-knowledge-consolidation"
+name: "brainia-knowledge-consolidation"
 displayName: "Brainia Knowledge Consolidation"
 description: "Build frameworks from scattered insights across all braindumps and notes"
 keywords: ["consolidate knowledge", "build frameworks", "synthesize insights", "extract patterns", "knowledge consolidation", "create framework", "analyze patterns"]

@@ -1,17 +1,17 @@
 {
-  "name": "cog-second-brain",
+  "name": "brainia",
   "displayName": "Brainia — Agentic Second Brain",
-  "version": "3.5.0",
+  "version": "4.0.0",
   "description": "Self-evolving second brain powered by AI agents, Obsidian markdown, and Git. 17 skills, 6 worker agents, people CRM with tiered enrichment. Inspired by Garry Tan's gstack and gbrain patterns. Works with Claude Code, Cursor, Kiro, Gemini CLI, Codex, and any markdown-reading agent.",
   "author": {
     "name": "Huy Tieu",
     "email": "tqhuy1991@gmail.com",
     "url": "https://github.com/huytieu"
   },
-  "homepage": "https://github.com/huytieu/COG-second-brain",
+  "homepage": "https://github.com/builes-carlos/brainia",
   "repository": {
     "type": "git",
-    "url": "https://github.com/huytieu/COG-second-brain"
+    "url": "https://github.com/builes-carlos/brainia"
   },
   "license": "MIT",
   "keywords": [
@@ -47,7 +47,7 @@
     "weekly-checkin",
     "knowledge-consolidation",
     "url-dump",
-    "update-cog",
+    "update-brainia",
     "team-brief",
     "meeting-transcript",
     "comprehensive-analysis",

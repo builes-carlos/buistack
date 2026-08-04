@@ -19,7 +19,7 @@ aliases: [ceo, co-founder, cofounder, startup founder, cto, coo, chief executive
 | knowledge-consolidation | Build strategic frameworks, pitch narratives, and decision logs from scattered founder thoughts |
 | url-dump | Save competitor launches, market analyses, and investor content with auto-extracted insights |
 | onboarding | Initial setup — run this first |
-| update-cog | Keep your COG framework current |
+| update-brainia | Keep your COG framework current |
 
 ## Recommended Integrations
 

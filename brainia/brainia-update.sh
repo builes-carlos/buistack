@@ -1,31 +1,31 @@
 ﻿#!/usr/bin/env bash
-# COG Upstream Update Script
+# Brainia Upstream Update Script
 # Safely updates framework files (skills, docs, scripts) without touching your personal content.
 #
 # Usage:
-#   ./cog-update.sh            Interactive update
-#   ./cog-update.sh --check    Check for available updates (no changes)
-#   ./cog-update.sh --dry-run  Show what would change (no changes)
-#   ./cog-update.sh --force    Update all framework files without prompting
-#   ./cog-update.sh --validate Run packaging validator only
-#   ./cog-update.sh --help     Show this help message
+#   ./brainia-update.sh            Interactive update
+#   ./brainia-update.sh --check    Check for available updates (no changes)
+#   ./brainia-update.sh --dry-run  Show what would change (no changes)
+#   ./brainia-update.sh --force    Update all framework files without prompting
+#   ./brainia-update.sh --validate Run packaging validator only
+#   ./brainia-update.sh --help     Show this help message
 
 set -euo pipefail
 
 # ── Configuration ────────────────────────────────────────────────────
 # An instance can override the upstream it pulls framework files from by
-# creating a gitignored `.cog-update.local` next to this script, e.g.:
-#   COG_REMOTE_NAME="brainia-upstream"
-#   COG_REMOTE_URL="https://github.com/builes-carlos/brainia.git"
+# creating a gitignored `.brainia-update.local` next to this script, e.g.:
+#   BRAINIA_REMOTE_NAME="brainia-upstream"
+#   BRAINIA_REMOTE_URL="https://github.com/builes-carlos/brainia.git"
 # This file is NOT in FRAMEWORK_FILES, so updates never reset an instance's
 # upstream. The defaults below point at the canonical COG repo.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-[ -f "${SCRIPT_DIR}/.cog-update.local" ] && source "${SCRIPT_DIR}/.cog-update.local"
+[ -f "${SCRIPT_DIR}/.brainia-update.local" ] && source "${SCRIPT_DIR}/.brainia-update.local"
 
-REMOTE_NAME="${COG_REMOTE_NAME:-cog-upstream}"
-REMOTE_URL="${COG_REMOTE_URL:-https://github.com/huytieu/COG-second-brain.git}"
-BRANCH="${COG_BRANCH:-main}"
-VERSION_FILE="COG-VERSION"
+REMOTE_NAME="${BRAINIA_REMOTE_NAME:-upstream}"
+REMOTE_URL="${BRAINIA_REMOTE_URL:-https://github.com/huytieu/COG-second-brain.git}"
+BRANCH="${BRAINIA_BRANCH:-main}"
+VERSION_FILE="BRAINIA-VERSION"
 VALIDATOR_SCRIPT="scripts/validate-agent-surface.sh"
 
 # Framework files — these are safe to overwrite (your content is never in this list)
@@ -38,8 +38,8 @@ FRAMEWORK_FILES=(
   "CHANGELOG.md"
   "CONTRIBUTING.md"
   "LICENSE"
-  "COG-VERSION"
-  "cog-update.sh"
+  "BRAINIA-VERSION"
+  "brainia-update.sh"
   "docs/AGENT-SUPPORT.md"
   ".github/MARKETPLACE.md"
   "scripts/validate-agent-surface.sh"
@@ -51,7 +51,7 @@ FRAMEWORK_FILES=(
   ".claude/skills/weekly-checkin/SKILL.md"
   ".claude/skills/knowledge-consolidation/SKILL.md"
   ".claude/skills/url-dump/SKILL.md"
-  ".claude/skills/update-cog/SKILL.md"
+  ".claude/skills/update-brainia/SKILL.md"
   ".claude/skills/team-brief/SKILL.md"
   ".claude/skills/comprehensive-analysis/SKILL.md"
   ".claude/skills/meeting-transcript/SKILL.md"
@@ -87,13 +87,13 @@ FRAMEWORK_FILES=(
   "global-hooks/install.py"
 
   # Kiro powers
-  ".kiro/powers/cog-onboarding/POWER.md"
-  ".kiro/powers/cog-braindump/POWER.md"
-  ".kiro/powers/cog-daily-brief/POWER.md"
-  ".kiro/powers/cog-weekly-checkin/POWER.md"
-  ".kiro/powers/cog-knowledge-consolidation/POWER.md"
-  ".kiro/powers/cog-url-dump/POWER.md"
-  ".kiro/powers/cog-update/POWER.md"
+  ".kiro/powers/brainia-onboarding/POWER.md"
+  ".kiro/powers/brainia-braindump/POWER.md"
+  ".kiro/powers/brainia-daily-brief/POWER.md"
+  ".kiro/powers/brainia-weekly-checkin/POWER.md"
+  ".kiro/powers/brainia-knowledge-consolidation/POWER.md"
+  ".kiro/powers/brainia-url-dump/POWER.md"
+  ".kiro/powers/brainia-update/POWER.md"
 
   # Gemini CLI
   ".gemini/commands/onboarding.toml"
@@ -102,14 +102,14 @@ FRAMEWORK_FILES=(
   ".gemini/commands/weekly-checkin.toml"
   ".gemini/commands/knowledge-consolidation.toml"
   ".gemini/commands/url-dump.toml"
-  ".gemini/commands/update-cog.toml"
+  ".gemini/commands/update-brainia.toml"
   ".gemini/skills/onboarding.md"
   ".gemini/skills/braindump.md"
   ".gemini/skills/daily-brief.md"
   ".gemini/skills/weekly-checkin.md"
   ".gemini/skills/knowledge-consolidation.md"
   ".gemini/skills/url-dump.md"
-  ".gemini/skills/update-cog.md"
+  ".gemini/skills/update-brainia.md"
 
   # Plugin metadata
   ".claude-plugin/plugin.json"
@@ -136,21 +136,21 @@ err()   { echo -e "${RED}✗${RESET}  $*" >&2; }
 
 usage() {
   cat <<'EOF'
-COG Upstream Update Script
+Brainia Upstream Update Script
 
 Updates framework files (skills, docs, scripts) from the official COG repo
 without touching your personal content (braindumps, profiles, notes).
 
 Usage:
-  ./cog-update.sh            Interactive update (prompts per file)
-  ./cog-update.sh --check    Check for available updates (no changes)
-  ./cog-update.sh --dry-run  Show what would change (no changes)
-  ./cog-update.sh --force    Update all framework files without prompting
-  ./cog-update.sh --validate Run packaging validator only
-  ./cog-update.sh --help     Show this help message
+  ./brainia-update.sh            Interactive update (prompts per file)
+  ./brainia-update.sh --check    Check for available updates (no changes)
+  ./brainia-update.sh --dry-run  Show what would change (no changes)
+  ./brainia-update.sh --force    Update all framework files without prompting
+  ./brainia-update.sh --validate Run packaging validator only
+  ./brainia-update.sh --help     Show this help message
 
 How it works:
-  1. Adds/fetches the upstream remote (cog-upstream)
+  1. Adds/fetches the upstream remote (upstream)
   2. Compares each framework file against the upstream version
   3. Offers to update changed files (interactive mode) or updates all (--force)
   4. Warns if your working tree is already dirty before replacing framework files
@@ -330,7 +330,7 @@ main() {
       for f in "${new_files[@]}"; do echo "  + $f"; done
     fi
     echo ""
-    info "Run ${BOLD}./cog-update.sh${RESET} to update, or ${BOLD}./cog-update.sh --dry-run${RESET} to preview."
+    info "Run ${BOLD}./brainia-update.sh${RESET} to update, or ${BOLD}./brainia-update.sh --dry-run${RESET} to preview."
     exit 0
   fi
 
@@ -347,7 +347,7 @@ main() {
       for f in "${new_files[@]}"; do echo "  + $f"; done
     fi
     echo ""
-    info "Run ${BOLD}./cog-update.sh --force${RESET} to apply all, or ${BOLD}./cog-update.sh${RESET} for interactive mode."
+    info "Run ${BOLD}./brainia-update.sh --force${RESET} to apply all, or ${BOLD}./brainia-update.sh${RESET} for interactive mode."
     exit 0
   fi
 

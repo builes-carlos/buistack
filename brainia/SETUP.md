@@ -21,7 +21,7 @@ Complete step-by-step instructions for setting up your Brainia agentic second br
 Your second brain is the `Brain/` of an `AI-Coached-Life` container. `Brain/` is the only required folder besides the container root. Every life front is a physical sibling folder of `Brain/` (`Code/`, `Strategy/`, `Health/`, … — they vary per person).
 ```bash
 mkdir AI-Coached-Life
-git clone https://github.com/huytieu/COG-second-brain.git AI-Coached-Life/Brain
+git clone https://github.com/builes-carlos/brainia.git AI-Coached-Life/Brain
 cd AI-Coached-Life/Brain
 ```
 
@@ -36,7 +36,7 @@ code .
 **Kiro:**
 - Open the folder in Kiro
 - Say "onboarding" or "setup Brainia"
-- Kiro will activate the cog-onboarding power
+- Kiro will activate the brainia-onboarding power
 
 **Other Agents:**
 - Point the agent to `AGENTS.md` for skill documentation
@@ -147,7 +147,7 @@ If you use an AI assistant with layered instruction files (e.g. Claude Code's `C
 | Workspace | `AI-Coached-Life/CLAUDE.md` (container) | Rules specific to this container: its structure, who you are to work with. |
 | Engine | `Brain/CLAUDE.md` (this repo) | COG framework only: model routing, worker rules, brain-first protocol, vault structure. |
 
-**Do not copy your personal rules (authorization, commits, communication) into `Brain/CLAUDE.md`.** It is overwritten on every `cog-update.sh` / `/update-cog`, and duplicating them across layers creates drift. The COG `CLAUDE.md` is intentionally free of personal/workspace policy.
+**Do not copy your personal rules (authorization, commits, communication) into `Brain/CLAUDE.md`.** It is overwritten on every `brainia-update.sh` / `/update-brainia`, and duplicating them across layers creates drift. The COG `CLAUDE.md` is intentionally free of personal/workspace policy.
 
 Inside `Brain/`, after running onboarding, you'll have this structure:
 
@@ -167,7 +167,7 @@ AI-Coached-Life/Brain/         # the second brain folder
 │       ├── comprehensive-analysis/
 │       ├── meeting-transcript/
 │       ├── scout/
-│       └── update-cog/
+│       └── update-brainia/
 ├── fronts/                    # front packs (optional per front)
 │   ├── code.md
 │   ├── work.md
@@ -178,13 +178,13 @@ AI-Coached-Life/Brain/         # the second brain folder
 │                               # export-open-issues, publish-to-confluence, update-knowledge-base, team-brief
 ├── .kiro/
 │   └── powers/                # 7 Kiro powers (core workflows)
-│       ├── cog-onboarding/
-│       ├── cog-braindump/
-│       ├── cog-daily-brief/
-│       ├── cog-weekly-checkin/
-│       ├── cog-knowledge-consolidation/
-│       ├── cog-url-dump/
-│       └── cog-update/
+│       ├── brainia-onboarding/
+│       ├── brainia-braindump/
+│       ├── brainia-daily-brief/
+│       ├── brainia-weekly-checkin/
+│       ├── brainia-knowledge-consolidation/
+│       ├── brainia-url-dump/
+│       └── brainia-update/
 ├── .gemini/
 │   ├── commands/              # 7 Gemini CLI commands (core workflows)
 │   └── skills/                # Detailed Gemini command playbooks
@@ -334,7 +334,7 @@ touch .claude/skills/my-skill/SKILL.md
 
 **Edit existing powers:**
 ```bash
-code .kiro/powers/cog-braindump/POWER.md
+code .kiro/powers/brainia-braindump/POWER.md
 ```
 
 Each `POWER.md` file contains:
@@ -472,7 +472,7 @@ When new COG versions are released (new skills, improved docs, bug fixes), you c
 
 Ask any supported agent:
 ```
-"Update COG" or /update-cog
+"Update COG" or /update-brainia
 ```
 
 The agent will:
@@ -486,19 +486,19 @@ The agent will:
 
 ```bash
 # Check for available updates (no changes made)
-./cog-update.sh --check
+./brainia-update.sh --check
 
 # Preview what would change (no changes made)
-./cog-update.sh --dry-run
+./brainia-update.sh --dry-run
 
 # Interactive update — prompts for each file
-./cog-update.sh
+./brainia-update.sh
 
 # Update everything without prompting
-./cog-update.sh --force
+./brainia-update.sh --force
 
 # Run packaging/support-surface validation only
-./cog-update.sh --validate
+./brainia-update.sh --validate
 
 # Or run the validator directly
 ./scripts/validate-agent-surface.sh
@@ -508,18 +508,18 @@ The agent will:
 
 ```bash
 # One-time setup: add the upstream remote
-git remote add cog-upstream https://github.com/huytieu/COG-second-brain.git
+git remote add upstream https://github.com/huytieu/COG-second-brain.git
 
 # Fetch latest
-git fetch cog-upstream main
+git fetch upstream main
 
 # Update specific files (surgical replacement, no merge needed)
-git checkout cog-upstream/main -- README.md SETUP.md AGENTS.md
-git checkout cog-upstream/main -- .claude/skills/ .kiro/powers/ .gemini/
-git checkout cog-upstream/main -- COG-VERSION cog-update.sh
+git checkout upstream/main -- README.md SETUP.md AGENTS.md
+git checkout upstream/main -- .claude/skills/ .kiro/powers/ .gemini/
+git checkout upstream/main -- BRAINIA-VERSION brainia-update.sh
 
 # Commit the update
-git add -A && git commit -m "Update COG framework to v$(cat COG-VERSION)"
+git add -A && git commit -m "Update COG framework to v$(cat BRAINIA-VERSION)"
 ```
 
 ### What Gets Updated vs What Doesn't
@@ -528,24 +528,24 @@ git add -A && git commit -m "Update COG framework to v$(cat COG-VERSION)"
 |---|---|
 | Skills (`.claude/skills/`, `.kiro/powers/`, `.gemini/`) | `vault/00-inbox/` (profiles, notes) |
 | Docs (`README.md`, `SETUP.md`, `AGENTS.md`, etc.) | `vault/01-daily/` (briefs, checkins) |
-| Scripts (`cog-update.sh`) | `vault/02-personal/` (braindumps) |
+| Scripts (`brainia-update.sh`) | `vault/02-personal/` (braindumps) |
 | Config (`.gitignore`, `.claude-plugin/plugin.json`, `marketplace-entry.json`) | `vault/03-professional/` (braindumps) |
-| Version (`COG-VERSION`) | `vault/04-projects/` (project files) |
+| Version (`BRAINIA-VERSION`) | `vault/04-projects/` (project files) |
 | | `vault/05-knowledge/` (consolidated) |
 | | `06-templates/` (your templates) |
 
 ### Checking Your Version
 
 ```bash
-cat COG-VERSION
+cat BRAINIA-VERSION
 # or ask any agent: "What version of COG am I running?"
 ```
 
 ## Getting Help
 
-- **Issues:** https://github.com/huytieu/COG-second-brain/issues
-- **Discussions:** https://github.com/huytieu/COG-second-brain/discussions
-- **Updates:** Watch the repo for improvements
+- **Brainia issues:** https://github.com/builes-carlos/brainia/issues
+- **COG engine (upstream):** [issues](https://github.com/huytieu/COG-second-brain/issues) · [discussions](https://github.com/huytieu/COG-second-brain/discussions) — for the engine underneath, not for Brainia itself
+- **Updates:** Watch this repo for improvements
 
 ## Next Steps
 

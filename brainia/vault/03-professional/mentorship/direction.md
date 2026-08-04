@@ -7,7 +7,7 @@ tags: ["#mentor", "#direction", "#strategy"]
 
 # Mentorship Thread — Direction
 
-*The root knot. Living doc; worked across sessions. Charter: [[COG-MENTOR-CHARTER]].*
+*The root knot. Living doc; worked across sessions. Charter: [[BRAINIA-MENTOR-CHARTER]].*
 
 ## The question
 Where are you going, and what gets you there? Of everything you're juggling, what to **double down on**, what to **park**, what to **drop**, and in what **sequence** — respecting real bandwidth, not aspirational bandwidth.

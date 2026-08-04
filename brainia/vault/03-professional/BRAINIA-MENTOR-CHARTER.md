@@ -1,6 +1,6 @@
 ---
 type: charter
-tags: ["#mentor", "#charter", "#cog", "#career", "#finance"]
+tags: ["#mentor", "#charter", "#brainia", "#career", "#finance"]
 ---
 
 # COG as Mentor — Charter

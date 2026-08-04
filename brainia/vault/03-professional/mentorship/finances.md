@@ -7,7 +7,7 @@ tags: ["#mentor", "#finance", "#allocation"]
 
 # Mentorship Thread — Finances
 
-*Living doc; worked across sessions. COG helps structure thinking; a licensed accountant/lawyer is required for regulated decisions — COG will flag those explicitly. Charter: [[COG-MENTOR-CHARTER]].*
+*Living doc; worked across sessions. COG helps structure thinking; a licensed accountant/lawyer is required for regulated decisions — COG will flag those explicitly. Charter: [[BRAINIA-MENTOR-CHARTER]].*
 
 ## The questions
 Income mix, capital/time allocation, runway, and (where relevant) tax-aware structuring.

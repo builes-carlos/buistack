@@ -7,7 +7,7 @@ tags: ["#mentor", "#career", "#positioning"]
 
 # Mentorship Thread — Career
 
-*Living doc; worked across sessions. Charter: [[COG-MENTOR-CHARTER]].*
+*Living doc; worked across sessions. Charter: [[BRAINIA-MENTOR-CHARTER]].*
 
 ## The question
 Where does your trajectory point next? What role and identity to build over the next 2–3 years, and how to position for it.

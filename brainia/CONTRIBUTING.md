@@ -1,6 +1,6 @@
-# Contributing to COG
+# Contributing to Brainia
 
-Thank you for your interest in contributing to COG! This document provides guidelines for contributing to the project.
+Thank you for your interest in contributing to Brainia! This document provides guidelines for contributing to the project.
 
 ## How to Contribute
 
@@ -8,7 +8,7 @@ Thank you for your interest in contributing to COG! This document provides guide
 
 If you find a bug or have a suggestion:
 
-1. Check if the issue already exists in [GitHub Issues](https://github.com/huytieu/COG-second-brain/issues)
+1. Check if the issue already exists in [GitHub Issues](https://github.com/builes-carlos/brainia/issues)
 2. If not, create a new issue with:
    - Clear, descriptive title
    - Detailed description of the problem or suggestion
@@ -31,15 +31,15 @@ We welcome ideas for new features or improvements:
 
 1. Fork the repository
 2. Create a new branch for your feature/fix
-3. Ensure your changes align with COG's philosophy:
+3. Ensure your changes align with Brainia's philosophy:
    - Simplicity over complexity
    - Plain text over proprietary formats
    - Self-evolving intelligence
    - Verification-first approach
 4. **If your PR changes the framework** (skills, docs, scripts):
-   - Bump the version in `COG-VERSION` (e.g., `3.2.0` → `3.3.0`)
+   - Bump the version in `BRAINIA-VERSION` (e.g., `3.2.0` → `3.3.0`)
    - Add a changelog entry in `CHANGELOG.md`
-   - If adding a new file, add it to the `FRAMEWORK_FILES` array in `cog-update.sh`
+   - If adding a new file, add it to the `FRAMEWORK_FILES` array in `brainia-update.sh`
    - Update `marketplace-entry.json` and `.claude-plugin/plugin.json` version fields
    - Keep the support matrix truthful in `README.md`, `SETUP.md`, `AGENTS.md`, and `docs/AGENT-SUPPORT.md`
    - Run `./scripts/validate-agent-surface.sh` before opening the PR
@@ -49,13 +49,13 @@ We welcome ideas for new features or improvements:
 1. **Worker Agents**: New agents should be added to `.claude/agents/` with this format:
    - YAML frontmatter with `name`, `description`, and `model` (use `sonnet` for I/O tasks, `opus` only if reasoning is required)
    - Clear capability list and output rule
-   - Add the file to `FRAMEWORK_FILES` in `cog-update.sh`
+   - Add the file to `FRAMEWORK_FILES` in `brainia-update.sh`
    - Document in `AGENTS.md` under "Worker Agents"
 2. **Skills**: New skills should be added in every surface that claims to support them:
    - `.claude/skills/[name]/SKILL.md` - Claude Code format (required; include `front` and `integrations` in frontmatter)
    - `AGENTS.md` - Universal documentation (required)
    - `.claude-plugin/plugin.json` - Packaged skill manifest (required)
-   - `.kiro/powers/cog-[name]/POWER.md` - Kiro format (if Kiro supports the skill)
+   - `.kiro/powers/brainia-[name]/POWER.md` - Kiro format (if Kiro supports the skill)
    - `.gemini/commands/[name].toml` + `.gemini/skills/[name].md` - Gemini CLI format (if Gemini supports the skill)
    - Domain-specific skills do not go in the core at all. They belong to a front, staged under `fronts/<id>/skills/`, and declared in that front's `skills` field in `fronts/<id>.md`.
 3. **Fronts**: A new front is the main extension path, and it is deliberately cheap:
@@ -81,7 +81,7 @@ We welcome ideas for new features or improvements:
 
 Before submitting:
 
-1. Test your command/feature in actual COG setup
+1. Test your command/feature in actual Brainia setup
 2. Ensure it works with existing commands
 3. Verify it doesn't break existing functionality
 4. Check that documentation is accurate
@@ -109,13 +109,13 @@ Before submitting:
 ### Medium Priority
 
 - **Specialized Skills**: New skills for specific domains
-- **Integration Scripts**: Scripts for connecting COG with other tools
+- **Integration Scripts**: Scripts for connecting Brainia with other tools
 - **Workflow Examples**: Real-world workflow demonstrations
 - **Performance Improvements**: Optimizations for large vaults
 
 ### Welcome But Lower Priority
 
-- **UI/Visual**: Visual improvements (COG is text-first)
+- **UI/Visual**: Visual improvements (Brainia is text-first)
 - **Platform-Specific**: Features for specific platforms (keep it universal)
 - **Advanced Features**: Complex features that increase learning curve
 
@@ -123,7 +123,7 @@ Before submitting:
 
 1. Fork and clone the repository
 2. Create a test Obsidian vault
-3. Copy COG files to your test vault
+3. Copy Brainia files to your test vault
 4. Make changes and test
 5. Submit PR when ready
 
@@ -151,11 +151,11 @@ integrations: [github, slack]
 [Expected output format]
 ```
 
-### Kiro Powers (`.kiro/powers/cog-[name]/POWER.md`)
+### Kiro Powers (`.kiro/powers/brainia-[name]/POWER.md`)
 
 ```markdown
 ---
-name: "cog-skill-name"
+name: "brainia-skill-name"
 displayName: "Skill Display Name"
 description: "What this power does"
 keywords: ["keyword1", "keyword2", "keyword3"]
@@ -241,9 +241,9 @@ date: "{{date:YYYY-MM-DD}}"
 
 ## Questions?
 
-- **General Questions**: [Discussions](https://github.com/huytieu/COG-second-brain/discussions)
-- **Bug Reports**: [Issues](https://github.com/huytieu/COG-second-brain/issues)
-- **Feature Requests**: [Issues](https://github.com/huytieu/COG-second-brain/issues) with "enhancement" label
+- **General Questions**: Brainia has no discussions forum; for questions about the engine underneath, use the [COG engine's discussions](https://github.com/huytieu/COG-second-brain/discussions)
+- **Bug Reports**: [Brainia Issues](https://github.com/builes-carlos/brainia/issues)
+- **Feature Requests**: [Brainia Issues](https://github.com/builes-carlos/brainia/issues) with "enhancement" label
 
 ## License
 
@@ -251,4 +251,4 @@ By contributing, you agree that your contributions will be licensed under the MI
 
 ---
 
-Thank you for contributing to COG! Your help makes this project better for everyone.
+Thank you for contributing to Brainia! Your help makes this project better for everyone.

@@ -16,7 +16,7 @@ aliases: [software engineer, developer, dev, swe, frontend engineer, backend eng
 | weekly-checkin | Reflect on what you shipped, what you learned, and where you want to grow |
 | knowledge-consolidation | Build personal engineering reference docs from scattered notes and learnings |
 | onboarding | Initial setup — run this first |
-| update-cog | Keep your COG framework current |
+| update-brainia | Keep your COG framework current |
 
 ## Recommended Integrations
 

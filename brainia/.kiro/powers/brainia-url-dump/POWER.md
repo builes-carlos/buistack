@@ -1,5 +1,5 @@
 ﻿---
-name: "cog-url-dump"
+name: "brainia-url-dump"
 displayName: "Brainia URL Dump"
 description: "Quick capture URLs with automatic content extraction, insights, and categorization into knowledge booklets"
 keywords: ["url dump", "save this link", "bookmark this", "save for later", "save url", "bookmark", "save link", "capture url"]

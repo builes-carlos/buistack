@@ -1,5 +1,5 @@
 ﻿---
-name: "cog-weekly-checkin"
+name: "brainia-weekly-checkin"
 displayName: "Brainia Weekly Check-in"
 description: "Cross-domain pattern analysis and strategic reflection for weekly review"
 keywords: ["weekly checkin", "weekly check-in", "weekly review", "reflect on my week", "week reflection", "weekly planning", "end of week"]

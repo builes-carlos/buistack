@@ -1,5 +1,5 @@
 ﻿---
-name: "cog-onboarding"
+name: "brainia-onboarding"
 displayName: "Brainia Onboarding"
 description: "Personalize Brainia second brain for your workflow - creates profile, interests, and watchlist files with guided setup"
 keywords: ["onboarding", "setup Brainia", "setup profile", "get started", "configure Brainia", "personalize", "my profile"]
@@ -92,7 +92,7 @@ vault/05-knowledge/consolidated/, patterns/, timeline/, booklets/
 
 Create `vault/00-inbox/WELCOME-TO-BRAINIA.md` with quick start instructions. Suggest a natural next action (braindump or daily brief) without presenting a numbered menu.
 
-Also mention that COG can be kept up to date: "When new COG versions are released, run `/update-cog` or `./cog-update.sh` to safely update skills and docs without touching your personal content."
+Also mention that COG can be kept up to date: "When new COG versions are released, run `/update-brainia` or `./brainia-update.sh` to safely update skills and docs without touching your personal content."
 
 ## Success Criteria
 

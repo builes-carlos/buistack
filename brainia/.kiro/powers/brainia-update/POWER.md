@@ -1,36 +1,36 @@
 ﻿---
-name: "cog-update"
-displayName: "COG Update"
+name: "brainia-update"
+displayName: "Brainia Update"
 description: "Check for and apply upstream COG framework updates without touching personal content"
-keywords: ["update COG", "check updates", "new version", "upgrade COG", "latest COG", "update skills"]
+keywords: ["update Brainia", "check updates", "new version", "upgrade Brainia", "latest Brainia", "update skills"]
 ---
 
-# COG Update Power
+# Brainia Update Power
 
 Check for and apply upstream COG framework updates (skills, docs, scripts) without touching your personal content.
 
 ## When This Power Activates
 
-- User mentions "update COG", "check for updates", or "upgrade"
-- User asks about their COG version or wants new features
+- User mentions "update Brainia", "check for updates", or "upgrade"
+- User asks about their Brainia version or wants new features
 - User wants the latest skills or documentation
 
 ## Update Steps
 
 ### 1. Check Current Version
-Read `COG-VERSION` in the vault root to determine the local version.
+Read `BRAINIA-VERSION` in the vault root to determine the local version.
 
 ### 2. Fetch Upstream
 ```bash
-git remote get-url cog-upstream 2>/dev/null || \
-  git remote add cog-upstream https://github.com/huytieu/COG-second-brain.git
-git fetch cog-upstream main --quiet
+git remote get-url upstream 2>/dev/null || \
+  git remote add upstream https://github.com/huytieu/COG-second-brain.git
+git fetch upstream main --quiet
 ```
 
 ### 3. Compare Versions
 ```bash
-cat COG-VERSION                           # local
-git show cog-upstream/main:COG-VERSION    # upstream
+cat BRAINIA-VERSION                           # local
+git show upstream/main:BRAINIA-VERSION    # upstream
 ```
 
 If versions match, report that everything is up to date.
@@ -45,7 +45,7 @@ For each changed file, offer the user:
 
 ### 5. Apply Updates
 ```bash
-git checkout cog-upstream/main -- <file>
+git checkout upstream/main -- <file>
 ```
 
 ### 6. Summarize
@@ -57,10 +57,10 @@ git add -A && git commit -m "Update COG framework to v<version>"
 ## Shell Script Alternative
 Users can also update without an AI agent:
 ```bash
-./cog-update.sh           # Interactive
-./cog-update.sh --check   # Check only
-./cog-update.sh --dry-run # Preview
-./cog-update.sh --force   # Update all
+./brainia-update.sh           # Interactive
+./brainia-update.sh --check   # Check only
+./brainia-update.sh --dry-run # Preview
+./brainia-update.sh --force   # Update all
 ```
 
 ## Safety

@@ -28,7 +28,7 @@ These surfaces should expose the complete **core** command set, which is domain-
 - `comprehensive-analysis`
 - `front-sync`
 - `auto-research`
-- `update-cog`
+- `update-brainia`
 
 Today, **Claude Code** and **`AGENTS.md`** are the full surfaces.
 
@@ -42,7 +42,7 @@ These surfaces intentionally cover the most common personal workflows first:
 - `weekly-checkin`
 - `knowledge-consolidation`
 - `url-dump`
-- `update-cog`
+- `update-brainia`
 
 Today, **Kiro** and **Gemini CLI** are core surfaces.
 
@@ -55,12 +55,12 @@ If you add, remove, rename, or materially change a public Brainia skill:
 3. Update **`.claude-plugin/plugin.json`** so marketplace metadata stays truthful
 4. Update **README / SETUP / this file** if counts or support levels change
 5. If the skill is supported natively in Kiro or Gemini, update those files too
-6. Add new framework files to `FRAMEWORK_FILES` in `cog-update.sh`
+6. Add new framework files to `FRAMEWORK_FILES` in `brainia-update.sh`
 7. Run `./scripts/validate-agent-surface.sh`
 
 ## Validation
 
-Run this before tagging a release, opening a packaging PR, or after using `./cog-update.sh`:
+Run this before tagging a release, opening a packaging PR, or after using `./brainia-update.sh`:
 
 ```bash
 ./scripts/validate-agent-surface.sh
@@ -78,8 +78,8 @@ The validator checks:
 Recommended maintainer flow:
 
 ```bash
-./cog-update.sh --check
-./cog-update.sh
+./brainia-update.sh --check
+./brainia-update.sh
 ./scripts/validate-agent-surface.sh
 ```
 

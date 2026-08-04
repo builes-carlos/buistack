@@ -19,7 +19,7 @@ aliases: [pm, product lead, product owner, head of product, vp product, director
 | knowledge-consolidation | Build product strategy frameworks from scattered insights across braindumps and notes |
 | url-dump | Save competitor pages, user research articles, and market reports with auto-extracted insights |
 | onboarding | Initial setup — run this first |
-| update-cog | Keep your COG framework current |
+| update-brainia | Keep your COG framework current |
 
 ## Recommended Integrations
 

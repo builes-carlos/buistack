@@ -1,5 +1,5 @@
 ﻿---
-name: "cog-daily-brief"
+name: "brainia-daily-brief"
 displayName: "Brainia Daily Brief"
 description: "Generate personalized news intelligence with verified sources and 7-day freshness requirement"
 keywords: ["daily brief", "news", "what's happening", "morning brief", "daily news", "intelligence briefing", "news update", "morning update"]

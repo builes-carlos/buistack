@@ -1,6 +1,6 @@
 ---
 type: guide
-tags: ["#welcome", "#getting-started", "#cog"]
+tags: ["#welcome", "#getting-started", "#brainia"]
 ---
 
 # Welcome to Your Brainia Life-Coach Second Brain
@@ -10,7 +10,7 @@ This is a Brainia Second Brain pre-configured as a **life coach / mentor**. It i
 ## First steps
 
 1. **Run `/onboarding`.** This creates your profile, interests, and integrations files in `vault/00-inbox/` (`MY-PROFILE.md`, `MY-INTERESTS.md`, `MY-INTEGRATIONS.md`). Answer the questions honestly; Brainia reads these whenever you use a skill.
-2. **Read the mentor charter:** [[03-professional/COG-MENTOR-CHARTER]]. It defines *how* Brainia mentors you. Edit the placeholders so it reflects your life, not a generic one.
+2. **Read the mentor charter:** [[03-professional/BRAINIA-MENTOR-CHARTER]]. It defines *how* Brainia mentors you. Edit the placeholders so it reflects your life, not a generic one.
 3. **Open your mentorship threads** in `vault/03-professional/mentorship/`. Each is a living doc for one topic — work one per session and the progress compounds.
 
 ## The mentorship threads
@@ -32,8 +32,8 @@ Rename, add, or remove threads to match your life. The pattern matters more than
 
 ## Keeping COG updated
 
-- Run `/update-cog` to pull framework updates. Your content is never touched.
-- Check version: `cat COG-VERSION`
+- Run `/update-brainia` to pull framework updates. Your content is never touched.
+- Check version: `cat BRAINIA-VERSION`
 
 ---
 

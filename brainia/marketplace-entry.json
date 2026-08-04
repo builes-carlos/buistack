@@ -1,5 +1,5 @@
 {
-  "name": "cog-second-brain",
+  "name": "brainia",
   "displayName": "Brainia",
   "source": "https://github.com/builes-carlos/brainia",
   "owner": {
@@ -8,7 +8,7 @@
     "url": "https://github.com/huytieu"
   },
   "description": "Self-evolving second brain with 17 AI skills, 6 worker agents, and people CRM. Inspired by Garry Tan's gstack and gbrain. Works with Claude Code, Cursor, Kiro, Gemini CLI, Codex.",
-  "version": "3.5.0",
+  "version": "4.0.0",
   "keywords": [
     "second-brain",
     "garry-tan",

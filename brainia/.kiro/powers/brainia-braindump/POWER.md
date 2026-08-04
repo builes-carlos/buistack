@@ -1,5 +1,5 @@
 ﻿---
-name: "cog-braindump"
+name: "brainia-braindump"
 displayName: "Brainia Braindump"
 description: "Quick capture of raw thoughts with intelligent domain classification and competitive intelligence extraction"
 keywords: ["braindump", "brain dump", "capture thoughts", "write down ideas", "thoughts", "get thoughts out", "dump my thoughts", "idea capture"]

@@ -4,8 +4,8 @@ vault/.obsidian/cache/
 vault/.obsidian/plugins/
 vault/.obsidian/community-plugins.json
 
-# Per-instance cog-update upstream override (never tracked)
-.cog-update.local
+# Per-instance brainia-update upstream override (never tracked)
+.brainia-update.local
 
 # Trash
 .trash/
@@ -19,7 +19,7 @@ fronts/.activated.json
 Thumbs.db
 
 # Personal Content — NOT ignored by default
-# The update script (cog-update.sh) uses file-by-file extraction, not git merge,
+# The update script (brainia-update.sh) uses file-by-file extraction, not git merge,
 # so there is no risk of merge conflicts with your personal content.
 # Users who fork COG to a private repo can freely track their content via git.
 #
@@ -51,7 +51,7 @@ Thumbs.db
 # Backup files
 *.bak
 *~
-*.backup.* # created by cog-update.sh
+*.backup.* # created by brainia-update.sh
 
 # Submission and marketplace tracking (keep private)
 .github/SUBMISSION-CHECKLIST.md

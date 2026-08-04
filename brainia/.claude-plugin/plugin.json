@@ -1,7 +1,7 @@
 {
-  "name": "cog-second-brain",
+  "name": "brainia",
   "displayName": "Brainia",
-  "version": "3.5.0",
+  "version": "4.0.0",
   "description": "Self-evolving second brain with 12 core AI agent skills, 6 worker agents, and people CRM. Inspired by Garry Tan's gstack specialist sessions and gbrain knowledge patterns. Works with Claude Code, Cursor, Kiro, Gemini CLI, Codex, and any markdown-reading agent.",
   "author": {
     "name": "Huy Tieu",
@@ -96,8 +96,8 @@
       "description": "Deep 7-day analysis for weekly reviews, board prep, or strategic planning"
     },
     {
-      "name": "update-cog",
-      "path": ".claude/skills/update-cog/SKILL.md",
+      "name": "update-brainia",
+      "path": ".claude/skills/update-brainia/SKILL.md",
       "description": "Check for and apply upstream COG framework updates without touching personal content"
     },
     {
@@ -140,7 +140,7 @@
       "agentsMd": "Universal fallback surface for Codex and other markdown-reading agents"
     },
     "installation": {
-      "quickStart": "Clone the repo, cd into COG-second-brain, then run onboarding in your agent of choice",
+      "quickStart": "Clone the repo as the Brain/ of your AI-Coached-Life container, then run onboarding in your agent of choice",
       "setupTime": "2-5 minutes",
       "onboardingTime": "2 minutes",
       "validation": "Run ./scripts/validate-agent-surface.sh before publishing or after framework updates"

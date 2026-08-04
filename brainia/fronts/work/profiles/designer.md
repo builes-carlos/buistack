@@ -17,7 +17,7 @@ aliases: [product designer, ux designer, ui designer, design lead, head of desig
 | weekly-checkin | Spot patterns in design feedback, user research themes, and project momentum |
 | knowledge-consolidation | Build design systems documentation and UX pattern libraries from scattered notes |
 | onboarding | Initial setup — run this first |
-| update-cog | Keep your COG framework current |
+| update-brainia | Keep your COG framework current |
 
 ## Recommended Integrations
 

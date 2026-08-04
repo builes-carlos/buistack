@@ -42,7 +42,7 @@ type: profile
 created: YYYY-MM-DD
 onboarding_completed: true
 agent_mode: solo
-tags: ["#profile", "#config", "#cog"]
+tags: ["#profile", "#config", "#brainia"]
 ```
 Include: Name, Occupation (if shared), Active Fronts, Profile Created date, Agent Mode setting, Active Projects (if any)
 

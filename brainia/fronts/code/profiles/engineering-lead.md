@@ -19,7 +19,7 @@ aliases: [eng lead, engineering manager, em, tech lead, vp engineering, director
 | knowledge-consolidation | Build engineering playbooks and decision records from scattered technical notes |
 | url-dump | Save technical articles, architecture references, and tool evaluations with auto-extracted insights |
 | onboarding | Initial setup — run this first |
-| update-cog | Keep your COG framework current |
+| update-brainia | Keep your COG framework current |
 
 ## Recommended Integrations
 

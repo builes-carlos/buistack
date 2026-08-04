@@ -331,12 +331,12 @@ This document defines the available commands/skills for AI agents interacting wi
 
 ---
 
-### /update-cog
+### /update-brainia
 
 **Description:** Check for and apply upstream COG framework updates without touching personal content.
 
 **Triggers:**
-- `/update-cog`
+- `/update-brainia`
 - "update COG"
 - "check for updates"
 - "get latest COG version"
@@ -346,8 +346,8 @@ This document defines the available commands/skills for AI agents interacting wi
 **Purpose:** Safely update framework files (skills, docs, scripts) from the official upstream repository while leaving all personal content untouched.
 
 **What it does:**
-1. Reads `COG-VERSION` to determine current version
-2. Adds/fetches the `cog-upstream` remote from the official repo
+1. Reads `BRAINIA-VERSION` to determine current version
+2. Adds/fetches the `upstream` remote from the official repo
 3. Compares each framework file against upstream
 4. Detects customizations and offers per-file keep/overwrite/backup
 5. Applies updates via surgical `git checkout` (no merge conflicts)
@@ -355,10 +355,10 @@ This document defines the available commands/skills for AI agents interacting wi
 
 **Shell script alternative:**
 ```bash
-./cog-update.sh           # Interactive
-./cog-update.sh --check   # Check for updates
-./cog-update.sh --dry-run # Preview changes
-./cog-update.sh --force   # Update all without prompting
+./brainia-update.sh           # Interactive
+./brainia-update.sh --check   # Check for updates
+./brainia-update.sh --dry-run # Preview changes
+./brainia-update.sh --force   # Update all without prompting
 ```
 
 **Safety:** Content folders (`vault/00-inbox/`, `vault/01-daily/`, `vault/02-personal/`, etc.) are NEVER touched. Only framework files (skills, docs, scripts) are updated.
@@ -669,9 +669,9 @@ Two packs ship with content: `fronts/code.md` delegates to **devaing** (<https:/
 
 ## Version & Updates
 
-COG tracks its version in `COG-VERSION` (currently 3.5.0). To check for updates:
-- Run `/update-cog` in any supported agent
-- Or use the shell script: `./cog-update.sh --check`
+COG tracks its version in `BRAINIA-VERSION` (currently 4.0.0). To check for updates:
+- Run `/update-brainia` in any supported agent
+- Or use the shell script: `./brainia-update.sh --check`
 - Validate packaged agent surfaces with `./scripts/validate-agent-surface.sh`
 
 Updates only touch framework files (skills, docs, scripts) — your personal content is never modified.

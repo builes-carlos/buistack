@@ -1,6 +1,80 @@
 ﻿# Changelog
 
-All notable changes to COG (Cognition + Obsidian + Git) will be documented in this file.
+All notable changes are documented in this file. Entries from `4.0.0` on are **Brainia**; entries at
+`3.5.0` and below are the upstream **COG** releases this fork is built on, kept verbatim as history.
+
+## [4.0.0] - 2026-08-04
+
+### Life fronts replace the job-title axis
+
+**Breaking.** This is the first release where Brainia is a different framework from COG rather than a
+rename of it. Anyone upgrading from a `3.x` COG install will find role packs gone, seven skills
+relocated, and every skill's frontmatter changed. Hence the major bump: keeping `3.5.0` would have
+claimed a compatibility that does not exist.
+
+### The problem this release fixes
+
+The core personalized by asking what the user does for a living. It knew six job titles, all of them
+from a software company, and anyone matching none of them was assigned `role_pack: custom` and
+offered "core skills only". A nurse, a teacher or a lawyer answered honestly and received the
+smallest version of the product. On top of that, the core shipped a PM and delivery toolchain to
+everyone regardless of whether they write software.
+
+### Two rules that now define the core
+
+1. **The core never asks what the user does for a living.** Fronts are detected from the filesystem.
+   There is no job-title taxonomy, no questionnaire, and no reduced tier.
+2. **The core contains no domain tooling.** Anything domain-specific belongs to a front, either as
+   front-owned skills or delegated to an external tool.
+
+### Added
+
+- **`fronts/`** — one optional pack per life front, declaring `sibling`, `writes_to`, `methodology`,
+  `reads_back`, `skills`, `profiles` and `integrations`. The filesystem is the source of truth for
+  which fronts exist; a front with no pack is valid and never "unconfigured".
+- **`scripts/front.py`** — `list`, `status`, `activate`, `deactivate`, with `--dry-run`, `--force`
+  and `--container`. Front-owned skills are staged under `fronts/<id>/skills/` and copied into
+  `.claude/skills/` only on activation. It refuses to delete a locally modified copy without
+  `--force`, and it shows only the fronts the container actually has.
+- **`front-sync` skill** — distills the artifacts a front declares in `reads_back` into the vault and
+  corrects claims the source now contradicts, so execution feeds the brain without the brain owning
+  execution. Skips linked git worktrees and flags unversioned units instead of trusting them.
+- **`fronts/code.md`** — the worked delegation example. The software front hands off to
+  [devaing](https://github.com/builes-carlos/devaing) and Brainia carries no development tooling.
+- **Validator coverage for fronts** — pack parsing, declaration-versus-disk agreement in both
+  directions, and a lint that fails if job-title identifiers return to the core.
+
+### Changed
+
+- **12 core skills**, all `front: all`. Skill frontmatter uses `front:` instead of `roles:`.
+- **Onboarding** resolves fronts from sibling folders into `active_fronts`. The brain is identified
+  by its contents, never by its folder name, so an instance may be called anything.
+- **Identity is Brainia**: plugin id `brainia`, `BRAINIA-VERSION`, `brainia-update.sh`,
+  `/update-brainia`, `brainia-<name>` Kiro powers. COG remains named only where it is the engine or
+  upstream history. Attribution to the engine's author is unchanged.
+- **Install and report pointers** target this repo. `marketplace-entry.json` previously declared
+  upstream as its `source`, so installing "Brainia" installed COG.
+
+### Moved
+
+- The six role packs became front-local profiles under `fronts/<id>/profiles/`. `.claude/roles/` is
+  gone.
+- `create-user-story`, `generate-prd`, `generate-release-notes`, `export-open-issues`,
+  `update-knowledge-base`, `publish-to-confluence` and `team-brief` moved to `fronts/work/skills/`.
+
+### Fixed
+
+- The agent-surface validator failed on Windows because Python writes CRLF to stdout, so every
+  shipped skill was reported missing. Inherited from upstream.
+- `scout` was never declared in the plugin manifest. Inherited from upstream.
+
+### Deferred
+
+Selective import of COG 3.9's agnostic pieces (`.agents/`, `memory-hygiene`, `daily-journal`). Its
+V-model development harness and design skills are deliberately excluded: they are the domain tooling
+this release removed. See `TO-DO.md`.
+
+---
 
 ## [3.5.0] - 2026-04-16
 
