@@ -67,6 +67,8 @@ fi
 
 while IFS=$'\t' read -r name path; do
   [[ -z "$name" ]] && continue
+  # Python on Windows writes CRLF to stdout; strip the CR or every -f test fails.
+  path="${path%$'\r'}"
 
   if [[ -f "$path" ]]; then
     ok "Manifest path exists for $name → $path"
