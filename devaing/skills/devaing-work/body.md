@@ -8,7 +8,38 @@ For adversarial review, Claude Code can additionally use `subagent_type=compound
 
 # devaing-work
 
-Implement GitHub issues on epic branches. One person per epic (lock by issue assignment). PRs created and merged to the phase integration branch when the epic closes. devaing-ship merges the phase branch to main and deploys.
+Two lanes, chosen at the start:
+
+- **Backlog** — implement GitHub issues on epic branches. One person per epic (lock by issue assignment). PRs created and merged to the phase integration branch when the epic closes; `devaing-ship` merges the phase branch to main and deploys.
+- **Direct** — implement something now on a branch from main, with no issue and no active phase required. The PR merges straight to main; `devaing-ship` deploys.
+
+## Opening — Route
+
+Before reading `## Phases` or fetching issues, ask how this session should run:
+
+```
+How do you want to work?
+
+  1. Backlog — pick from the open issues
+  2. Direct  — implement something now, outside the backlog
+```
+
+Wait for response.
+
+**If 2 (Direct):** skip to [Direct flow](#direct-flow). Do not read `## Phases`, do not fetch issues.
+
+**If 1 (Backlog):** continue to Issue selection below.
+
+Skip this prompt entirely when the skill was invoked with an explicit `#N` or `<milestone>` argument — that is already a Backlog choice.
+
+**When there is no active phase:** if `CONTEXT.md ## Phases` has no row with Status `In Progress`, or the file has no `## Phases` section at all, Backlog has nothing to offer. Do not stall or error. Say so and go Direct:
+
+```
+No active phase in CONTEXT.md — the backlog has nothing to pick from.
+Going Direct.
+```
+
+This is the normal state for a project that works incrementally instead of in phases. Direct is a first-class lane, not a fallback.
 
 ## Opening — Issue selection
 
@@ -46,12 +77,12 @@ How do you want to work?
   1. One     — pick a task
   2. All     — implement all your epic's tasks in sequence
   3. Cascade — implement, close epic, take next available epic, repeat
-  4. Hotfix  — fix something outside the backlog
+  4. Direct  — implement something outside the backlog
 ```
 
 Wait for response.
 
-**If 4 (Hotfix):** skip to [Hotfix flow](#hotfix-flow).
+**If 4 (Direct):** skip to [Direct flow](#direct-flow).
 
 **If 1 (One):** ask which number, then continue to Step 1.
 
@@ -352,10 +383,16 @@ Process findings:
 - New domain terms: add rows to `## Domain glossary`.
 - Architecture changes: **edit the existing `## Architecture` section surgically** — update the description to reflect current state. Do not append; rewrite the affected sentence or paragraph.
 - New integrations or key constraints: add to the relevant section.
-- Feature implementation details (file paths, SQL specifics, edge cases, state machines): write to `docs/features/<slug>.md`. Add one line to CONTEXT.md `## Features implemented` (or create the section): `- **<Feature name>**: one-line description → \`docs/features/<slug>.md\``. Do NOT put implementation detail in CONTEXT.md.
+- Feature implementation details (file paths, SQL specifics, edge cases, state machines): write to `docs/features/<slug>.md`. Do NOT put implementation detail in CONTEXT.md.
+- Index that feature doc in CONTEXT.md **reusing the index the project already has**. Find it before writing: `grep -n "docs/features/" CONTEXT.md`. If a section already links to `docs/features/` — whatever it is called (`## Áreas de producto`, `## Features implemented`, a table, a bullet list) — add the entry inside that section, matching its existing format (same table columns, or same bullet shape). Only when no such section exists, create `## Features implemented` with: `- **<Feature name>**: one-line description → \`docs/features/<slug>.md\``. Never create a second index next to one that already exists.
 - Only update what actually changed. Do not rewrite the whole file.
 
-**Known limitations:** if the report mentions anything intentionally left incomplete or broken: add to `## Known limitations` in CONTEXT.md:
+**Known limitations:** if the report mentions anything intentionally left incomplete or broken, decide where it belongs before writing:
+
+- **Scoped to one product area** → append it to that area's `docs/features/<slug>.md`, not to CONTEXT.md.
+- **Cross-cutting** (hits several areas or the app as a whole) → add it to CONTEXT.md's known-limitations section, matching the heading the project actually uses. It may carry a qualifier (e.g. `## Known limitations (transversales)`); use the existing heading, do not create a second one.
+
+Use this shape either way:
 
 ```
 - **<what>**: <description>. Deferred because: <reason>. Triggered by: <condition>. For now: <guidance>.
@@ -511,24 +548,24 @@ QA en main local antes de shipear. Todo el código de la fase ya está mergeado.
   → Cuando estés listo: /devaing-ship
 ```
 
-## Hotfix flow
+## Direct flow
 
 ```
-Describe what to fix:
+What do you want to build or fix?
 ```
 
-Wait. Store as `<hotfix-description>`.
+Wait. Store as `<direct-description>`.
 
-Hotfix flow does not use epic branches. It works directly on a hotfix branch from main:
+Direct flow does not use epic branches. It works directly on a branch from main:
 
 ```bash
 git checkout main && git pull
-SLUG=$(echo "<hotfix-description>" | tr '[:upper:]' '[:lower:]' \
+SLUG=$(echo "<direct-description>" | tr '[:upper:]' '[:lower:]' \
   | sed 's/[^a-z0-9]/-/g' | sed 's/-\+/-/g' | sed 's/^-\|-$//g' | cut -c1-50)
 git checkout -b hotfix/$SLUG
 ```
 
-Spawn a sub-agent (same structure as Step 2) but pass `<hotfix-description>` instead of an issue. Commit message: `fix: <short description>`.
+Spawn a sub-agent (same structure as Step 2) but pass `<direct-description>` instead of an issue. Commit message: conventional prefix matching what the work actually is (`feat:`, `fix:`, `docs:`, `chore:`), then a short description.
 
 After sub-agent completes: run Step 3 (CONTEXT.md update + push). Push hotfix branch:
 
@@ -540,8 +577,8 @@ Create and auto-merge a PR to main:
 
 ```bash
 PR_URL=$(gh pr create --base main --head hotfix/$SLUG \
-  --title "Hotfix: <hotfix-description>" \
-  --body "Hotfix applied directly. No issue tracked.")
+  --title "<direct-description>" \
+  --body "Implemented directly. No issue tracked.")
 PR_NUMBER=$(echo "$PR_URL" | grep -o '[0-9]*$')
 gh pr merge $PR_NUMBER --merge --delete-branch
 git checkout main && git pull
@@ -558,16 +595,16 @@ If yes:
 
 ```bash
 RETROACTIVE_URL=$(gh issue create \
-  --title "Hotfix: <hotfix-description>" \
+  --title "<direct-description>" \
   --label "needs-triage" \
   --body "$(cat <<'EOF'
-## What was fixed
+## What was done
 
-<hotfix-description>
+<direct-description>
 
 ## Resolution
 
-Implemented as hotfix. No issue was created before the fix.
+Implemented directly. No issue was created beforehand.
 EOF
 )")
 RETROACTIVE_N=$(echo "$RETROACTIVE_URL" | grep -o '[0-9]*$')
@@ -577,7 +614,7 @@ gh issue close $RETROACTIVE_N --comment "Closed retroactively — fix merged to 
 Output:
 
 ```
-✓ Hotfix done.
+✓ Done.
 
   → When ready to deploy to prod: /devaing-ship
 ```
