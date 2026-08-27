@@ -127,24 +127,6 @@ If user says no: stop and let them re-run.
 gh issue edit <N> --add-assignee @me
 ```
 
-Move to "In Progress" in the GitHub Project:
-
-```bash
-PROJECT_NUMBER=$(grep "^project:" .devaing.md | awk '{print $2}')
-OWNER=$(gh api user --jq '.login')
-ITEM_ID=$(gh project item-list $PROJECT_NUMBER --owner $OWNER --format json \
-  --jq ".items[] | select(.content.number == <N>) | .id")
-PROJECT_ID=$(gh project view $PROJECT_NUMBER --owner $OWNER --format json --jq '.id')
-STATUS_FIELD=$(gh project field-list $PROJECT_NUMBER --owner $OWNER --format json \
-  --jq '.fields[] | select(.name == "Status")')
-FIELD_ID=$(echo $STATUS_FIELD | jq -r '.id')
-IN_PROGRESS_ID=$(echo $STATUS_FIELD | jq -r '.options[] | select(.name == "In Progress") | .id')
-gh project item-edit --id $ITEM_ID --field-id $FIELD_ID \
-  --project-id $PROJECT_ID --single-select-option-id $IN_PROGRESS_ID
-```
-
-If `.devaing.md` has no `project:` line or the update fails: continue silently.
-
 **Lazy branch creation/checkout:**
 
 Derive a slug from the milestone name (lowercase, replace non-alphanumeric with `-`, collapse repeated dashes, strip leading/trailing dashes). Store as `<slug>`.
@@ -235,20 +217,24 @@ Wait for response.
 - "Document": continue — the failure will go into Known limitations below.
 - "Revert": run `git reset --hard HEAD~1`. Stop and return to issue selection.
 
-**AC validation:** read the issue body with `gh issue view <N>`. Extract all `- [ ]` lines from `## Acceptance criteria`. Ask in a single prompt:
+**AC validation:** read the issue body with `gh issue view <N>`. Extract all `- [ ]` lines from `## Acceptance criteria`.
 
-```
-Acceptance criteria check for #<N>:
-  [ ] <AC 1>
-  [ ] <AC 2>
-  ...
+If the issue has no Acceptance criteria section, or the extraction is empty: skip this step silently.
 
-All criteria met? (y/n/partial)
-```
+If there are criteria: cross-check each one against `<implementation-report>` from Step 2 — what the sub-agent reported as built vs. left incomplete.
 
-- `y`: continue.
-- `n`: offer Fix now / Document / Revert (same flow as test failure above).
-- `partial`: ask which criteria are unmet. Apply Document to those — they go to Known limitations.
+- All criteria covered per the report: continue without asking.
+  ```
+  Acceptance criteria: N/N covered per the implementation report.
+  ```
+- Any criterion not covered, or the report doesn't make it possible to tell: stop and show which:
+  ```
+  Acceptance criteria check for #<N>:
+    [ ] <AC not covered 1>
+    [ ] <AC not covered 2>
+    ...
+  ```
+  Offer Fix now / Document / Revert (same flow as test failure above).
 
 **Data integrity check (conditional):**
 
@@ -305,13 +291,19 @@ OPEN_IN_MILESTONE=$(gh issue list --milestone "<milestone>" --state open \
   --json number --jq 'length')
 ```
 
-Default `y` if `OPEN_IN_MILESTONE` = 0 (last issue — worth reviewing before auto-merge). Default `n` otherwise.
+Decide automatically from `OPEN_IN_MILESTONE` — do not ask:
+- `OPEN_IN_MILESTONE` = 0 (last issue in the milestone): run the review.
+  ```
+  Adversarial review: running (last issue in milestone).
+  ```
+- `OPEN_IN_MILESTONE` > 0: skip it.
+  ```
+  Adversarial review: skipped (<OPEN_IN_MILESTONE> issues still open in milestone).
+  ```
 
-```
-Run adversarial review on this commit? (y/n, default <y/n>)
-```
+The user can still ask for it explicitly at any point, even when it would otherwise be skipped.
 
-If `y`: get the full epic diff:
+If running: get the full epic diff:
 
 ```bash
 # For epic close (OPEN_IN_MILESTONE = 0): review the entire epic
@@ -398,35 +390,31 @@ Use this shape either way:
 - **<what>**: <description>. Deferred because: <reason>. Triggered by: <condition>. For now: <guidance>.
 ```
 
-If CONTEXT.md changed:
-
-```bash
-git add CONTEXT.md
-git commit -m "docs: update CONTEXT.md after #<N>"
-```
-
 **Tactical anti-patterns capture (conditional):**
 
-If this issue involved a fix commit that corrected a plausible-but-wrong pattern, a workaround that must not be replicated, or an adversarial finding that revealed a subtle incorrect assumption — ask:
+Derive automatically from what this Step 3 already produced: `<implementation-report>` from Step 2, and the findings from the adversarial review and the data integrity check (if they ran). Look for a fix that corrected a plausible-but-wrong pattern, a workaround that must not be replicated, or a subtle incorrect assumption an adversarial finding revealed.
 
-```
-Did this issue surface a code pattern that future agents should NOT copy?
-(a wrong-looking-correct workaround, a constraint invisible from reading code, a plausible mistake)
-Describe briefly, or skip:
-```
-
-If described: append to `CLAUDE.md ## Tactical anti-patterns`:
+If a clear anti-pattern surfaces: append to `CLAUDE.md ## Tactical anti-patterns`:
 
 ```
 - **<name>**: <what the wrong pattern looks like> → <correct pattern>. [Why: <one-line reason>]
 ```
 
-```bash
-git add CLAUDE.md
-git commit -m "docs: add tactical anti-pattern from #<N>"
+Tell the user in one line what was added:
+```
+Tactical anti-pattern captured: <name>.
 ```
 
-If nothing new, skip.
+If nothing surfaces, continue silently.
+
+**Commit project docs:** if CONTEXT.md, any file under `docs/features/`, or CLAUDE.md (anti-pattern) changed:
+
+```bash
+git add CONTEXT.md 2>/dev/null
+git add docs/features/ 2>/dev/null
+git add CLAUDE.md 2>/dev/null
+git commit -m "docs: update project docs after #<N>"
+```
 
 **Push epic branch:**
 
@@ -439,24 +427,6 @@ git push origin epic/<slug>
 ```bash
 git rev-parse --short HEAD | xargs -I{} gh issue close <N> --comment "Implemented in {}. CONTEXT.md updated."
 ```
-
-**Move to Done:**
-
-```bash
-PROJECT_NUMBER=$(grep "^project:" .devaing.md | awk '{print $2}')
-OWNER=$(gh api user --jq '.login')
-PROJECT_ID=$(gh project view $PROJECT_NUMBER --owner $OWNER --format json --jq '.id')
-ITEM_ID=$(gh project item-list $PROJECT_NUMBER --owner $OWNER --format json \
-  --jq ".items[] | select(.content.number == <N>) | .id")
-STATUS_FIELD=$(gh project field-list $PROJECT_NUMBER --owner $OWNER --format json \
-  --jq '.fields[] | select(.name == "Status")')
-FIELD_ID=$(echo $STATUS_FIELD | jq -r '.id')
-DONE_ID=$(echo $STATUS_FIELD | jq -r '.options[] | select(.name == "Done") | .id')
-gh project item-edit --id $ITEM_ID --field-id $FIELD_ID \
-  --project-id $PROJECT_ID --single-select-option-id $DONE_ID
-```
-
-If any command fails: skip silently.
 
 ## Closing — Epic complete check
 
@@ -471,19 +441,28 @@ If `OPEN_IN_MILESTONE` > 0: skip to "Per-issue close" below.
 
 If 0 (epic complete):
 
-1. **Known limitations review:** before merging, check whether this epic resolved any existing limitations:
+1. **Known limitations review:** check whether this epic resolved any existing limitations:
 
    ```bash
    grep -A 200 "^## Known limitations" CONTEXT.md | grep "^\- \*\*"
    ```
 
-   If there are entries, ask:
+   If there are no entries: skip this step silently.
+
+   If there are entries: spawn a sub-agent with (a) the list of limitations and (b) the full epic diff (`REVIEW_DIFF` from the adversarial review step above, or `git diff phase-<phase-num>..epic/<slug>` if that step didn't run). Ask it to report which of these limitations were resolved by this epic, with concrete evidence from the diff for each.
+
+   If the sub-agent finds none resolved: continue silently.
+
+   If it finds candidates: show them with their evidence and confirm before touching CONTEXT.md:
    ```
-   Known limitations — did this epic resolve any of these?
-   (list the items by name, or 'none')
+   Known limitations resolved by this epic:
+     - <limitation 1> — <evidence>
+     - <limitation 2> — <evidence>
+
+   Remove these from CONTEXT.md? (y/n)
    ```
 
-   If items were resolved: remove or update them in CONTEXT.md. Commit:
+   If confirmed: remove or update them in CONTEXT.md. Commit:
    ```bash
    git add CONTEXT.md
    git commit -m "docs: resolve known limitations addressed in epic/<slug>"
@@ -582,33 +561,6 @@ PR_URL=$(gh pr create --base main --head hotfix/$SLUG \
 PR_NUMBER=$(echo "$PR_URL" | grep -o '[0-9]*$')
 gh pr merge $PR_NUMBER --merge --delete-branch
 git checkout main && git pull
-```
-
-Then ask:
-
-```
-Create a retroactive issue for tracking? (y/n)
-(Recommended — keeps the backlog searchable)
-```
-
-If yes:
-
-```bash
-RETROACTIVE_URL=$(gh issue create \
-  --title "<direct-description>" \
-  --label "needs-triage" \
-  --body "$(cat <<'EOF'
-## What was done
-
-<direct-description>
-
-## Resolution
-
-Implemented directly. No issue was created beforehand.
-EOF
-)")
-RETROACTIVE_N=$(echo "$RETROACTIVE_URL" | grep -o '[0-9]*$')
-gh issue close $RETROACTIVE_N --comment "Closed retroactively — fix merged to main."
 ```
 
 Output:
