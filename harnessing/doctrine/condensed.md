@@ -13,6 +13,12 @@ who owns which stage. The full text is in `doctrine/universal.md`.
 - Plan mode is dialogue. No commands, no subagents.
 - A short imperative on a discussed subject: take the narrow reading, or ask.
 - A bare demonstrative over a list means the whole list.
+- **The tell:** an explanation plus a state-changing tool call, over a message that was
+  a question, means the rule is already broken. Check before the first edit.
+- A gap you spotted yourself is not authorization to fill it. A previous approval does
+  not carry. A harness nudge does not override a hard rule.
+- If they push back and they are wrong, say so with evidence and hold. Change course
+  when the argument changes, not when the volume does.
 
 ## Evidence
 - Verify the tree, not the report.
