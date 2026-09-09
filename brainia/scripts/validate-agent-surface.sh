@@ -171,6 +171,34 @@ else
   record_warning "Expected 7 Gemini commands and 7 Gemini skills, found commands=$gemini_commands_count skills=$gemini_skills_count"
 fi
 
+# Counting files says the surfaces are the same size. It does not say they hold the
+# same skills. A skill renamed in one surface and not the others, or added to Claude and
+# never ported, keeps the counts right and the surfaces wrong, and nobody reading these
+# folders six months from now will notice. So compare names, and fail rather than warn:
+# a surface that has drifted is shipping a command that does not exist.
+core_from_gemini=$(find .gemini/skills -type f ! -name '*.backup-*' -exec basename {} .md \; | sort)
+parity_failed=0
+
+check_surface() {
+  local label="$1" listing="$2"
+  local missing
+  missing=$(comm -23 <(echo "$core_from_gemini") <(echo "$listing" | sort))
+  if [[ -n "$missing" ]]; then
+    record_failure "$label is missing core skills present in the Gemini surface: $(echo $missing)"
+    parity_failed=1
+  fi
+}
+
+# Kiro ships `brainia-update` for what every other surface calls `update-brainia`.
+# A known alias, normalised here rather than treated as drift.
+check_surface "Claude (.claude/skills)" "$(ls .claude/skills)"
+check_surface "Gemini commands (.gemini/commands)" "$(ls .gemini/commands | sed 's/\.[^.]*$//')"
+check_surface "Kiro (.kiro/powers)" "$(ls .kiro/powers | sed 's/^brainia-//; s/^update$/update-brainia/')"
+
+if [[ $parity_failed -eq 0 ]]; then
+  ok "Every core skill exists by name on all four surfaces"
+fi
+
 if [[ -f docs/AGENT-SUPPORT.md ]]; then
   ok "docs/AGENT-SUPPORT.md exists"
 else
