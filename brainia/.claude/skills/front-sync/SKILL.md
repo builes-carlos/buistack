@@ -69,7 +69,7 @@ For each front in scope, read `fronts/<front_id>.md` and take from its frontmatt
 
 Most fronts hold several units of work (the software front holds one per project), so expect **one set of artifacts per unit**, not one per front.
 
-**A unit is the directory that contains the declared artifacts, not the top-level folder.** This matters and getting it wrong loses whole projects: in a real container the artifacts sit at `Code/<project>/CONTEXT.md` but also at `Code/<project>/<app>/CONTEXT.md`, `Code/<client>/<project>/CONTEXT.md` and `Code/<client>/<project>/CONTEXT.md`. A top-level-only scan silently misses every nested one.
+**A unit is the directory that contains the declared artifacts, not the top-level folder.** This matters and getting it wrong loses whole projects: in a real container some artifacts sit at `Code/<project>/CONTEXT.md` while others sit one or two levels down, at `Code/<project>/<app>/CONTEXT.md` or `Code/<client>/<project>/CONTEXT.md`, because a repo is free to hold more than one deployable. A top-level-only scan silently misses every nested one.
 
 So: search the sibling folder recursively to a **bounded depth of 3**, skipping vendored and build directories (`node_modules`, `.git`, `dist`, `build`, `.next`, `target`, `venv`, `__pycache__`). Any directory holding at least one declared artifact is a unit.
 

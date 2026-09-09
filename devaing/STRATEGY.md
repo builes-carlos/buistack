@@ -48,7 +48,7 @@ Updated after every operation: devaing-work, devaing-bug, devaing-phase-revise. 
 
 To prevent context rot from accumulated slice-by-slice notes, CONTEXT.md is compressed at milestone close: verbose operational detail is replaced with a 3-line summary block (what was built, decisions made, known limitations introduced). ADRs and Known limitations entries are never removed — only deduplicated into their canonical sections.
 
-### Known limitations section in CONTEXT.md (from senior-dev practice)
+### Known limitations section in CONTEXT.md
 Distinct from ADRs (decisions made) and key constraints (non-negotiable limits). Captures problems we are aware of and consciously not fixing yet: what the problem is, why it's deferred, what would trigger the fix, and operational guidance for the current state. devaing-work prompts for this at close alongside the ADR question.
 
 ### Epic branches + ownership lock
@@ -113,8 +113,8 @@ If Claude can run the check, it runs it. The only time it stops and asks the use
 ### Self-verification before closing
 After the sub-agent commits, devaing-work runs the project's test suite (auto-detected: `npm test` / `pytest` / `cargo test`). If tests fail, the user chooses: fix now (spawn another sub-agent with the failure output), document in Known limitations, or revert the commit. Then it reads each `- [ ]` acceptance criterion from the issue and asks for a single y/n/partial confirmation before closing.
 
-### Adversarial review (from observed practice)
-The pattern: after each implementation commit, a review pass constructs failure scenarios (not pattern-matching against known issues). devaing-work integrates this as an optional step: default `y` when closing the last issue in a milestone (before auto-merge to main), default `n` for intermediate issues. At epic close, the diff reviewed is `main..epic/<slug>` (the full epic), not just the closing commit. Uses `ce-adversarial-reviewer` on Claude Code; other environments pipe an inline adversarial prompt to `subagent_cli`.
+### Adversarial review
+After each implementation commit, a review pass constructs failure scenarios (not pattern-matching against known issues). devaing-work integrates this as an optional step: default `y` when closing the last issue in a milestone (before auto-merge to main), default `n` for intermediate issues. At epic close, the diff reviewed is `main..epic/<slug>` (the full epic), not just the closing commit. Uses `ce-adversarial-reviewer` on Claude Code; other environments pipe an inline adversarial prompt to `subagent_cli`.
 
 When the diff touches migration or seed files, `ce-data-integrity-guardian` runs first (before adversarial review), also with a Claude Code / inline-prompt dual path.
 
