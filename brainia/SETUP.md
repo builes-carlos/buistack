@@ -21,7 +21,7 @@ Complete step-by-step instructions for setting up your Brainia agentic second br
 Your second brain is the `Brain/` of an `AI-Coached-Life` container. `Brain/` is the only required folder besides the container root. Every life front is a physical sibling folder of `Brain/` (`Code/`, `Strategy/`, `Health/`, … — they vary per person).
 ```bash
 mkdir AI-Coached-Life
-git clone https://github.com/builes-carlos/brainia.git AI-Coached-Life/Brain
+git clone https://github.com/builes-carlos/buistack.git AI-Coached-Life/Brain
 cd AI-Coached-Life/Brain
 ```
 
@@ -543,7 +543,7 @@ cat BRAINIA-VERSION
 
 ## Getting Help
 
-- **Brainia issues:** https://github.com/builes-carlos/brainia/issues
+- **Brainia issues:** https://github.com/builes-carlos/buistack/issues
 - **COG engine (upstream):** [issues](https://github.com/huytieu/COG-second-brain/issues) · [discussions](https://github.com/huytieu/COG-second-brain/discussions) — for the engine underneath, not for Brainia itself
 - **Updates:** Watch this repo for improvements
 

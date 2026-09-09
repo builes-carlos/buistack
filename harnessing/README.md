@@ -36,7 +36,7 @@ itself.
 ## Install, from the clone
 
 ```bash
-git clone <this-repo-url>
+git clone https://github.com/builes-carlos/buistack.git
 cd buistack/harnessing
 python install.py --check     # see what's missing, writes nothing
 python install.py             # bootstrap: skills + doctrine pointer + hook

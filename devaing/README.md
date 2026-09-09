@@ -256,8 +256,8 @@ claude plugin install compound-engineering
 ## Installation
 
 ```bash
-git clone https://github.com/builes-carlos/devaing.git
-cd devaing
+git clone https://github.com/builes-carlos/buistack.git
+cd buistack/devaing
 bash install.sh
 ```
 

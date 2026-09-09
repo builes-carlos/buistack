@@ -48,12 +48,17 @@ AI-Coached-Life/        # your whole life, AI-coached   (required)
 
 ## Quick Start
 
-**1. Clone it as the `Brain/` of your life container:**
+**1. Clone the stack, then use the `brainia/` folder as your instance:**
 ```bash
+git clone https://github.com/builes-carlos/buistack.git
 mkdir AI-Coached-Life
-git clone https://github.com/builes-carlos/brainia.git AI-Coached-Life/Brain
-cd AI-Coached-Life/Brain
+cp -r buistack/brainia AI-Coached-Life/brainia-<yourname>
+cd AI-Coached-Life/brainia-<yourname>
 ```
+
+The copy is on purpose. `buistack/brainia` is the framework and it gets updated from
+upstream; your instance is where your own content lives, and it is named
+`brainia-<yourname>` so a glance tells the two apart.
 
 **2. Run onboarding in your agent:**
 
@@ -116,7 +121,7 @@ Two packs ship with real content:
 
 | Front | What it does |
 |---|---|
-| **`fronts/code.md`** | Delegates to **[devaing](https://github.com/builes-carlos/devaing)**, an external framework for building products with AI. Brainia does not plan, build, review, or ship code. It hands off to `/devaing-director` and stops. It reads each project's `CONTEXT.md` and `CHECKPOINTS.md` back into `vault/04-projects/`, which is how execution feeds the brain without the brain owning execution. |
+| **`fronts/code.md`** | Delegates to **[devaing](https://github.com/builes-carlos/buistack/tree/main/devaing)**, an external framework for building products with AI. Brainia does not plan, build, review, or ship code. It hands off to `/devaing-director` and stops. It reads each project's `CONTEXT.md` and `CHECKPOINTS.md` back into `vault/04-projects/`, which is how execution feeds the brain without the brain owning execution. |
 | **`fronts/work.md`** | Owns the PM and delivery skills that used to sit in the core: `create-user-story`, `generate-prd`, `generate-release-notes`, `export-open-issues`, `update-knowledge-base`, `publish-to-confluence`, `team-brief`. They install only if you activate the Work front. |
 
 Every other front (`health`, `finances`, `people`, `learning`, `career`, `strategy`, `biz`, `personal`) ships as a thin declaration with no tooling, which is the intended default rather than an omission. Write your own from `fronts/_template.md`.
@@ -281,7 +286,7 @@ Git is optional but recommended for version history. Brainia works fine with jus
 
 | | | |
 |---|---|---|
-| [Contribute](CONTRIBUTING.md) | [Report a Brainia bug](https://github.com/builes-carlos/brainia/issues) | [MIT License](LICENSE) |
+| [Contribute](CONTRIBUTING.md) | [Report a Brainia bug](https://github.com/builes-carlos/buistack/issues) | [MIT License](LICENSE) |
 
 Bugs in Brainia belong in this repo's issues. For the COG engine underneath, use [upstream issues](https://github.com/huytieu/COG-second-brain/issues) and [upstream discussions](https://github.com/huytieu/COG-second-brain/discussions) — and if you want to support the engine's author, [sponsor huytieu](https://github.com/sponsors/huytieu) or [buy them a coffee](https://buymeacoffee.com/0xlight).
 
@@ -298,7 +303,7 @@ Built with [Claude Code](https://claude.ai/code), [Cursor](https://cursor.com/),
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=builes-carlos/brainia&type=date&legend=top-left)](https://www.star-history.com/#builes-carlos/brainia&type=date&legend=top-left)
+[![Star History Chart](https://api.star-history.com/svg?repos=builes-carlos/buistack&type=date&legend=top-left)](https://www.star-history.com/#builes-carlos/buistack&type=date&legend=top-left)
 
 ---
 

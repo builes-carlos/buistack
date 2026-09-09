@@ -665,7 +665,7 @@ Fronts are detected from the filesystem: the sibling folders next to `Brain/`. A
 
 **The filesystem is the source of truth, not `fronts/`.** A sibling folder is a front whether or not a pack exists for it, and a front with no pack is never "unconfigured". The set is open and changes over time.
 
-Two packs ship with content: `fronts/code.md` delegates to **devaing** (<https://github.com/builes-carlos/devaing>) and reads each project's `CONTEXT.md` and `CHECKPOINTS.md` back into `vault/04-projects/`; `fronts/work.md` owns the seven PM and delivery skills. Write your own from `fronts/_template.md`, and front-local profiles from `fronts/_profile-template.md`.
+Two packs ship with content: `fronts/code.md` delegates to **devaing** (<https://github.com/builes-carlos/buistack/tree/main/devaing>) and reads each project's `CONTEXT.md` and `CHECKPOINTS.md` back into `vault/04-projects/`; `fronts/work.md` owns the seven PM and delivery skills. Write your own from `fronts/_template.md`, and front-local profiles from `fronts/_profile-template.md`.
 
 ## Version & Updates
 

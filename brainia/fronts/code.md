@@ -25,13 +25,13 @@ several fronts at once — Code is just the slice where code gets written.
 devaing is an external framework for building products with AI via GitHub-issue-sized,
 self-contained units of work.
 
-- **Source:** <https://github.com/builes-carlos/devaing> (public). This is the canonical
+- **Source:** <https://github.com/builes-carlos/buistack/tree/main/devaing> (public). This is the canonical
   reference. Do not point at a local path as if it were the source; a path only exists on the
   machine that already has it.
 - **Install:**
   ```bash
-  git clone https://github.com/builes-carlos/devaing.git
-  cd devaing && bash install.sh
+  git clone https://github.com/builes-carlos/buistack.git
+  cd buistack/devaing && bash install.sh
   ```
   `install.sh` copies each `skills/devaing-*/` folder into `~/.claude/skills/`, so devaing
   installs itself machine-wide and is not vendored into any brain.

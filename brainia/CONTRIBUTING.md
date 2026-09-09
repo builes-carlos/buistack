@@ -8,7 +8,7 @@ Thank you for your interest in contributing to Brainia! This document provides g
 
 If you find a bug or have a suggestion:
 
-1. Check if the issue already exists in [GitHub Issues](https://github.com/builes-carlos/brainia/issues)
+1. Check if the issue already exists in [GitHub Issues](https://github.com/builes-carlos/buistack/issues)
 2. If not, create a new issue with:
    - Clear, descriptive title
    - Detailed description of the problem or suggestion
@@ -242,8 +242,8 @@ date: "{{date:YYYY-MM-DD}}"
 ## Questions?
 
 - **General Questions**: Brainia has no discussions forum; for questions about the engine underneath, use the [COG engine's discussions](https://github.com/huytieu/COG-second-brain/discussions)
-- **Bug Reports**: [Brainia Issues](https://github.com/builes-carlos/brainia/issues)
-- **Feature Requests**: [Brainia Issues](https://github.com/builes-carlos/brainia/issues) with "enhancement" label
+- **Bug Reports**: [Brainia Issues](https://github.com/builes-carlos/buistack/issues)
+- **Feature Requests**: [Brainia Issues](https://github.com/builes-carlos/buistack/issues) with "enhancement" label
 
 ## License
 

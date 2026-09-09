@@ -40,7 +40,7 @@ everyone regardless of whether they write software.
   corrects claims the source now contradicts, so execution feeds the brain without the brain owning
   execution. Skips linked git worktrees and flags unversioned units instead of trusting them.
 - **`fronts/code.md`** — the worked delegation example. The software front hands off to
-  [devaing](https://github.com/builes-carlos/devaing) and Brainia carries no development tooling.
+  [devaing](https://github.com/builes-carlos/buistack/tree/main/devaing) and Brainia carries no development tooling.
 - **Validator coverage for fronts** — pack parsing, declaration-versus-disk agreement in both
   directions, and a lint that fails if job-title identifiers return to the core.
 
