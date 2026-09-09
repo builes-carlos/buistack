@@ -919,7 +919,11 @@ If `n`: skip to Step 7b and write `enforcement: off`.
 
 If `y`:
 
-1. Copy the checker scripts into the target repo:
+1. Locate the devaing checkout these skills were installed from. It is the `devaing/`
+   directory of a buistack clone. Resolve it from `$DEVAING_REPO` if set, otherwise ask
+   the user for the path once. Store as `<devaing-repo>`.
+
+2. Copy the checker scripts into the target repo:
 
 ```bash
 mkdir -p .devaing/gate
@@ -928,7 +932,7 @@ cp <devaing-repo>/scripts/gate/migration_collision.py .devaing/gate/migration_co
 cp <devaing-repo>/scripts/gate/doc_lint.py .devaing/gate/doc_lint.py
 ```
 
-2. Write `.github/workflows/devaing-gate.yml`, replacing `<branch>`:
+3. Write `.github/workflows/devaing-gate.yml`, replacing `<branch>`:
 
 ```yaml
 name: devaing-gate
@@ -962,7 +966,7 @@ jobs:
 
 The documentation lint runs broken-link checking with no configuration required. A project that wants the parent-link, lane-trace, or EARS rules adds `.devaing/gate/doc_lint.json`. The script's own docstring carries the schema.
 
-3. Ask a **second, separate** confirmation before touching branch protection (installing the workflow and making `main` un-mergeable without it passing are different blast radii):
+4. Ask a **second, separate** confirmation before touching branch protection (installing the workflow and making `main` un-mergeable without it passing are different blast radii):
 
 ```
 ¿Marcar devaing-gate como required check en <branch>? Esto puede bloquear
