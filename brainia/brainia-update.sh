@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # Brainia Upstream Update Script
 # Safely updates framework files (skills, docs, scripts) without touching your personal content.
 #
@@ -21,6 +21,17 @@ set -euo pipefail
 # upstream. The defaults below point at the canonical COG repo.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 [ -f "${SCRIPT_DIR}/.brainia-update.local" ] && source "${SCRIPT_DIR}/.brainia-update.local"
+
+# Every path below is relative, and brainia is no longer the root of its repository:
+# it is one folder inside buistack. Without this, running the script from the repo root
+# writes README.md and .claude/skills/ to the wrong level and silently wrecks the
+# layout instead of failing. Anchor to the script's own directory and refuse to run if
+# that is not brainia.
+cd "$SCRIPT_DIR" || exit 1
+if [ ! -f "BRAINIA-VERSION" ]; then
+  echo "This script must sit next to BRAINIA-VERSION. Found neither." >&2
+  exit 1
+fi
 
 REMOTE_NAME="${BRAINIA_REMOTE_NAME:-upstream}"
 REMOTE_URL="${BRAINIA_REMOTE_URL:-https://github.com/huytieu/COG-second-brain.git}"
@@ -219,7 +230,9 @@ backup_file() {
 }
 
 worktree_is_dirty() {
-  [[ -n "$(git status --porcelain)" ]]
+  # Scoped to this folder. brainia shares a repository with two other frameworks now,
+  # and their uncommitted work is none of this script's business.
+  [[ -n "$(git status --porcelain -- .)" ]]
 }
 
 warn_if_dirty() {
@@ -262,7 +275,7 @@ main() {
 
   # Sanity check — are we in a git repo?
   if ! git rev-parse --is-inside-work-tree &>/dev/null; then
-    err "Not inside a git repository. Run this from your COG folder."
+    err "Not inside a git repository. Clone buistack and run this from its brainia folder."
     exit 1
   fi
 
@@ -288,7 +301,7 @@ main() {
 
   if [[ "$mode" == "interactive" || "$mode" == "force" ]]; then
     warn_if_dirty
-    [[ -n "$(git status --porcelain)" ]] && echo ""
+    [[ -n "$(git status --porcelain -- .)" ]] && echo ""
   fi
 
   if [[ "$uv" == "unknown" ]]; then
