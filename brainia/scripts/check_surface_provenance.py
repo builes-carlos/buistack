@@ -33,7 +33,16 @@ KIRO_ALIASES = {"update-brainia": "update"}
 
 
 def sha(path: pathlib.Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    """Hash the content, not the bytes on this particular disk.
+
+    Line endings are not content. A checkout on Windows with core.autocrlf on holds
+    CRLF while CI holds LF, so hashing raw bytes makes every stamp look stale the
+    moment the check leaves the machine that wrote it. This check caught exactly that
+    on its first CI run, which is the argument for having it.
+    """
+    text = path.read_bytes().decode("utf-8", "replace")
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
 def adaptations() -> dict[str, pathlib.Path]:

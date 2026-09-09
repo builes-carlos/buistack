@@ -1,86 +1,86 @@
 {
   ".gemini/commands/braindump.toml": {
     "ported_from": ".claude/skills/braindump/SKILL.md",
-    "source_sha256": "98c456e969d8d671d329d237770ede49e4ce3ad3a032e4493a47832497903abc"
+    "source_sha256": "5345443fb1e3431e24f0e4d8edeb01ec3e2ff154f4bcf4acebace47e3b0229e9"
   },
   ".gemini/commands/daily-brief.toml": {
     "ported_from": ".claude/skills/daily-brief/SKILL.md",
-    "source_sha256": "526c3f41c5924f78b44ccc54da7658d896d032f3662bf85ccbfac45896dd054b"
+    "source_sha256": "153d9903f310a6623efd9f8479f84510e0c9d15b7ecc7445180e561b94a91527"
   },
   ".gemini/commands/knowledge-consolidation.toml": {
     "ported_from": ".claude/skills/knowledge-consolidation/SKILL.md",
-    "source_sha256": "185cb6182e5a0d79016c3e83107373d196329f0e7254febaa524eb7f7142a8f4"
+    "source_sha256": "9d8f95c4bbbf60d04e8e168ec07016482c24076844cb4387eea59018697e41b6"
   },
   ".gemini/commands/onboarding.toml": {
     "ported_from": ".claude/skills/onboarding/SKILL.md",
-    "source_sha256": "15f393d7fb3c829ddf141043284755f30b6a2dc16b1b491b7bf28ee2932cbfa0"
+    "source_sha256": "a871b640d987891c419384911572e62260656a8bbb4aea1596cadd8608173f12"
   },
   ".gemini/commands/update-brainia.toml": {
     "ported_from": ".claude/skills/update-brainia/SKILL.md",
-    "source_sha256": "c018d4b35f5507f6274bea64f892bf1ba7f409b9b34f422a6eee13a4fec140ec"
+    "source_sha256": "c3069597763ee0dcd529073443294b79bcc2c8d3f24ab2d2984f8ceec0f722de"
   },
   ".gemini/commands/url-dump.toml": {
     "ported_from": ".claude/skills/url-dump/SKILL.md",
-    "source_sha256": "e99d47413ceafb857146822f9a82a8ecc442caf898ff0eec9c68cc524e073535"
+    "source_sha256": "2b84ae78b0bc39738c61853fb962db90e3d68e8b9973ca2509da2705a5c7df7b"
   },
   ".gemini/commands/weekly-checkin.toml": {
     "ported_from": ".claude/skills/weekly-checkin/SKILL.md",
-    "source_sha256": "674a21d816d2d8697eca8e27e665c5862b9ab610e9ce2e1bdc20d65d93b662bf"
+    "source_sha256": "6c911a7f7f6db85fb2d704ac15c0afe1305d179a0b07717d32a05bdcb6c01561"
   },
   ".gemini/skills/braindump.md": {
     "ported_from": ".claude/skills/braindump/SKILL.md",
-    "source_sha256": "98c456e969d8d671d329d237770ede49e4ce3ad3a032e4493a47832497903abc"
+    "source_sha256": "5345443fb1e3431e24f0e4d8edeb01ec3e2ff154f4bcf4acebace47e3b0229e9"
   },
   ".gemini/skills/daily-brief.md": {
     "ported_from": ".claude/skills/daily-brief/SKILL.md",
-    "source_sha256": "526c3f41c5924f78b44ccc54da7658d896d032f3662bf85ccbfac45896dd054b"
+    "source_sha256": "153d9903f310a6623efd9f8479f84510e0c9d15b7ecc7445180e561b94a91527"
   },
   ".gemini/skills/knowledge-consolidation.md": {
     "ported_from": ".claude/skills/knowledge-consolidation/SKILL.md",
-    "source_sha256": "185cb6182e5a0d79016c3e83107373d196329f0e7254febaa524eb7f7142a8f4"
+    "source_sha256": "9d8f95c4bbbf60d04e8e168ec07016482c24076844cb4387eea59018697e41b6"
   },
   ".gemini/skills/onboarding.md": {
     "ported_from": ".claude/skills/onboarding/SKILL.md",
-    "source_sha256": "15f393d7fb3c829ddf141043284755f30b6a2dc16b1b491b7bf28ee2932cbfa0"
+    "source_sha256": "a871b640d987891c419384911572e62260656a8bbb4aea1596cadd8608173f12"
   },
   ".gemini/skills/update-brainia.md": {
     "ported_from": ".claude/skills/update-brainia/SKILL.md",
-    "source_sha256": "c018d4b35f5507f6274bea64f892bf1ba7f409b9b34f422a6eee13a4fec140ec"
+    "source_sha256": "c3069597763ee0dcd529073443294b79bcc2c8d3f24ab2d2984f8ceec0f722de"
   },
   ".gemini/skills/url-dump.md": {
     "ported_from": ".claude/skills/url-dump/SKILL.md",
-    "source_sha256": "e99d47413ceafb857146822f9a82a8ecc442caf898ff0eec9c68cc524e073535"
+    "source_sha256": "2b84ae78b0bc39738c61853fb962db90e3d68e8b9973ca2509da2705a5c7df7b"
   },
   ".gemini/skills/weekly-checkin.md": {
     "ported_from": ".claude/skills/weekly-checkin/SKILL.md",
-    "source_sha256": "674a21d816d2d8697eca8e27e665c5862b9ab610e9ce2e1bdc20d65d93b662bf"
+    "source_sha256": "6c911a7f7f6db85fb2d704ac15c0afe1305d179a0b07717d32a05bdcb6c01561"
   },
   ".kiro/powers/brainia-braindump/POWER.md": {
     "ported_from": ".claude/skills/braindump/SKILL.md",
-    "source_sha256": "98c456e969d8d671d329d237770ede49e4ce3ad3a032e4493a47832497903abc"
+    "source_sha256": "5345443fb1e3431e24f0e4d8edeb01ec3e2ff154f4bcf4acebace47e3b0229e9"
   },
   ".kiro/powers/brainia-daily-brief/POWER.md": {
     "ported_from": ".claude/skills/daily-brief/SKILL.md",
-    "source_sha256": "526c3f41c5924f78b44ccc54da7658d896d032f3662bf85ccbfac45896dd054b"
+    "source_sha256": "153d9903f310a6623efd9f8479f84510e0c9d15b7ecc7445180e561b94a91527"
   },
   ".kiro/powers/brainia-knowledge-consolidation/POWER.md": {
     "ported_from": ".claude/skills/knowledge-consolidation/SKILL.md",
-    "source_sha256": "185cb6182e5a0d79016c3e83107373d196329f0e7254febaa524eb7f7142a8f4"
+    "source_sha256": "9d8f95c4bbbf60d04e8e168ec07016482c24076844cb4387eea59018697e41b6"
   },
   ".kiro/powers/brainia-onboarding/POWER.md": {
     "ported_from": ".claude/skills/onboarding/SKILL.md",
-    "source_sha256": "15f393d7fb3c829ddf141043284755f30b6a2dc16b1b491b7bf28ee2932cbfa0"
+    "source_sha256": "a871b640d987891c419384911572e62260656a8bbb4aea1596cadd8608173f12"
   },
   ".kiro/powers/brainia-update/POWER.md": {
     "ported_from": ".claude/skills/update-brainia/SKILL.md",
-    "source_sha256": "c018d4b35f5507f6274bea64f892bf1ba7f409b9b34f422a6eee13a4fec140ec"
+    "source_sha256": "c3069597763ee0dcd529073443294b79bcc2c8d3f24ab2d2984f8ceec0f722de"
   },
   ".kiro/powers/brainia-url-dump/POWER.md": {
     "ported_from": ".claude/skills/url-dump/SKILL.md",
-    "source_sha256": "e99d47413ceafb857146822f9a82a8ecc442caf898ff0eec9c68cc524e073535"
+    "source_sha256": "2b84ae78b0bc39738c61853fb962db90e3d68e8b9973ca2509da2705a5c7df7b"
   },
   ".kiro/powers/brainia-weekly-checkin/POWER.md": {
     "ported_from": ".claude/skills/weekly-checkin/SKILL.md",
-    "source_sha256": "674a21d816d2d8697eca8e27e665c5862b9ab610e9ce2e1bdc20d65d93b662bf"
+    "source_sha256": "6c911a7f7f6db85fb2d704ac15c0afe1305d179a0b07717d32a05bdcb6c01561"
   }
 }
