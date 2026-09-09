@@ -1,0 +1,5 @@
+# One line-ending policy for the whole collection. core.autocrlf on Windows would
+# otherwise hand a shell script CRLF and break it under bash.
+* text=auto
+*.sh text eol=lf
+*.py text eol=lf
