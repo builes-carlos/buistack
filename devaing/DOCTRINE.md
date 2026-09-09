@@ -68,8 +68,9 @@ in another session or handed to someone else. For a two-minute fix it is overhea
 
 ## Building
 
-**Change only what the slice requires.** No refactoring outside scope. No obvious
-comments. Ask before adding a dependency.
+**No obvious comments.** The scope rule that governs this is in `harnessing/`, and
+here it means one more thing: a comment restating what the line already says is scope
+nobody asked for.
 
 **A silent catch is not a fix.** If it fails without the user finding out, the visible
 surface of the error is part of the fix.
@@ -80,8 +81,9 @@ A green suite and a green build do not know what the page looks like.
 **A data problem is diagnosed with the rows.** Not with a theory about timestamps.
 Pull the actual records and read them.
 
-**Do not call a fix done without exercising it.** Run the exact case. If it was a data
-problem, correct the affected rows in the same session.
+**Exercising a fix means running the exact failing case**, not a similar one. If the
+problem was in the data, the affected rows get corrected in the same session: code that
+stops producing bad rows does not repair the bad rows already there.
 
 **When debugging with temporary logging, leave it in until the bug is confirmed gone.**
 
@@ -116,9 +118,10 @@ mutations or migrations, or when it runs past roughly 300 lines. Below that,
 self-review is enough. Whoever reviews is told to break the invariant, not to confirm
 the happy path.
 
-**Verification is sized to the change.** Only the gates that could fail because of what
-was touched. A trivial check, two numbers or one grep, is done inline and not dispatched
-at all.
+**Which gates a change actually needs** is the software reading of sizing verification
+to the change. A copy edit does not need the type check. A shared type does. A style
+change needs the screen and not the suite. Running the whole battery by reflex hides
+which gate was the one that mattered.
 
 ## Documentation
 

@@ -6,7 +6,7 @@ A hyper-agile framework for building products with AI. Targets solo builders, de
 
 **Core insight:** GitHub Issues is not bureaucracy — it's a token rationalization system. Issues let the user work granularly (one issue per session), share work with friends (parallel token consumption), and give agents enough context to execute without re-explanation.
 
-## The seven skills
+## The eight skills
 
 | Skill | Purpose |
 |-------|---------|
