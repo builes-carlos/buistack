@@ -16,9 +16,11 @@ set -euo pipefail
 # An instance can override the upstream it pulls framework files from by
 # creating a gitignored `.brainia-update.local` next to this script, e.g.:
 #   BRAINIA_REMOTE_NAME="brainia-upstream"
-#   BRAINIA_REMOTE_URL="https://github.com/builes-carlos/brainia.git"
+#   BRAINIA_REMOTE_URL="https://github.com/builes-carlos/buistack.git"
+#   BRAINIA_REMOTE_PATH_PREFIX="brainia/"
 # This file is NOT in FRAMEWORK_FILES, so updates never reset an instance's
-# upstream. The defaults below point at the canonical COG repo.
+# upstream. The defaults below point at the canonical COG repo, which is flat
+# (no path prefix needed).
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 [ -f "${SCRIPT_DIR}/.brainia-update.local" ] && source "${SCRIPT_DIR}/.brainia-update.local"
 
@@ -38,6 +40,18 @@ REMOTE_URL="${BRAINIA_REMOTE_URL:-https://github.com/huytieu/COG-second-brain.gi
 BRANCH="${BRAINIA_BRANCH:-main}"
 VERSION_FILE="BRAINIA-VERSION"
 VALIDATOR_SCRIPT="scripts/validate-agent-surface.sh"
+
+# When the remote is a monorepo (brainia living inside buistack rather than at
+# the remote's root), every FRAMEWORK_FILES path needs that subdirectory
+# prepended before it means anything in the remote's tree. Empty by default so
+# an instance still pointed at a flat repo (huytieu's original, or the old
+# standalone builes-carlos/brainia fork) is unaffected.
+REMOTE_PATH_PREFIX="${BRAINIA_REMOTE_PATH_PREFIX:-}"
+
+# Resolve a local framework-relative path to its path in the remote's tree.
+remote_path() {
+  echo "${REMOTE_PATH_PREFIX}${1}"
+}
 
 # Framework files — these are safe to overwrite (your content is never in this list)
 FRAMEWORK_FILES=(
@@ -67,6 +81,8 @@ FRAMEWORK_FILES=(
   ".claude/skills/comprehensive-analysis/SKILL.md"
   ".claude/skills/meeting-transcript/SKILL.md"
   ".claude/skills/auto-research/SKILL.md"
+  ".claude/skills/front-sync/SKILL.md"
+  ".claude/skills/scout/SKILL.md"
   ".claude/skills/create-user-story/SKILL.md"
   ".claude/skills/generate-prd/SKILL.md"
   ".claude/skills/generate-release-notes/SKILL.md"
@@ -192,19 +208,19 @@ local_version() {
 }
 
 upstream_version() {
-  git show "${REMOTE_NAME}/${BRANCH}:${VERSION_FILE}" 2>/dev/null | tr -d '[:space:]' || echo "unknown"
+  git show "${REMOTE_NAME}/${BRANCH}:$(remote_path "$VERSION_FILE")" 2>/dev/null | tr -d '[:space:]' || echo "unknown"
 }
 
 # ── Diff a single file ──────────────────────────────────────────────
 file_has_changes() {
   local file="$1"
   # File exists upstream?
-  if ! git show "${REMOTE_NAME}/${BRANCH}:${file}" &>/dev/null; then
+  if ! git show "${REMOTE_NAME}/${BRANCH}:$(remote_path "$file")" &>/dev/null; then
     return 1  # no upstream version
   fi
   # File differs from upstream?
   if [[ -f "$file" ]]; then
-    ! diff -q <(git show "${REMOTE_NAME}/${BRANCH}:${file}" 2>/dev/null) "$file" &>/dev/null
+    ! diff -q <(git show "${REMOTE_NAME}/${BRANCH}:$(remote_path "$file")" 2>/dev/null) "$file" &>/dev/null
   else
     return 0  # file missing locally → counts as changed
   fi
@@ -216,7 +232,7 @@ update_file() {
   local dir
   dir=$(dirname "$file")
   [[ "$dir" != "." ]] && mkdir -p "$dir"
-  git show "${REMOTE_NAME}/${BRANCH}:${file}" > "$file" 2>/dev/null
+  git show "${REMOTE_NAME}/${BRANCH}:$(remote_path "$file")" > "$file" 2>/dev/null
 }
 
 # ── Backup a file before overwriting ─────────────────────────────────
@@ -411,7 +427,7 @@ main() {
       read -r answer
       case "$answer" in
         d|D|diff)
-          diff --color=auto <(cat "$f") <(git show "${REMOTE_NAME}/${BRANCH}:${f}") || true
+          diff --color=auto <(cat "$f") <(git show "${REMOTE_NAME}/${BRANCH}:$(remote_path "$f")") || true
           echo -ne "  Update this file? [Y/n/b] "
           read -r answer2
           if [[ -z "$answer2" || "$answer2" =~ ^[Yy] ]]; then
