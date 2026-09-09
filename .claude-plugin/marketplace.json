@@ -1,0 +1,35 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "buistack",
+  "description": "Three frameworks for working with AI agents: the doctrine, the software front, and the human front. Each installs on its own.",
+  "owner": {
+    "name": "Carlos Builes",
+    "url": "https://github.com/builes-carlos"
+  },
+  "plugins": [
+    {
+      "name": "harnessing",
+      "description": "How anything gets dispatched to an agent: the doctrine, the stage-to-owner map, the .md hierarchy, the module contract.",
+      "author": { "name": "Carlos Builes", "url": "https://github.com/builes-carlos" },
+      "source": "./harnessing",
+      "category": "productivity",
+      "homepage": "https://github.com/builes-carlos/buistack/tree/main/harnessing"
+    },
+    {
+      "name": "devaing",
+      "description": "Building software with agents: phases, epics, vertical slices, tests, and the road to production.",
+      "author": { "name": "Carlos Builes", "url": "https://github.com/builes-carlos" },
+      "source": "./devaing",
+      "category": "development",
+      "homepage": "https://github.com/builes-carlos/buistack/tree/main/devaing"
+    },
+    {
+      "name": "brainia",
+      "description": "A second brain for a whole life, not a job title: a vault, life and work fronts, and durable memory.",
+      "author": { "name": "Carlos Builes", "url": "https://github.com/builes-carlos" },
+      "source": "./brainia",
+      "category": "productivity",
+      "homepage": "https://github.com/builes-carlos/buistack/tree/main/brainia"
+    }
+  ]
+}
