@@ -1,0 +1,8 @@
+{
+  "name": "harnessing",
+  "description": "The doctrine of working with agents, the stage-to-owner map, the .md hierarchy, and the module contract.",
+  "version": "1.0.0",
+  "author": { "name": "Carlos Builes", "url": "https://github.com/builes-carlos" },
+  "homepage": "https://github.com/builes-carlos/buistack/tree/main/harnessing",
+  "license": "MIT"
+}

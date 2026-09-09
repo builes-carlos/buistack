@@ -1,0 +1,7 @@
+{
+  "name": "devaing",
+  "description": "Building software with agents: phases, epics, vertical slices, tests, and the road to production.",
+  "author": { "name": "Carlos Builes", "url": "https://github.com/builes-carlos" },
+  "homepage": "https://github.com/builes-carlos/buistack/tree/main/devaing",
+  "license": "MIT"
+}
