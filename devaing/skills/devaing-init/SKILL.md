@@ -664,7 +664,7 @@ Claude Code: `/devaing-work #N`
 **Guardrail:** If the user asks to implement a feature or fix without invoking `/devaing-work`, do not implement it directly. Instead, ask: "¿Querés crear un issue primero y trabajarlo con `/devaing-work`?" Only proceed without the workflow if the user explicitly confirms they want to skip it.
 
 <if `.devaing.md` has `enforcement: gate`, include:>
-**Gate:** `.github/workflows/devaing-gate.yml` checks CONTEXT.md sync and migration numbering on every push/PR — this is a backstop for changes that don't go through `/devaing-work`, not a replacement for it. It doesn't change what you do here.
+**Gate:** `.github/workflows/devaing-gate.yml` checks CONTEXT.md sync, migration numbering, and documentation lint on every push/PR — this is a backstop for changes that don't go through `/devaing-work`, not a replacement for it. It doesn't change what you do here.
 
 ### Review
 
@@ -891,9 +891,10 @@ Instruction (a rule in AGENTS.md, a step inside a skill) is not enforcement — 
 Always ask, never enable silently — the follow-up step touches branch protection, a repo-wide setting:
 
 ```
-¿Activar el gate de docs-sync (CONTEXT.md) y colisión de migraciones en este repo?
-Esto instala .github/workflows/devaing-gate.yml y, si confirmás, lo marca como
-required check en main vía branch protection. (y/n, default n)
+¿Activar el gate de docs-sync (CONTEXT.md), colisión de migraciones y lint de
+documentación en este repo? Esto instala .github/workflows/devaing-gate.yml y,
+si confirmás, lo marca como required check en main vía branch protection.
+(y/n, default n)
 ```
 
 If `n`: skip to Step 7b and write `enforcement: off`.
@@ -906,6 +907,7 @@ If `y`:
 mkdir -p .devaing/gate
 cp <devaing-repo>/scripts/gate/feed_gate.py .devaing/gate/feed_gate.py
 cp <devaing-repo>/scripts/gate/migration_collision.py .devaing/gate/migration_collision.py
+cp <devaing-repo>/scripts/gate/doc_lint.py .devaing/gate/doc_lint.py
 ```
 
 2. Write `.github/workflows/devaing-gate.yml`, replacing `<branch>`:
@@ -936,7 +938,11 @@ jobs:
         run: python3 .devaing/gate/feed_gate.py
       - name: Migration numbering collision
         run: python3 .devaing/gate/migration_collision.py
+      - name: Documentation lint
+        run: python3 .devaing/gate/doc_lint.py
 ```
+
+The documentation lint runs broken-link checking with no configuration required. A project that wants the parent-link, lane-trace, or EARS rules adds `.devaing/gate/doc_lint.json`. The script's own docstring carries the schema.
 
 3. Ask a **second, separate** confirmation before touching branch protection (installing the workflow and making `main` un-mergeable without it passing are different blast radii):
 
@@ -1026,7 +1032,7 @@ enforcement: <gate|off>
 
 Runtime-agnostic spec. For Claude Code, use the `/devaing-*` skills directly.
 
-`enforcement: gate` means `.github/workflows/devaing-gate.yml` is installed and checks CONTEXT.md sync and migration numbering on every push/PR — see `.devaing/gate/*.py`. `enforcement: off` means those stay instruction only (the skill steps below still write CONTEXT.md, but nothing outside a skill session catches a change that skips them).
+`enforcement: gate` means `.github/workflows/devaing-gate.yml` is installed and checks CONTEXT.md sync, migration numbering, and documentation lint on every push/PR — see `.devaing/gate/*.py`. `enforcement: off` means those stay instruction only (the skill steps below still write CONTEXT.md, but nothing outside a skill session catches a change that skips them).
 
 ## devaing-work — Implement a slice
 

@@ -195,8 +195,9 @@ Codex, Aider, Cursor, or any agent that can read files can drive the full devain
 | `docs/agents/` | Supporting agent docs: issue-tracker.md, triage-labels.md, domain.md |
 | `prisma/seeds/` (or `db/seeds/`) | Seed migration runner + `_seed_migrations` tracking table |
 | `.github/workflows/ci.yml` | CI pipeline created by init based on detected stack |
-| `.github/workflows/devaing-gate.yml` (optional) | Docs-sync + migration-collision checks — installed only if you opt in during init (`enforcement: gate`) |
+| `.github/workflows/devaing-gate.yml` (optional) | Docs-sync + migration-collision + documentation-lint checks — installed only if you opt in during init (`enforcement: gate`) |
 | `.devaing/gate/*.py` (optional) | Stdlib checker scripts the gate workflow runs; copied in only when the gate is enabled |
+| `.devaing/gate/doc_lint.json` (you write it) | Turns on the documentation lint's parent-link, lane-trace and EARS rules; init never writes it, and without it the lint checks broken links only |
 | `CONTEXT_ARCHIVE.md` | Shipped phases moved here by devaing-ship (keeps CONTEXT.md lean across many phases) |
 
 ---
