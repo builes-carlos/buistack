@@ -128,16 +128,18 @@ Every other front (`health`, `finances`, `people`, `learning`, `career`, `strate
 
 ### Worker Agents (Specialist Sessions)
 
-Brainia uses a worker agent architecture inspired by [garrytan/gstack](https://github.com/garrytan/gstack) specialist sessions and [garrytan/gbrain](https://github.com/garrytan/gbrain) knowledge patterns. Workers handle data-heavy tasks cheaply (Sonnet) while the lead session does reasoning (Opus).
+Six agents specialized by the kind of I/O they do, inspired by [garrytan/gstack](https://github.com/garrytan/gstack) specialist sessions and [garrytan/gbrain](https://github.com/garrytan/gbrain) knowledge patterns. They are a division of labour over vault work, not a second set of the generic roles: **how agents get dispatched at all, how long one lives, and which tier of model each runs on is [harnessing](../harnessing/)'s to declare**, and this table does not restate it.
 
-| Agent | What it does | Model |
-|---|---|---|
-| **worker-data-collector** | Structured extraction from GitHub, Slack, Jira, Linear | Sonnet |
-| **worker-researcher** | Web research with source citations | Sonnet |
-| **worker-file-ops** | Vault file operations, metadata, profiles | Sonnet |
-| **worker-executor** | Pre-approved mutations (Jira, Linear, APIs) | Sonnet |
-| **worker-publisher** | Publishing to Slack, Confluence, Notion | Sonnet |
-| **brief-people-updater** | Batch-update people profiles from meetings/briefs | Sonnet |
+All six run on the working model. They move data, and moving data does not get better by paying for a larger model.
+
+| Agent | What it does |
+|---|---|
+| **worker-data-collector** | Structured extraction from GitHub, Slack, Jira, Linear |
+| **worker-researcher** | Web research with source citations |
+| **worker-file-ops** | Vault file operations, metadata, profiles |
+| **worker-executor** | Pre-approved mutations (Jira, Linear, APIs) |
+| **worker-publisher** | Publishing to Slack, Confluence, Notion |
+| **brief-people-updater** | Batch-update people profiles from meetings/briefs |
 
 > Workers write results to `/tmp/` files and return only a status + path. The lead reads the file for synthesis. This eliminates slow token generation in agent output.
 
@@ -194,7 +196,7 @@ graph TD
 |---|---|---|
 | **Self-Evolving** — Learns your patterns, auto-organizes content, builds frameworks | **Self-Healing** — Rename files or restructure; cross-references update automatically | **Verification-First** — Sources required, 7-day freshness, confidence levels on all analysis |
 | **Privacy-First** — Local `.md` files, strict domain separation, no external servers | **Multi-Device** — iCloud sync to iPhone/iPad/Mac; Git for version history | **Obsidian Tasks** — `📅 YYYY-MM-DD` emoji format works with Tasks plugin dashboards |
-| **Garry Tan Inspired** — gstack specialist sessions + gbrain knowledge patterns | **Multi-Agent** — Claude Code, Cursor, Kiro, Gemini CLI, Codex, or any agent that reads markdown | **Worker Agents** — Sonnet handles I/O, Opus handles thinking |
+| **Garry Tan Inspired** — gstack specialist sessions + gbrain knowledge patterns | **Multi-Agent** — Claude Code, Cursor, Kiro, Gemini CLI, Codex, or any agent that reads markdown | **Worker Agents** — the working model handles I/O, the lead does the thinking |
 
 ## Your Vault
 
