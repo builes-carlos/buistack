@@ -73,6 +73,14 @@ jobs:
         # own definition is instruction rather than enforcement.
         run: bash brainia/scripts/validate-agent-surface.sh
 
+      - name: brainia adaptations were reviewed after their source changed
+        # Name parity says the same skills exist everywhere. It does not say the Gemini
+        # and Kiro versions still describe what the Claude one does. A diff cannot
+        # settle that either, because the adaptations are deliberately shorter. What can
+        # be settled is whether anyone looked: each one records the hash of the source
+        # it was ported from, and this fails when a source moved on without a review.
+        run: python brainia/scripts/check_surface_provenance.py
+
       - name: Context footprint stays honest
         # A framework about the economy of context has to account for its own. These are
         # the numbers published in harnessing/README.md, checked so the claim cannot
@@ -80,6 +88,7 @@ jobs:
         run: |
           python - <<'EOF'
           import pathlib, sys
+          import glob, re
           limits = {"harnessing/doctrine/condensed.md": 800,
                     "harnessing/doctrine/universal.md": 3200,
                     "devaing/DOCTRINE.md": 2000}
@@ -89,6 +98,38 @@ jobs:
               print(f"{f}: {n} words (cap {cap})")
               if n > cap:
                   bad.append(f"{f} is {n} words, over its published cap of {cap}")
+
+          # Every installed skill's name and description sits in the system prompt of
+          # every session, because that is how an agent knows the skill exists. It is
+          # resident whether or not the skill ever fires, so it is part of the standing
+          # cost and the first version of this check missed it entirely.
+          def announced(path):
+              t = pathlib.Path(path).read_text(encoding="utf-8", errors="replace")
+              if not t.startswith("---"):
+                  return 0
+              block = t.split("---", 2)[1]
+              words = 0
+              for key in ("name", "description"):
+                  m = re.search(rf'^{key}:\s*(.*)$', block, re.M)
+                  if m:
+                      words += len(m.group(1).strip().strip('"').split())
+              return words
+
+          surfaces = {"harnessing": "harnessing/skills/*/SKILL.md",
+                      "devaing": "devaing/skills/*/SKILL.md",
+                      "brainia": "brainia/.claude/skills/*/SKILL.md",
+                      "brainia agents": "brainia/.claude/agents/*.md"}
+          total = 0
+          for label, pattern in surfaces.items():
+              files = glob.glob(pattern)
+              n = sum(announced(f) for f in files)
+              total += n
+              print(f"{label}: {n} words announced across {len(files)} entries")
+          CAP = 1000
+          print(f"announced total: {total} words (cap {CAP})")
+          if total > CAP:
+              bad.append(f"skill names and descriptions total {total} words, over the "
+                         f"published cap of {CAP}. That is resident in every session.")
           if bad:
               for b in bad:
                   print(b)

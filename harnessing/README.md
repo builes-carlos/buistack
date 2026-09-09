@@ -74,13 +74,25 @@ measured rather than estimated.
 | What | Words | When it loads |
 |---|---|---|
 | `doctrine/condensed.md` | ~620 | Every session, injected by the hook |
+| Every installed skill's name and description | ~150 harnessing alone, ~810 with all three | Every session. This is how an agent knows a skill exists at all, so it is in the system prompt whether or not the skill ever fires |
 | `doctrine/universal.md` | ~2,600 | Only when an agent follows the pointer, which is the point of the condensed version |
 | `devaing/DOCTRINE.md` | ~1,400 | Only while building software |
 
-So the standing cost is about 620 words per session, and the ceiling if an agent reads
-everything is around 4,600. Counting the whole repository gives roughly 108,000 words,
-which is the wrong number: most of it is brainia's skills, and a skill only enters a
-context window when it fires.
+**The standing cost is about 770 words with harnessing alone and about 1,430 with all
+three installed.** The ceiling, if an agent reads every pointer, is around 5,400.
+
+That second row is the one that gets forgotten, including by the first version of this
+table, which claimed 620 and was short by a factor of two. Descriptions are not free:
+they are the routing surface, they are always resident, and they grow every time a
+skill is added.
+
+devaing pays the most there, roughly 46 words per skill against brainia's 16. Whether
+that is waste or the minimum a router needs is not obvious, since a description too
+thin means the skill never fires, so it is measured and left alone rather than trimmed
+on instinct.
+
+Counting the whole repository gives roughly 108,000 words, which is the wrong number:
+most of it is skill bodies, and a body only enters a window when its skill fires.
 
 Those three files have caps enforced in CI. If the doctrine grows past them the build
 fails, because a rule about not wasting context that quietly triples its own footprint
