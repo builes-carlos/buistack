@@ -16,11 +16,28 @@ Usage:
 """
 
 import re
+import shutil
+import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
 SKILLS_DIR = Path(__file__).parent.parent / "skills"
+
+# The eight third-party skills devaing suggests with a fallback (never required).
+# "skill" entries are plain Claude Code skills, detected by their presence under
+# ~/.claude/skills/<name>/SKILL.md. "plugin" entries share a single Compound
+# Engineering plugin install, detected once via `claude plugin list`.
+DEPENDENCIES = [
+    ("grill-me",                      "skill",  "Pocock"),
+    ("prototype",                     "skill",  "Pocock"),
+    ("triage",                        "skill",  "Pocock"),
+    ("diagnose",                      "skill",  "Pocock"),
+    ("improve-codebase-architecture", "skill",  "Pocock"),
+    ("ce-adversarial-reviewer",       "plugin", "CE"),
+    ("ce-data-integrity-guardian",    "plugin", "CE"),
+    ("ce-code-review",                "plugin", "CE"),
+]
 
 # Who writes each .devaing.md field
 DEVAING_MD_CONTRACT = {
@@ -243,6 +260,51 @@ def check_devaing_contract(skill_name: str, lines: list[str]) -> list[Issue]:
     return issues
 
 
+# ── check 4: third-party dependency availability (suggestion, never required) ─
+
+def _skill_present(name: str) -> bool:
+    return (Path.home() / ".claude" / "skills" / name / "SKILL.md").exists()
+
+
+def _ce_plugin_status() -> str:
+    """'present', 'absent', or 'unknown' (no `claude` CLI on PATH — e.g. CI)."""
+    claude_bin = shutil.which("claude")
+    if not claude_bin:
+        return "unknown"
+    try:
+        result = subprocess.run(
+            [claude_bin, "plugin", "list"],
+            capture_output=True, timeout=10,
+            encoding="utf-8", errors="replace",
+        )
+        return "present" if "compound-engineering" in result.stdout else "absent"
+    except Exception:
+        return "unknown"
+
+
+def check_dependencies() -> str:
+    """Report what's found of the eight optional dependencies. Never affects
+    the exit code — an absent piece is information, not an error: each site
+    that suggests one of these already runs an inline fallback when it's
+    missing."""
+    ce_status = _ce_plugin_status()
+    ce_label = {
+        "present": "present",
+        "absent":  "absent — fallback active",
+        "unknown": "unknown (claude CLI not found)",
+    }[ce_status]
+
+    lines = ["", "Third-party dependencies (suggestion with fallback, never required):"]
+    for name, kind, stage in DEPENDENCIES:
+        if kind == "skill":
+            label = "present" if _skill_present(name) else "absent — fallback active"
+        else:
+            label = ce_label
+        sym = "OK" if label == "present" else ("??" if label.startswith("unknown") else "--")
+        lines.append(f"  {sym}  {name:<32} ({stage})  {label}")
+    return "\n".join(lines)
+
+
 # ── runner ────────────────────────────────────────────────────────────────────
 
 def check_skill(skill_path: Path) -> SkillResult:
@@ -298,6 +360,8 @@ def main() -> None:
 
     results = [check_skill(p) for p in paths]
     print(format_output(results))
+    print(check_dependencies())
+    # Dependency absence never fails the run — only ERROR-level skill issues do.
     sys.exit(1 if any(r.status == "ERROR" for r in results) else 0)
 
 

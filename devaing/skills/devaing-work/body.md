@@ -4,7 +4,12 @@ Steps that say "Spawn a sub-agent" or "invoke Agent":
 - **Claude Code**: use the `Agent` tool (no `isolation` parameter — work in current directory).
 - **Other environments (Codex, Aider, Cursor, etc.)**: read `subagent_cli:` from `.devaing.md`. Default: `claude -p --model claude-sonnet-4-6`. Build the prompt and pipe it: `IMPLEMENTATION_REPORT=$(echo "$PROMPT" | $SUBAGENT_CLI)`.
 
-For adversarial review, Claude Code can additionally use `subagent_type=compound-engineering:ce-adversarial-reviewer`. Other environments use the inline adversarial prompt included in the Adversarial review section below.
+For adversarial review and the data integrity check, Claude Code can additionally use `subagent_type=compound-engineering:ce-adversarial-reviewer` / `ce-data-integrity-guardian` — but only when that plugin is actually present. This is a suggestion with a fallback, never a requirement: check live before each use, do not assume it's there just because the session is Claude Code.
+
+**Availability check:** `claude plugin list 2>/dev/null | grep -q "compound-engineering" && echo present || echo absent`. Do this check independently at each of the two sites below (Step 3) rather than trusting a flag from `devaing-init` — the plugin can be installed or removed after init ran.
+
+- **present:** spawn Agent with the matching `subagent_type`, passing the prompt built at that site.
+- **absent:** spawn a plain Agent (no `subagent_type`) with that same prompt text as its instructions — the identical inline prompt other environments pipe through `subagent_cli`. Tell the user once per run: "compound-engineering not installed — running the review inline."
 
 # devaing-work
 
@@ -272,7 +277,7 @@ Report findings as HIGH / MEDIUM / LOW:
 For each finding: one-line description + concrete failure scenario."
 ```
 
-**Claude Code:** spawn Agent with `subagent_type=compound-engineering:ce-data-integrity-guardian`, passing the prompt above.
+**Claude Code:** check availability as described in "Sub-agent invocation" above. If present, spawn Agent with `subagent_type=compound-engineering:ce-data-integrity-guardian`, passing the prompt above. If absent, spawn a plain Agent with the same prompt above as its instructions, and say so.
 
 **Other environments:**
 ```bash
@@ -345,7 +350,7 @@ Report findings as HIGH / MEDIUM / LOW:
 For each finding: one-line description + the specific failure scenario."
 ```
 
-**Claude Code:** spawn Agent with `subagent_type=compound-engineering:ce-adversarial-reviewer`, passing the prompt above.
+**Claude Code:** check availability as described in "Sub-agent invocation" above. If present, spawn Agent with `subagent_type=compound-engineering:ce-adversarial-reviewer`, passing the prompt above. If absent, spawn a plain Agent with the same prompt above as its instructions, and say so.
 
 **Other environments:**
 ```bash
@@ -513,6 +518,19 @@ git add CONTEXT.md
 git commit -m "docs: Phase <N> complete"
 git push
 ```
+
+**Architecture review (suggestion with fallback, not a requirement):** ask before the closing message below.
+
+```
+Phase "<phase-name>" complete. Look for architecture drift before shipping? (y/n)
+```
+
+If no: skip silently, continue to Output.
+
+If yes, check availability: an `improve-codebase-architecture` skill listed among this session's available skills, or `$HOME/.claude/skills/improve-codebase-architecture/SKILL.md` on disk.
+
+- **present:** invoke `improve-codebase-architecture`.
+- **absent:** run the review yourself. Read `CONTEXT.md`'s domain glossary and any ADRs in the areas this phase touched, then look across the phase's epics for shallow modules (interface nearly as complex as the implementation) and tightly-coupled pieces. Apply the deletion test to anything suspect: would removing it concentrate complexity elsewhere, or just move it? Present any real candidate (files, problem, proposed change, benefit) and let the user pick before touching code. Tell the user once: "improve-codebase-architecture not installed — running the review inline."
 
 Output:
 

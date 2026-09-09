@@ -298,6 +298,26 @@ Steps to connect Stitch:
 Re-run /devaing-init when you're back.
 ```
 
+## Step 0c — Third-party skill availability
+
+devaing suggests a handful of third-party skills at specific steps. Each one is optional: check once here, reuse the result, and never block a step on an absence.
+
+**`grill-me` (Pocock).** Used in Step 1b and RE-scan-2b. Availability test: a `grill-me` skill is listed among this session's available skills, or `$HOME/.claude/skills/grill-me/SKILL.md` exists on disk. Store as `<grillme-status>`.
+
+- **present:** invoke `grill-me` as written at each site below.
+- **absent:** run the interview inline instead, same discipline `grill-me` uses: one question at a time, walk each branch of the plan before moving to the next, always propose your own recommended answer next to the question, and read the codebase instead of asking anything it already answers. Continue until every open branch is resolved, not until some fixed count of questions is asked. Tell the user once: "grill-me not installed — running the interview inline."
+
+**Compound Engineering plugin.** Backs `ce-code-review` (referenced in the AGENTS.md written in Step 3), and `ce-adversarial-reviewer` / `ce-data-integrity-guardian` (used by `devaing-work`, which re-checks live rather than trusting a stale flag from init). Checked here, before Step 3, because Step 3 needs the answer:
+
+```bash
+claude plugin list 2>/dev/null | grep -q "compound-engineering" && echo present || echo absent
+```
+
+Store as `<ce-plugin-status>`. This is a suggestion with a fallback, not a requirement — never install it on the user's behalf, same rule harnessing applies to brainia and devaing themselves: report what's found, nothing more.
+
+- **present:** the AGENTS.md written in Step 3 points at `/ce-code-review`.
+- **absent:** the AGENTS.md written in Step 3 points at a manual review checklist instead. Note "compound-engineering not installed — code review and devaing-work use the built-in fallback" in the final report.
+
 ## Step 1b — Product discovery (greenfield only)
 
 Skip entirely if `<re_flow>` is true (RE scan will capture context in RE-scan-2b).
@@ -343,13 +363,15 @@ Did you switch to a more capable model?
 
 Wait for response. If `y`: set `<model_upgraded> = true`. If `n`: set `<model_upgraded> = false`.
 
-Invoke `grill-me` with:
+If `<grillme-status>` is present, invoke `grill-me` with:
 
 > "I'm setting up a new project called <name>. Here's what I know so far: <seed>.
 >
 > Granularity: <granularity>. Calibrate question depth: Broad = 3-5 focused questions covering problem, user, and core scope. Balanced = 6-10 questions adding constraints and key flows. Detailed = go deep on every persona, edge case, and technical constraint.
 >
 > Now capture it properly: what is this, who is it for, what problem does it solve, what are the key constraints, what's out of scope? Ask targeted questions based on what you already know — do not repeat what I already answered."
+
+If `<grillme-status>` is absent, run the inline interview described in Step 0c instead, covering the same ground: what this is, who it's for, what problem it solves, key constraints, what's out of scope. Calibrate depth to `<granularity>` the same way.
 
 Run until the user signals done. Store all context as `<discovery-context>`.
 
@@ -488,13 +510,15 @@ made, what's deferred, where it's going). Not a continuation of above.
 
 ### RE-scan-2b: Business context — grill-me
 
-Invoke `grill-me` with the RE scan as context:
+If `<grillme-status>` (from Step 0c) is present, invoke `grill-me` with the RE scan as context:
 
 > "I've analyzed the codebase for <name>. Here's what I found: <RE summary from RE-scan-2>.
 >
 > Granularity: <granularity>. Calibrate question depth: Broad = 3-5 focused questions. Balanced = 6-10 questions. Detailed = go deep on every decision, constraint, and deferred work.
 >
 > Now I need to understand the business side: why this exists, who uses it, what decisions shaped it, what's broken or deferred, and where it's going. Ask targeted questions based on what the codebase already reveals."
+
+If `<grillme-status>` is absent, run the inline interview from Step 0c instead, using the RE summary as its starting context: why the project exists, who uses it, what decisions shaped it, what's broken or deferred, and where it's going.
 
 Run until the user signals done. Store responses as `<re-business-context>`.
 
@@ -670,7 +694,10 @@ Claude Code: `/devaing-work #N`
 
 Before opening a PR, run a code review in a fresh context (not the implementation context).
 
+<if `<ce-plugin-status>` is present:>
 Claude Code: `/ce-code-review` or `/ultrareview`
+<if `<ce-plugin-status>` is absent:>
+compound-engineering is not installed here. Review the diff yourself in a fresh context against four lenses: correctness (logic errors, edge cases, error handling), test coverage (gaps, weak assertions, missing edge cases), maintainability (coupling, dead code, naming), and this file's own conventions. Flag anything uncertain instead of merging past it. `claude plugin install compound-engineering` re-enables `/ce-code-review` later.
 
 ### QA
 
@@ -816,16 +843,7 @@ These are marked needs-triage. Review them during phase definition or address th
 
 ## Step 5 — Compound Engineering plugin
 
-```bash
-claude plugin list | grep "compound-engineering"
-```
-
-If already installed: skip.
-
-Otherwise attempt in order:
-1. `claude plugin install compound-engineering`
-2. `claude plugin marketplace add EveryInc/compound-engineering-plugin && claude plugin install compound-engineering`
-3. If still failing: note "manual requerido" in the final report and continue.
+Already detected in Step 0c as `<ce-plugin-status>`, and already applied to the AGENTS.md written in Step 3. Nothing to do here beyond carrying the result into the final report — `devaing-work` re-checks live when it needs `ce-adversarial-reviewer` or `ce-data-integrity-guardian`, rather than trusting a flag from init time.
 
 ## Step 6 — CI workflow
 
@@ -1360,7 +1378,7 @@ This branch is only ever updated by `devaing-ship`. `devaing-work` merges to `<b
 | docs/agents/ | created / already existed |
 | GitHub Project | created / already existed |
 | Labels | applied / already existed |
-| Compound Engineering | installed / already installed / manual required |
+| Compound Engineering | present / absent — built-in fallbacks active |
 | ci.yml | created / already existed |
 | CONTEXT.md | created from RE scan / created blank / already existed |
 | Legacy pendings (Step A2) | N found and migrated / N found, ignored by choice / none found |

@@ -209,7 +209,11 @@ Before invoking grill-me, read:
 - `CONTEXT.md ## Architecture` — current system shape
 - Closed issues from the previous phase (to know what was actually built, not just planned)
 
-Invoke `grill-me` with a hypothesis-rich prompt that deepens the phase intent. Do NOT ask the user to describe the phase from scratch. If `<phase-intent>` was vague, lead with your own hypotheses.
+**Availability check (suggestion with fallback, not a requirement):** a `grill-me` skill is listed among this session's available skills, or `$HOME/.claude/skills/grill-me/SKILL.md` exists on disk. Store as `<grillme-status>`.
+
+If `<grillme-status>` is present, invoke `grill-me` with a hypothesis-rich prompt that deepens the phase intent. Do NOT ask the user to describe the phase from scratch. If `<phase-intent>` was vague, lead with your own hypotheses.
+
+If `<grillme-status>` is absent, run the same interview yourself: one question at a time, lead with your own hypotheses when `<phase-intent>` was vague instead of asking the user to repeat it, and propose a recommended answer alongside each question. Use the same prompt content below to drive it. Tell the user once: "grill-me not installed — running the interview inline."
 
 Prompt:
 
@@ -297,13 +301,17 @@ Read `.devaing.md` for `prototyper:`. Default to `Claude` if not set. Store as `
 
 ### If `<prototyper>` is Claude
 
+**Availability check (suggestion with fallback, not a requirement):** a `prototype` skill is listed among this session's available skills, or `$HOME/.claude/skills/prototype/SKILL.md` exists on disk. Store as `<prototype-status>`.
+
 **Phase 1:** for each epic with UI, ask:
 
 ```
 Epic "<name>" has UI. Prototype the interaction before generating issues? (y/n)
 ```
 
-If yes: invoke `prototype` for that epic. After validation, document agreed UX decisions in `CONTEXT.md ## UX conventions`. Keep the prototype as a **living skeleton** — mock screens are replaced progressively by `/devaing-work` slices. Do not delete unimplemented screens.
+If yes and `<prototype-status>` is present: invoke `prototype` for that epic. After validation, document agreed UX decisions in `CONTEXT.md ## UX conventions`. Keep the prototype as a **living skeleton** — mock screens are replaced progressively by `/devaing-work` slices. Do not delete unimplemented screens.
+
+If yes and `<prototype-status>` is absent, build the mock yourself instead, same rules the skill would apply: throwaway code, one command to run, no persistence, no polish. For a UI-flavored epic, put several radically different screen variations on one throwaway route, switchable via a URL param or a bottom toggle bar, using in-memory fixture data only. For a state/logic-flavored epic, build a small runnable script that drives the state machine through its hardest cases and prints the full state after each transition. Tell the user once: "prototype not installed — building the mock inline." Document the agreed UX decisions in `CONTEXT.md ## UX conventions` the same way, and keep the result as a living skeleton just like the normal path.
 
 Prototype screens must be stateless and presentational: no local state, no API calls, no hardcoded data beyond display fixtures.
 
@@ -327,7 +335,7 @@ How would you like to proceed?
   3. Connect Stitch first — instructions below.
 ```
 
-- If 1: proceed as Claude prototyper (invoke `prototype` skill).
+- If 1: proceed as Claude prototyper — invoke `prototype` if `<prototype-status>` is present, otherwise build the mock inline as described above.
 - If 2: skip to Step 7 (no UX conventions written).
 - If 3: output the following, then stop:
 
@@ -420,7 +428,8 @@ Anything to adjust?
 Wait for response.
 
 **If 1 (screen or flow):** Ask which epic/screen. Then:
-- Claude prototyper: invoke `prototype` for that epic only, passing the specific feedback. Update `CONTEXT.md ## UX conventions` with any changed patterns. Commit.
+- Claude prototyper, `<prototype-status>` present: invoke `prototype` for that epic only, passing the specific feedback. Update `CONTEXT.md ## UX conventions` with any changed patterns. Commit.
+- Claude prototyper, `<prototype-status>` absent: rebuild that screen or variation inline, same throwaway rules as above, applying the specific feedback. Update `CONTEXT.md ## UX conventions`. Commit.
 - Stitch: call the relevant `mcp__stitch__*` tool to regenerate the affected screens. Update `DESIGN.md` and `CONTEXT.md ## UX conventions`. Commit.
 - Other MCP: call `<prototyper_tool>` again with the epic name, the affected screen description, and the user's requested changes following `<prototyper_instructions>`. Update `CONTEXT.md ## UX conventions`. Commit.
 

@@ -148,7 +148,13 @@ Update `CONTEXT.md ## Epics` if an epic was added or removed from this phase.
 
 **Prototype changes:**
 
-Invoke `prototype` for the affected screens only. Do not touch screens from previous phases or unrelated screens. After validation, update `CONTEXT.md ## UX conventions` if interaction patterns changed.
+**Availability check (suggestion with fallback, not a requirement):** a `prototype` skill is listed among this session's available skills, or `$HOME/.claude/skills/prototype/SKILL.md` exists on disk.
+
+If available, invoke `prototype` for the affected screens only. Do not touch screens from previous phases or unrelated screens.
+
+If not available, rebuild only the affected screens yourself: throwaway code, one command to run, no persistence beyond in-memory fixtures, no polish — same rules the skill would apply. Tell the user once: "prototype not installed — rebuilding the affected screens inline."
+
+Either way, after validation update `CONTEXT.md ## UX conventions` if interaction patterns changed.
 
 **Business logic changes:**
 

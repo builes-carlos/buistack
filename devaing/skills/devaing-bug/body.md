@@ -32,7 +32,12 @@ Before creating the issue, investigate the codebase to find the probable cause:
 - Determine what a correct fix would look like
 - Identify how to verify the fix works
 
-If the root cause is not obvious after reading the code (ambiguous stack trace, intermittent behavior, multiple possible causes), invoke `diagnose` before proceeding. Let diagnose run its full loop: reproduce → minimise → hypothesise → instrument → fix. Use its findings to populate the issue.
+If the root cause is not obvious after reading the code (ambiguous stack trace, intermittent behavior, multiple possible causes), run a diagnosis before proceeding. This is a suggestion with a fallback, not a requirement.
+
+**Availability check:** a `diagnose` skill is listed among this session's available skills, or `$HOME/.claude/skills/diagnose/SKILL.md` exists on disk.
+
+- **present:** invoke `diagnose` before proceeding. Let it run its full loop: reproduce → minimise → hypothesise → instrument → fix. Use its findings to populate the issue.
+- **absent:** run the same loop yourself instead of guessing at a fix. Build a fast, deterministic reproduction first (failing test, curl script, or CLI invocation against a fixture) — do not skip straight from "read the code" to "propose a fix". Generate 3-5 falsifiable hypotheses and rank them. Instrument only the boundary that distinguishes the top hypotheses, one variable at a time. Confirm the fix by re-running the reproduction. Tell the user once: "diagnose not installed — running the loop inline." Use the findings to populate the issue.
 
 ## Step 3 — Assign milestone
 

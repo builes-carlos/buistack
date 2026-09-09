@@ -58,6 +58,8 @@ Parallelism happens between epics, not within them: Dev A on `epic/auth`, Dev B 
 
 Branch lifecycle: created lazily when the first issue of the epic is claimed. Auto-merged to main when the last issue closes. Branch deleted after merge.
 
+A session that dies mid-slice loses nothing structural: the epic branch and the issue assignment are exactly where they were. The next `/devaing-work` run finds the existing branch (Step 1's local/remote check) and resumes on it instead of starting the epic over.
+
 ### Enforcement gate (optional)
 Instruction is not enforcement: a rule in AGENTS.md, or a documentation step inside a skill, only fires when that skill actually runs. Any change that bypasses it — an ad-hoc fix, a collaborator not using devaing, a different agent entirely — feeds nothing back into CONTEXT.md, and nothing downstream notices. The epic-ownership lock above has the same shape: it's a check inside devaing-work, advisory only, easy to race if two people run the skill at the same moment.
 
@@ -97,8 +99,11 @@ devaing-phase-def detects setup state at every invocation, enabling safe re-entr
 | Yes | No | Prototype built, review in progress | Resume review loop |
 | — | Yes | Definition closed — active phase | Block |
 
-### Sub-agent with fresh context (from GSD)
+### Sub-agent with fresh context
 Each issue is implemented by a sub-agent spawned with a clean context. The parent skill passes a filtered CONTEXT.md (only `## Project`, `## Domain glossary`, `## Architecture`, `## Key constraints` — not Phases history) plus the full issue content. The sub-agent commits and reports back. This isolates context rot to the sub-agent, not the orchestrating session.
+
+### Progressive scope
+Issues are generated phase by phase, never for the whole product upfront. Scope for a future phase is genuinely unknown until the current one ships, and generating it early would just be backlog that rots before anyone touches it. Deferred epics are tracked in `CONTEXT.md ## Next phase backlog` until their phase is defined.
 
 ### Skills execute, they never delegate to the user
 Skills run their own checks and commands directly instead of printing a command and asking the user to run it. This came from direct user feedback that a skill was "lazy": devaing-init used to tell the user "Please verify: 1. Run the start command, 2. DB connection works..." instead of running those checks itself, and after running a migration it waited for user confirmation instead of checking the exit code.
@@ -164,12 +169,24 @@ Ship tags (`ship/*`) are the deploy markers. The diff from the last ship tag tel
 
 The ceremony scales to scope: only code changed = one confirmation. Schema migrations or seeds involved = ordered checklist with DB snapshot first.
 
-## Skills integrated (third-party, not modified)
+## Dependencies (suggestion with fallback, never required)
 
-- `grill-me` → domain discovery inside devaing-phase-def and devaing-init RE scan
-- `prototype` → UI validation before issue generation inside devaing-phase-def
-- `compound-engineering:ce-adversarial-reviewer` → adversarial review in devaing-work Step 3 (Claude Code only; other environments use inline prompt)
-- `diagnose` → hard bugs in devaing-bug when cause is not obvious
+Eight third-party skills are suggested at specific steps, none of them modified. Each is checked live at its point of use: if present, devaing invokes it; if absent, the same step runs an inline fallback and says so. Absence is information, never an error, and never blocks a step. Stack-wide sourcing and attribution live in harnessing, the umbrella this framework implements.
+
+| Skill | Stage | Used at |
+|-------|-------|---------|
+| `grill-me` | Pocock | devaing-init (product discovery, RE scan), devaing-phase-def (phase discovery) |
+| `prototype` | Pocock | devaing-phase-def, devaing-phase-revise |
+| `triage` | Pocock | label vocabulary only (needs-triage/needs-info/ready-for-agent/ready-for-human/wontfix) — the skill itself isn't invoked by any step today |
+| `diagnose` | Pocock | devaing-bug, when the root cause isn't obvious |
+| `improve-codebase-architecture` | Pocock | devaing-work, optional architecture review at phase close |
+| `ce-adversarial-reviewer` | CE | devaing-work Step 3 |
+| `ce-data-integrity-guardian` | CE | devaing-work Step 3, when migration or seed files changed |
+| `ce-code-review` | CE | referenced in the AGENTS.md devaing-init writes for the target project |
+
+## Roles
+
+devaing's build loop uses two roles from the shared doctrine: `Faber` builds, `Testarossa` verifies against the requirement, not the implementation. Full roster, glosses, and model assignment: harnessing.
 
 ## Documentation format
 
@@ -179,18 +196,6 @@ STRATEGY.html is a generated companion for human consumption. It is a periodic s
 - Generate it only when explicitly requested, never proactively.
 - When updating it, use surgical edits on the existing file, not a full rewrite.
 - If it diverges from STRATEGY.md, STRATEGY.md wins.
-
-
-## Sources
-
-### Pocock
-Structure: atomic issues, isolated worktrees, ADRs post-implementation, vertical slices, Compound Engineering as execution layer. Dropped: PRDs, quiz loops, one PRD per epic.
-
-### gstack (Garry Tan / YC)
-Feed-forward pipeline (each step writes artifacts the next consumes), role chaining via CE skills (designer → engineer → reviewer), prototype before committing to UI. Also: checkpoint/context-restore concept → adapted as mid-flight session recovery in devaing-work. Dropped: taste learning, multi-model validation, safety gates (out of scope for devaing's target).
-
-### GSD (get-shit-done, gsd-build/TACHES)
-Context rot model: 0-30% peak quality, 50%+ rushes, 70%+ hallucinates. Context isolation per task. Adapted as: Progressive working mode (no full backlog upfront), context budget warning in devaing-work before dispatching to ce-work, fresh session suggestion after each closed slice. Dropped: autonomous next-step detection, separate REQUIREMENTS/STATE/ROADMAP files (unified in CONTEXT.md).
 
 ## Flows
 
