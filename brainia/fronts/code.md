@@ -36,8 +36,8 @@ self-contained units of work.
   `install.sh` copies each `skills/devaing-*/` folder into `~/.claude/skills/`, so devaing
   installs itself machine-wide and is not vendored into any brain.
 - **Detection:** presence of `devaing-*` directories in `~/.claude/skills/`.
-- **Local convenience only:** if devaing is already cloned as a project inside this front
-  (`Code/devaing` in the author's own container), use it from there. That path is not part of
+- **Local convenience only:** if the buistack clone happens to live inside this front,
+  devaing is at `<clone>/devaing` and can be used from there. That path is not part of
   the contract and its absence means nothing is wrong.
 
 ### Entry points, in order
