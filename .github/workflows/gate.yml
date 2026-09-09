@@ -65,6 +65,36 @@ jobs:
           print(f"manifests OK: {len(m['plugins'])} plugins, every source resolves")
           EOF
 
+      - name: brainia agent surfaces stay in parity
+        # brainia ships the same skills to Claude, Gemini and Kiro, in progressively
+        # reduced adaptations rather than copies. That is three surfaces to keep in
+        # step, and it is where silent drift shows up first. The validator already
+        # existed and only ran when someone remembered to run it, which by this stack's
+        # own definition is instruction rather than enforcement.
+        run: bash brainia/scripts/validate-agent-surface.sh
+
+      - name: Context footprint stays honest
+        # A framework about the economy of context has to account for its own. These are
+        # the numbers published in harnessing/README.md, checked so the claim cannot
+        # quietly stop being true.
+        run: |
+          python - <<'EOF'
+          import pathlib, sys
+          limits = {"harnessing/doctrine/condensed.md": 800,
+                    "harnessing/doctrine/universal.md": 3200,
+                    "devaing/DOCTRINE.md": 2000}
+          bad = []
+          for f, cap in limits.items():
+              n = len(pathlib.Path(f).read_text(encoding="utf-8").split())
+              print(f"{f}: {n} words (cap {cap})")
+              if n > cap:
+                  bad.append(f"{f} is {n} words, over its published cap of {cap}")
+          if bad:
+              for b in bad:
+                  print(b)
+              sys.exit(1)
+          EOF
+
       - name: No byte order marks
         run: |
           python - <<'EOF'

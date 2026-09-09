@@ -66,6 +66,26 @@ To check the install later, or audit a repo that has drifted:
 /harnessing-audit
 ```
 
+## What it costs you, in context
+
+A framework about the economy of context owes you its own number, so here it is,
+measured rather than estimated.
+
+| What | Words | When it loads |
+|---|---|---|
+| `doctrine/condensed.md` | ~620 | Every session, injected by the hook |
+| `doctrine/universal.md` | ~2,600 | Only when an agent follows the pointer, which is the point of the condensed version |
+| `devaing/DOCTRINE.md` | ~1,400 | Only while building software |
+
+So the standing cost is about 620 words per session, and the ceiling if an agent reads
+everything is around 4,600. Counting the whole repository gives roughly 108,000 words,
+which is the wrong number: most of it is brainia's skills, and a skill only enters a
+context window when it fires.
+
+Those three files have caps enforced in CI. If the doctrine grows past them the build
+fails, because a rule about not wasting context that quietly triples its own footprint
+is not a rule anyone should trust.
+
 ## The contract between modules
 
 **Modules suggest each other. They never require each other.** devaing's
