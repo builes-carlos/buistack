@@ -1,7 +1,7 @@
 {
   "name": "brainia",
   "displayName": "Brainia",
-  "source": "https://github.com/builes-carlos/brainia",
+  "source": "https://github.com/builes-carlos/buistack",
   "owner": {
     "name": "Huy Tieu",
     "email": "tqhuy1991@gmail.com",
@@ -24,5 +24,5 @@
     "specialist-sessions"
   ],
   "category": "productivity",
-  "homepage": "https://github.com/builes-carlos/brainia"
+  "homepage": "https://github.com/builes-carlos/buistack/tree/main/brainia"
 }

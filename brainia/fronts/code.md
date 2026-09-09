@@ -6,6 +6,7 @@ sibling: Code/
 writes_to: [vault/04-projects/]
 methodology: devaing
 reads_back: [CONTEXT.md, CHECKPOINTS.md]
+mines_durable: [AGENTS.md, REFERENCE.md]
 skills: []
 profiles: [engineer, engineering-lead]
 integrations: []
@@ -65,6 +66,17 @@ constraints, known limitations, phases table) and `CHECKPOINTS.md` (objective he
 Brainia reads these two artifacts into `vault/04-projects/<project>/` — this is how execution
 feeds the brain without the brain ever owning execution: devaing does the building and keeps
 its own living truth, Brainia only distills what devaing already wrote down.
+
+## mines_durable: AGENTS.md and REFERENCE.md
+
+CONTEXT.md and CHECKPOINTS.md say where a project stands. They are not where gotchas, stack
+traps, and litigated decisions end up in practice. Those get written to whatever machine-local
+`AGENTS.md` or `REFERENCE.md` the working session had open at the time, at any level of `Code/`:
+the workspace root (`Code/AGENTS.md`, `Code/REFERENCE.md`), or a single project's own. None of
+that is state, so `front-sync` never folds it into a project's current-state note. It mines these
+files on a separate pass for durable findings and routes each one by how far it generalizes; see
+`front-sync`'s Durable Knowledge process. The sibling root itself becomes a unit for this pass
+even though it holds no `CONTEXT.md` and is invisible to state sync.
 
 ## Profiles
 

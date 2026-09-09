@@ -1,6 +1,6 @@
 ---
 name: front-sync
-description: Distill the artifacts an active front declares in reads_back into vault notes, so work done outside the brain feeds back into it
+description: Distill the artifacts an active front declares in reads_back into vault notes, and mine mines_durable artifacts for durable findings routed by how far they generalize, so work done outside the brain feeds back into it
 front: all
 integrations: []
 ---
@@ -9,9 +9,18 @@ integrations: []
 
 ## Purpose
 
-Close the loop between execution and the brain. Each front pack declares `reads_back`: the artifacts that the front's own methodology already maintains in its sibling folder. This skill reads those artifacts and distills them into vault notes at the front's `writes_to` location.
+Close the loop between execution and the brain. Each front pack declares `reads_back`: the
+artifacts that the front's own methodology already maintains in its sibling folder. This skill
+reads those artifacts and distills them into vault notes at the front's `writes_to` location.
+That is state: where things stand right now.
 
-This is the mechanism that lets Brainia learn what happened downstream **without owning any of the work**. The software front is the first case: devaing maintains each project's `CONTEXT.md` and `CHECKPOINTS.md`, and this skill distills them. Nothing here is specific to devaing. Any front that declares `reads_back` syncs the same way.
+A front pack can also declare `mines_durable`: artifacts where gotchas, stack traps, and
+litigated decisions tend to land instead. This skill mines those separately and routes each
+finding by scope (project, stack, or universal) instead of distilling them as state. State
+answers "where do things stand"; durable knowledge answers "what's true regardless of when you
+ask." Both close the same loop; neither substitutes for the other.
+
+This is the mechanism that lets Brainia learn what happened downstream **without owning any of the work**. The software front is the first case: devaing maintains each project's `CONTEXT.md` and `CHECKPOINTS.md`, and this skill distills them. Nothing here is specific to devaing. Any front that declares `reads_back` syncs the same way, and any front that declares `mines_durable` mines the same way.
 
 ## When to Invoke
 
@@ -32,15 +41,17 @@ Never copy a source artifact into the vault. Never move working files in. What l
 - If `agent_mode: team` — delegate the reading to a `worker-file-ops` or `worker-data-collector` sub-agent (Sonnet), one per front. Each worker writes its extraction to `/tmp/front-sync-<front_id>.md` and returns only a status plus the path. The lead session reads those files and does the distillation and judgment.
 - If `agent_mode: solo` (default) — read and distill directly.
 
-Reading many artifacts is data collection, so it belongs to a Sonnet worker per the Model Routing table. Deciding what is worth keeping is judgment, so it stays with the lead.
+Reading many artifacts is data collection, so it belongs to a Sonnet worker per the Model Routing table. Deciding what is worth keeping is judgment, so it stays with the lead. This applies doubly to the durable-knowledge pass: a worker may read `mines_durable` artifacts and list candidate claims, but the admission filter, the scope proposal, and the dedup check are judgment calls the lead makes itself, never delegated.
 
 ## Pre-Flight Check
 
 1. **Resolve active fronts.** Read `active_fronts` from `vault/00-inbox/MY-PROFILE.md` frontmatter. If it is absent, tell the user to run `/onboarding` and stop.
-2. **Scope.** If the user named a front, sync only that one. Otherwise sync every active front that declares a non-empty `reads_back`.
+2. **Scope.** If the user named a front, sync only that one. Otherwise sync every active front that declares a non-empty `reads_back` or a non-empty `mines_durable`: a front can have either, both, or neither.
 3. **Get the real timestamp.** Run `date '+%Y-%m-%d %H:%M'` via Bash. Never guess or fabricate a date; it is the basis of every staleness judgment in the output.
 
-## Process Flow
+## Part A: State Sync
+
+Distills `reads_back` artifacts into a project's current-state note. Unchanged from before durable knowledge existed as a separate pass.
 
 ### 1. Read the contract, not the assumption
 
@@ -49,6 +60,8 @@ For each front in scope, read `fronts/<front_id>.md` and take from its frontmatt
 - `sibling` — the container folder to read from
 - `reads_back` — the artifact filenames to look for
 - `writes_to` — the vault path the distilled note belongs in
+
+`mines_durable` is a separate list read the same way, for Part B below. A front may declare one, the other, both, or neither; each list is located and processed independently.
 
 **Never hardcode a filename.** If a pack declares `reads_back: [STATUS.md]`, that is what gets read. The pack is the contract.
 
@@ -111,24 +124,95 @@ Write the changes into the note's own history section, append-only, and surface 
 
 ### 5. Summarize for the human
 
-Report per front and per unit: synced, unchanged, missing artifacts, and every invalidated claim. Lead with the invalidations, because those are the ones that were actively misleading.
+Report per front and per unit: synced, unchanged, missing artifacts, and every invalidated claim. Lead with the invalidations, because those are the ones that were actively misleading. If Part B also ran, fold its summary (step 8 below) into the same report rather than issuing two separate ones. The human asked for one sync, not two.
+
+## Part B: Durable Knowledge
+
+State sync returns what's happening. This pass returns what's true regardless of when you ask:
+gotchas, stack traps, litigated decisions, findings that would make someone waste a day
+rediscovering something already known. It runs for every front in scope that declares a
+non-empty `mines_durable`, independently of whether that front also has `reads_back`; a unit
+can have state, durable findings, both, or neither.
+
+### 1. Locate the mined artifacts
+
+Same mechanics as Part A step 2 (bounded depth 3, skip vendored dirs, skip linked worktrees, flag unversioned units) but against `mines_durable` instead of `reads_back`. This can surface units Part A never sees: for the Code front, `Code/AGENTS.md` and `Code/REFERENCE.md` sit at the sibling root itself, so the sibling root is a unit here even though it holds no `CONTEXT.md` and is invisible to state sync.
+
+### 2. Extract candidates
+
+Read each mined artifact and pull out discrete claims: a gotcha, a workaround, a "never do X" rule, a decision with its reasoning, a trap already hit once. One candidate per claim, not per section: split a bullet list of five gotchas into five candidates so each can be filtered, routed, and deduplicated independently.
+
+### 3. Admission filter: the volume is the enemy
+
+Keep a candidate only if it passes all three. Guarding all three matters because saving everything defeats the purpose as completely as saving nothing:
+
+- **Not discoverable by reading the code.** If opening the file in question would tell a future reader the same thing in the same amount of time, it does not belong in the vault.
+- **Generalizes past one component.** A fact that only ever matters inside a single function or a single file is not durable knowledge; it is a code comment that has not been written yet.
+- **The obvious approach is wrong.** The candidate exists because someone tried the naive thing and it failed. A fact with no trap behind it is documentation, not a finding.
+
+Drop anything that fails a leg. Emphasis in the source ("IMPORTANT", bold, all-caps) is not evidence of durability and never substitutes for the filter.
+
+### 4. Propose a scope, never decide it alone
+
+For each surviving candidate, propose one of three levels and give the one-sentence reasoning:
+
+- **Project**: bites only inside this unit. Default level, written without confirmation.
+- **Stack**: would bite any project sharing this unit's stack (same framework, same runtime quirk, same shared infra). Needs the user's confirmation before the first write; state the proposed stack slug and why.
+- **Universal**: holds regardless of stack (a methodology point, a review discipline, a decision-making rule). Needs confirmation like Stack, and a stronger justification, since this is the level where an over-eager promotion pollutes every project the vault serves.
+
+Never promote silently. A candidate proposed at Stack or Universal and not yet confirmed gets written at Project level only, flagged as pending promotion, and listed in the summary for the user to confirm or correct. Confirming a pending promotion later moves it: the full text goes to the new level, the project note is left with a one-line pointer instead of the full text.
+
+### 5. Never duplicate: search before writing
+
+Before writing a confirmed candidate, search the destination file for the same claim by topic, not by exact wording. For a Stack candidate, also check other projects' `LEARNINGS.md` for the same stack in case the same trap was already promoted from a different origin. If found, update that entry in place (extend its provenance list, correct anything the new source contradicts) instead of appending a second entry. Two copies of the same finding drift the moment one gets corrected and the other does not, which is worse than writing it once.
+
+### 6. Write, with provenance, one canonical copy
+
+Destinations mirror the vault's existing tiers: project detail stays with the project, broader knowledge climbs into `05-knowledge/` the same way `knowledge-consolidation` already promotes personal insight into `05-knowledge/consolidated/`:
+
+- **Project** → `vault/04-projects/<unit-slug>/LEARNINGS.md`
+- **Stack** → `vault/05-knowledge/stacks/<stack-slug>.md` (new folder, one file per stack, created on first promotion)
+- **Universal** → `vault/05-knowledge/consolidated/engineering-principles-framework.md`, using the same `consolidated-knowledge` frontmatter `knowledge-consolidation` already writes for frameworks, with `domain: "engineering"` and `framework: "engineering-principles"`. A universal finding is a framework like any other the vault holds, not a new document type.
+
+Once a finding is promoted past Project, its full text lives only at the promoted level; the project note keeps a pointer, never a second full copy. This is what step 5's "never duplicate" rule requires in practice.
+
+Each note opens with light frontmatter (`type: durable-findings`, `scope: project|stack|universal`, `last_updated`) and one heading per finding. Every finding carries a provenance line:
+
+`[Source: <front_id>/<unit-slug> | YYYY-MM-DD | confidence: high|medium|low]`
+
+Confidence follows Part A's rule: `high` when quoted, `medium` when inferred, `low` when the source is ambiguous. A promoted finding keeps every origin's provenance line and gains the promotion date; it never loses where it came from.
+
+### 7. What this pass never does
+
+- **It never edits or deletes the source.** Mining is read-and-cite, exactly like state sync: `AGENTS.md`/`REFERENCE.md` stay exactly what they already are.
+- **It never promotes past Project on its own judgment.** See step 4.
+- **It never feeds the state note.** A mined artifact does not describe "current state," even for a unit that also has `CONTEXT.md`.
+
+### 8. Summarize for the human
+
+Report per front: candidates extracted, candidates dropped by the filter (and which leg), findings written at each level, findings updated in place, and every pending promotion awaiting confirmation. Lead with pending promotions: those are the ones that need the user's decision before this pass is actually done.
 
 ## What this skill does NOT do
 
 - **It does not do the front's work.** It reads what the front's methodology already wrote. If the software front's artifacts are stale, the fix is to run devaing, not to have Brainia infer project state.
 - **It does not write outside `writes_to`.** A front declares where its knowledge lands; this skill respects it.
-- **It does not touch the sibling folder.** Read-only, always.
+- **It does not touch the sibling folder.** Read-only, always. This includes `mines_durable` artifacts, which are mined, never edited.
 - **It does not invent state.** If an artifact does not say it, the note does not claim it.
+- **It does not save every candidate it finds.** A candidate that fails the admission filter is dropped, not stored "just in case."
+- **It does not decide a promotion above Project by itself.** It proposes; the user confirms.
 
 ## Success criteria
 
 Sync is successful when:
-1. Every active front with a non-empty `reads_back` was visited
+1. Every active front with a non-empty `reads_back` or `mines_durable` was visited
 2. Every note carries a source citation with a real date per factual claim
 3. No source artifact was copied or moved into the vault
 4. Every contradiction between a prior note and the current artifact was corrected and reported
 5. Missing artifacts were reported rather than filled in with inference
 6. The sibling folders are byte-for-byte unchanged
+7. Every durable finding kept passed all three admission-filter legs
+8. No finding was promoted past Project scope without the user's confirmation
+9. No finding exists at more than one level after the run. Promotion left a pointer, not a copy
 
 ## Error Handling
 
@@ -137,3 +221,5 @@ Sync is successful when:
 - **`writes_to` path absent** — create it, since it is inside the vault and declared by the pack.
 - **Sibling folder absent** — report it. The front may have been renamed or moved, which is normal and is the user's call, not something to auto-correct.
 - **Artifact unparseable** — record what could be read, flag the rest, never fabricate the gap.
+- **`mines_durable` absent**: that front simply has no durable-knowledge pass this run. State sync still runs if `reads_back` is set. Skip Part B silently, same as a missing front pack.
+- **A pending promotion from a prior run is never confirmed**: leave it pending indefinitely. It is already safely stored at Project level; there is no deadline that forces a decision.

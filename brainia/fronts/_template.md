@@ -28,6 +28,7 @@ integrations: []
 | `writes_to` | Vault paths this front's knowledge lands in. |
 | `methodology` | External tool this front delegates execution to, or `none`. |
 | `reads_back` | Artifacts Brainia ingests from the sibling folder. |
+| `mines_durable` | Artifacts `front-sync` mines for durable findings (gotchas, litigated decisions) instead of state. Optional; empty means this front has nothing beyond state sync. |
 | `skills` | Front-owned skills staged under `fronts/<id>/skills/`. Empty for most fronts. |
 | `profiles` | Optional sub-profiles inside the front (see `fronts/_profile-template.md`). |
 | `integrations` | Integrations that only make sense for this front. |

@@ -140,7 +140,7 @@
       "agentsMd": "Universal fallback surface for Codex and other markdown-reading agents"
     },
     "installation": {
-      "quickStart": "Clone the repo as the Brain/ of your AI-Coached-Life container, then run onboarding in your agent of choice",
+      "quickStart": "Clone https://github.com/builes-carlos/buistack, then use its brainia/ folder as the Brain/ of your AI-Coached-Life container, then run onboarding in your agent of choice",
       "setupTime": "2-5 minutes",
       "onboardingTime": "2 minutes",
       "validation": "Run ./scripts/validate-agent-surface.sh before publishing or after framework updates"
