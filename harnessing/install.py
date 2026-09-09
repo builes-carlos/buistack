@@ -119,6 +119,23 @@ def replace_or_append_block(existing: str, block: str) -> tuple[str, bool]:
     return new_content, True
 
 
+def inherits_block(target_dir: Path, filename: str) -> Path | None:
+    """Return the ancestor that already carries the doctrine block, if any.
+
+    AGENTS.md and CLAUDE.md load the one in the working directory plus every
+    parent, so a block at the container level already reaches every directory
+    under it. Writing a second one further down would duplicate a rule across
+    two layers, which is exactly what the doctrine forbids and what the audit
+    is meant to catch. Reporting it as missing sends the reader to create the
+    duplication.
+    """
+    for ancestor in target_dir.parents:
+        candidate = ancestor / filename
+        if candidate.is_file() and MARKER_START in candidate.read_text(encoding="utf-8"):
+            return candidate
+    return None
+
+
 def install_doctrine_pointer(target_dir: Path, agents: dict[str, bool], check: bool) -> list[Step]:
     steps: list[Step] = []
     if not UNIVERSAL_DOCTRINE.is_file():
@@ -133,6 +150,14 @@ def install_doctrine_pointer(target_dir: Path, agents: dict[str, bool], check: b
         filename = AGENT_FILES[agent]
         path = target_dir / filename
         existing = path.read_text(encoding="utf-8") if path.is_file() else ""
+
+        if MARKER_START not in existing:
+            inherited = inherits_block(target_dir, filename)
+            if inherited is not None:
+                steps.append(Step(filename, "ok",
+                                   f"doctrine block inherited from {inherited}"))
+                continue
+
         new_content, changed = replace_or_append_block(existing, block)
 
         if not changed:

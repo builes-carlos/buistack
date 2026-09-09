@@ -42,12 +42,28 @@ that belongs in harnessing's doctrine written inline in a project file.
 
 ### C2: Upward duplication
 
-For every pair of layers in a parent-child relationship, grep for passages
-that appear in both. This is the check most likely to fire: a layer
-repeating the one above it is the single most common way this structure
-rots. Any hit is worth reporting even if the two copies still agree today,
-since a duplicate that agrees today is a contradiction waiting for one side
-to be edited without the other.
+For every pair of layers in a parent-child relationship, look for rules
+stated in both. This is the check most likely to fire: a layer repeating the
+one above it is the single most common way this structure rots. Any hit is
+worth reporting even if the two copies still agree today, since a duplicate
+that agrees today is a contradiction waiting for one side to be edited
+without the other.
+
+**Compare claims, never strings.** A grep will miss almost everything that
+matters here, and this is the failure mode this check was written for. The
+copies are routinely in different languages, paraphrased, or split between a
+principle and its instrumentation. Read both documents end to end and ask
+whether they answer the same question, not whether they share a line.
+
+[Why: the memory hygiene rule lived in four files at once, in two languages,
+and a literal grep found none of the pairs. Two documents answering "where
+does each document live" with different taxonomies and no statement of which
+one wins were likewise invisible to text matching.]
+
+**Include the files that no layer names.** The always-loaded contract files
+of each agent (`~/.codex/AGENTS.md`, `~/.claude/CLAUDE.md`, `~/.gemini/GEMINI.md`)
+and the harnessing instance itself are in reach of every session but are not
+one of the four layers, so a sweep organized by layer walks right past them.
 
 ### C3: Stale derivation
 
@@ -113,6 +129,60 @@ the loop nobody currently handles) and a stage with two owners (a
 collision: two skills both trying to run at the same point, which is how a
 stage ends up run twice or run inconsistently depending on which skill fires
 first).
+
+### C9: Duplicated skills
+
+For every skill name reachable in this session, list where it comes from:
+`~/.claude/skills/`, the `skills/` directory of each enabled plugin, and any
+project-scoped `.claude/skills/`. Report any name that appears in more than
+one place.
+
+Two copies of a skill drift, and the one that wins is decided by resolution
+order rather than by anyone's intent. Report it even when the two are
+byte-identical today.
+
+### C10: Installed copy against its source
+
+An installer copies files out of a framework clone and into the agent's
+directory. Those copies go stale silently: the clone moves on, the installed
+copy stays at whatever version was current the day it was installed.
+
+For each installed skill, diff it against its file in the clone. Report any
+mismatch as a stale install, and say which side is newer.
+
+[Why: an installed copy of a strategy document sat eleven weeks behind its
+source, describing four skills when the installer shipped eight, and
+naming one that no longer existed.]
+
+### C11: A module still named after something dropped
+
+`SOURCES.md` is the ledger of what the stack kept and what it dropped, with
+the reason. Cross-check it both ways.
+
+Anything it lists as dropped should not still be installed, enabled, or named
+as an owner in the stage map. Anything the doctrine names as an owner should
+appear in the ledger as kept.
+
+This is how a reverted decision comes back: the ledger records the reversal
+and nothing checks that the machine agrees with the ledger.
+
+### C12: An instance still named after a predecessor framework
+
+A framework that gets renamed leaves its old name inside instances that were
+created before the rename. Check each instance's internal markers, the
+version file and the update script, against the framework's current name.
+
+Placement and folder naming are C5. This is the inside of the folder.
+
+[Why: an instance still carried `COG-VERSION` and `cog-update.sh` long after
+the framework it belonged to had finished renaming itself.]
+
+## Out of scope, and deliberately
+
+**Contradictions inside one file.** Two passages of the same document
+disagreeing is a content problem, not a structural one, and this skill audits
+structure and installation. Report one if you trip over it, but do not build
+the pass that hunts for them.
 
 ## Report format
 
