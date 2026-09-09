@@ -51,7 +51,10 @@ Thumbs.db
 # Backup files
 *.bak
 *~
-*.backup.* # created by brainia-update.sh
+# *.backup-<timestamp>, created by brainia-update.sh — inline comments after a
+# gitignore pattern are NOT comments, they are literal pattern text, so this
+# must stay on its own line or the pattern never matches anything real.
+*.backup-*
 
 # Submission and marketplace tracking (keep private)
 .github/SUBMISSION-CHECKLIST.md

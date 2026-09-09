@@ -389,7 +389,7 @@ main() {
       fi
       update_file "$f"
       ok "Updated: $f"
-      ((updated++))
+      updated=$((updated + 1))
     done
     echo ""
     ok "Updated ${updated} file(s) to v${uv}"
@@ -410,10 +410,10 @@ main() {
       if [[ -z "$answer" || "$answer" =~ ^[Yy] ]]; then
         update_file "$f"
         ok "Added: $f"
-        ((updated++))
+        updated=$((updated + 1))
       else
         warn "Skipped: $f"
-        ((skipped++))
+        skipped=$((skipped + 1))
       fi
     done
     echo ""
@@ -433,16 +433,16 @@ main() {
           if [[ -z "$answer2" || "$answer2" =~ ^[Yy] ]]; then
             update_file "$f"
             ok "Updated: $f"
-            ((updated++))
+            updated=$((updated + 1))
           elif [[ "$answer2" =~ ^[Bb] ]]; then
             local bk
             bk=$(backup_file "$f")
             update_file "$f"
             ok "Updated: $f (backup: $bk)"
-            ((updated++))
+            updated=$((updated + 1))
           else
             warn "Skipped: $f"
-            ((skipped++))
+            skipped=$((skipped + 1))
           fi
           ;;
         b|B)
@@ -450,16 +450,16 @@ main() {
           bk=$(backup_file "$f")
           update_file "$f"
           ok "Updated: $f (backup: $bk)"
-          ((updated++))
+          updated=$((updated + 1))
           ;;
         n|N)
           warn "Skipped: $f"
-          ((skipped++))
+          skipped=$((skipped + 1))
           ;;
         *)
           update_file "$f"
           ok "Updated: $f"
-          ((updated++))
+          updated=$((updated + 1))
           ;;
       esac
     done
