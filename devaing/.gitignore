@@ -1,0 +1,11 @@
+# Per-machine agent permissions. Absolute paths, never portable.
+.claude/settings.local.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and backups
+*.log
+*.bak
+*~

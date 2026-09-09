@@ -29,6 +29,11 @@ These two responsibilities are strictly separated but both use grill-me. init di
 
 For greenfield projects, init asks a seed question ("¿Qué hace esta app a alto nivel?") with up to 2 follow-up subquestions if the answer is vague, then upgrade → grill-me (seed as context) → downgrade → CONTEXT.md written before any infrastructure is set up. No brainstorm option — grill-me runs directly. For existing projects, init does a RE scan + validation questionnaire + upgrade → grill-me → downgrade, and writes CONTEXT.md from reality. In both cases, CONTEXT.md is fully populated before phase-def ever runs.
 
+### Init handles legacy state automatically
+When a framework skill changes structurally (file renames, heading renames, path conventions), `devaing-init` must detect and migrate legacy state automatically on re-runs, silently, with no user intervention. Users invoke `/devaing-init` expecting it to bring the project current; they don't know what the previous template looked like or what changed, and asking them to decide leaks internal mechanics that the skill should own.
+
+For each structural change, detection-and-migration logic is added to the init skill before the main create/augment steps. Migrations rename rather than delete, preserve user content, and flag unresolvable conflicts in the post-run report, but never ask mid-run. An ad-hoc one-time fix applied by hand in a workspace session is a valid scope exit for an urgent case, but it is not a substitute for adding the migration logic to the skill itself. Avoid the counter-pattern of asking "should the skill detect old files and migrate them, or leave as-is?": that forces the user to design the skill instead of just using it.
+
 phase-def runs a grill-me focused on each phase's scope (always, including Phase 1). The model upgrade covers the entire discovery block: for Phase 2+, it's upgrade → backlog cross-reference → backlog selection → phase intent → grill-me → downgrade. For Phase 1, it's upgrade → phase intent → grill-me → downgrade. The phase intent step is an open question ("¿Qué querés que tenga Phase N?") with sub-prompts; the grill-me then deepens that answer using hypotheses derived from known limitations and the selected backlog. If the phase intent was vague, the grill-me leads with its own hypotheses — it never asks the user to repeat what they just said.
 
 Every grill-me in every skill is always preceded by the model upgrade prompt and followed by the model downgrade prompt. Both grill-me calls also receive `<granularity>` and calibrate question depth: Broad = 3-5 questions, Balanced = 6-10, Detailed = go deep. This is non-negotiable.
@@ -94,6 +99,11 @@ devaing-phase-def detects setup state at every invocation, enabling safe re-entr
 
 ### Sub-agent with fresh context (from GSD)
 Each issue is implemented by a sub-agent spawned with a clean context. The parent skill passes a filtered CONTEXT.md (only `## Project`, `## Domain glossary`, `## Architecture`, `## Key constraints` — not Phases history) plus the full issue content. The sub-agent commits and reports back. This isolates context rot to the sub-agent, not the orchestrating session.
+
+### Skills execute, they never delegate to the user
+Skills run their own checks and commands directly instead of printing a command and asking the user to run it. This came from direct user feedback that a skill was "lazy": devaing-init used to tell the user "Please verify: 1. Run the start command, 2. DB connection works..." instead of running those checks itself, and after running a migration it waited for user confirmation instead of checking the exit code.
+
+If Claude can run the check, it runs it. The only time it stops and asks the user is when something fails or the step genuinely requires a human (an interactive browser login, creating an external account, filling in a `.env` with secret credentials). The exit code decides whether something worked, not a user confirmation.
 
 ### Self-verification before closing
 After the sub-agent commits, devaing-work runs the project's test suite (auto-detected: `npm test` / `pytest` / `cargo test`). If tests fail, the user chooses: fix now (spawn another sub-agent with the failure output), document in Known limitations, or revert the commit. Then it reads each `- [ ]` acceptance criterion from the issue and asks for a single y/n/partial confirmation before closing.
