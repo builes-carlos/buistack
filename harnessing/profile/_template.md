@@ -9,8 +9,11 @@ register: neutral
 > rename it if you like, and fill in the sections below. This is what
 > parameterizes the doctrine for one person, without touching the framework
 > itself. The framework stays generic and public; this file is what makes it
-> yours, and it is meant to live in a private instance repo, not in
-> `buistack` itself.
+> yours, and it belongs in your own instance folder, never in `buistack` itself.
+>
+> Where that folder lives and how you keep it is up to you: version it, sync it,
+> or leave it as a plain folder. It holds your own configuration and nobody else
+> needs to read it, so the only thing that matters is that it is not public.
 
 ## Language and register
 

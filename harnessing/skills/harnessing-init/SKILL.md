@@ -134,11 +134,19 @@ Skip if the re-run path in Step 1 already recovered this.
 git config user.name 2>/dev/null
 ```
 
+If git is not installed or the name is unset, that command returns nothing. Do not
+treat that as an error and do not install anything: just ask for the name as part of
+the question below.
+
 ```
 Where should your harnessing instance live, and what should it be called?
 Default: <parent of the confirmed layer>/harnessing-<git user.name, lowercased
 and hyphenated>
 ```
+
+Only the name and the location are being asked. **How the folder gets stored and
+backed up is the user's business**: a git repo, a synced drive, a folder and nothing
+else. Do not ask, do not recommend, and do not assume one.
 
 Offer the default as a plain enter. Store the confirmed path as
 `<instance_path>`.
@@ -180,11 +188,20 @@ python <path to this clone>/install.py --path <confirmed layer path> \
 
 ## Step 7: Stop here
 
-**Do not create a remote for the instance.** Creating a private remote repo
-is a state change with its own blast radius (a new repo under the user's
-account), and it needs an explicit go, not an inference from "the user ran
-init." Report that the instance folder is scaffolded locally and that
-creating a remote, if wanted, is a separate step.
+**Scaffold the folder and stop.** Do not run `git init`, do not create a remote, do
+not set up sync.
+
+How the instance gets stored is the user's decision and the framework has no opinion
+about it. Some will version it, some will drop it in a synced drive, some will leave it
+as a plain folder. Every one of those is correct, and each one carries a different
+tradeoff about history and about who else can read it.
+
+Creating a remote in particular is a state change with its own blast radius, a new repo
+under the user's account, and it needs an explicit go rather than an inference from
+"they ran init."
+
+Report that the folder is scaffolded, say what is in it, and say that storage is theirs
+to choose.
 
 ## Final report
 
