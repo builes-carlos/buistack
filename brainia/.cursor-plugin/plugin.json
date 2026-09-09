@@ -8,10 +8,16 @@
     "email": "tqhuy1991@gmail.com",
     "url": "https://github.com/huytieu"
   },
-  "homepage": "https://github.com/builes-carlos/brainia",
+  "contributors": [
+    {
+      "name": "builes-carlos",
+      "url": "https://github.com/builes-carlos"
+    }
+  ],
+  "homepage": "https://github.com/builes-carlos/buistack/tree/main/brainia",
   "repository": {
     "type": "git",
-    "url": "https://github.com/builes-carlos/brainia"
+    "url": "https://github.com/builes-carlos/buistack"
   },
   "license": "MIT",
   "keywords": [
