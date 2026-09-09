@@ -1,4 +1,4 @@
-﻿# Brainia Knowledge Consolidation Playbook
+# Brainia Knowledge Consolidation Playbook
 
 ## Goal
 Transform scattered insights from braindumps, briefs, and check-ins into coherent frameworks and knowledge documents.

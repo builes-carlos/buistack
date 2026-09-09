@@ -1,4 +1,4 @@
-﻿---
+---
 name: devaing-work
 description: Take a GitHub issue or milestone name and implement the next vertical slice end-to-end. Detects mid-flight sessions and resumes instead of starting over. Updates CONTEXT.md and closes the issue after merge. Invoked with /devaing-work #N or /devaing-work <milestone>. When invoked with no argument, presents a Structured/Hotfix choice.
 ---

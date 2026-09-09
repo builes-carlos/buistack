@@ -1,4 +1,4 @@
-﻿# Brainia: Agentic Second Brain - Universal Agent Commands
+# Brainia: Agentic Second Brain - Universal Agent Commands
 
 This document defines the available commands/skills for AI agents interacting with Brainia, a self-evolving agentic second brain built on the COG engine (Cognition + Obsidian + Git).
 

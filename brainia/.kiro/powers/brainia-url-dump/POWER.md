@@ -1,4 +1,4 @@
-﻿---
+---
 name: "brainia-url-dump"
 displayName: "Brainia URL Dump"
 description: "Quick capture URLs with automatic content extraction, insights, and categorization into knowledge booklets"

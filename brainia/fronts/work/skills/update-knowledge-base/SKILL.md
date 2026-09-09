@@ -1,4 +1,4 @@
-﻿---
+---
 name: update-knowledge-base
 description: Maintain and update product knowledge base from releases, features, and project changes with optional wiki sync
 front: work

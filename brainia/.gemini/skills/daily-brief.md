@@ -1,4 +1,4 @@
-﻿# Brainia Daily Brief Playbook
+# Brainia Daily Brief Playbook
 
 ## Goal
 Generate a personalized news intelligence briefing with verified sources.

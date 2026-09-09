@@ -1,4 +1,4 @@
-﻿---
+---
 name: daily-brief
 description: Generate personalized news intelligence with verified sources (7-day freshness requirement)
 front: all

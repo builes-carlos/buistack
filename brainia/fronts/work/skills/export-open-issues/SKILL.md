@@ -1,4 +1,4 @@
-﻿---
+---
 name: export-open-issues
 description: Audit and export open issues from any project tracker with summary analysis and vault archival
 front: work

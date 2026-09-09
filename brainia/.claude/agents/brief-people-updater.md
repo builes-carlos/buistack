@@ -1,4 +1,4 @@
-﻿---
+---
 name: brief-people-updater
 description: Update people profiles in vault/05-knowledge/people/ with new information from brief data, meetings, or Slack
 model: sonnet

@@ -1,4 +1,4 @@
-﻿---
+---
 name: publish-to-confluence
 description: Publish any markdown file from the vault to Confluence with format conversion and approval gate
 front: work

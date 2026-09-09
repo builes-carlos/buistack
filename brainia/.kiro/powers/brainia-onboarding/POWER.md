@@ -1,4 +1,4 @@
-﻿---
+---
 name: "brainia-onboarding"
 displayName: "Brainia Onboarding"
 description: "Personalize Brainia second brain for your workflow - creates profile, interests, and watchlist files with guided setup"

@@ -1,4 +1,4 @@
-﻿---
+---
 name: knowledge-consolidation
 description: Build frameworks from scattered insights across all braindumps and notes
 front: all

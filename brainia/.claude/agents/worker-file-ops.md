@@ -1,4 +1,4 @@
-﻿---
+---
 name: worker-file-ops
 description: Read, write, and organize vault files. Metadata updates, file moves, profile updates.
 model: sonnet

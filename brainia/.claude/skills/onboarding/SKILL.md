@@ -1,4 +1,4 @@
-﻿---
+---
 name: onboarding
 description: Personalize Brainia for your workflow - creates profile, interests, and watchlist files with guided setup (run this first!)
 front: all

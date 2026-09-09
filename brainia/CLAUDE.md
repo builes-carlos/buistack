@@ -1,4 +1,4 @@
-﻿# COG Second Brain — Framework Instructions
+# COG Second Brain — Framework Instructions
 
 ## Assistant identity
 

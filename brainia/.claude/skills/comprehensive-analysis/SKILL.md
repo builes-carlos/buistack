@@ -1,4 +1,4 @@
-﻿---
+---
 name: comprehensive-analysis
 description: Deep-dive 7-day analysis across all data sources for weekly reviews, board prep, and strategic planning
 front: all

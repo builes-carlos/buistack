@@ -1,4 +1,4 @@
-﻿# Brainia Onboarding Playbook
+# Brainia Onboarding Playbook
 
 ## Goal
 Welcome the user and create their Brainia profile through natural conversation.

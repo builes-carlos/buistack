@@ -1,4 +1,4 @@
-﻿---
+---
 name: generate-prd
 description: Generate product requirements documents with optional publishing to Confluence or other wiki platforms
 front: work

@@ -1,4 +1,4 @@
-﻿---
+---
 name: "brainia-braindump"
 displayName: "Brainia Braindump"
 description: "Quick capture of raw thoughts with intelligent domain classification and competitive intelligence extraction"

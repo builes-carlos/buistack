@@ -1,4 +1,4 @@
-﻿# Brainia URL Dump Playbook
+# Brainia URL Dump Playbook
 
 ## Goal
 Transform URLs into structured knowledge entries with automatic content extraction, insights, and categorization.

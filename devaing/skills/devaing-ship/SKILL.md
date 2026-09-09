@@ -1,4 +1,4 @@
-﻿---
+---
 name: devaing-ship
 description: Ship to production. Run after completing a phase, after phase-revise additions, or after a hotfix tested in dev. Detects what changed since the last deploy, checks migrations and seeds, validates env vars, deploys, and tags the release. Works for first deploys (new prod or adopt existing prod) and incremental deploys.
 ---

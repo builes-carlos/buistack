@@ -1,4 +1,4 @@
-﻿---
+---
 name: generate-release-notes
 description: Generate categorized release notes from any source (GitHub, Linear, Jira, or manual input) with optional publishing
 front: work

@@ -1,4 +1,4 @@
-﻿# Brainia: Agentic Second Brain
+# Brainia: Agentic Second Brain
 
 You are operating inside a **Brainia second brain** — a self-evolving knowledge management system built on Obsidian markdown files and Git.
 

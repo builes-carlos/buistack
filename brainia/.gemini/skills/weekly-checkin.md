@@ -1,4 +1,4 @@
-﻿# Brainia Weekly Check-in Playbook
+# Brainia Weekly Check-in Playbook
 
 ## Goal
 Comprehensive weekly review integrating insights across all domains with pattern recognition.

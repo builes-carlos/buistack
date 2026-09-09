@@ -1,4 +1,4 @@
-﻿# Changelog
+# Changelog
 
 All notable changes are documented in this file. Entries from `4.0.0` on are **Brainia**; entries at
 `3.5.0` and below are the upstream **COG** releases this fork is built on, kept verbatim as history.

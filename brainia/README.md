@@ -1,4 +1,4 @@
-﻿# Brainia — A Second Brain for Your Whole Life, Not Your Job Title
+# Brainia — A Second Brain for Your Whole Life, Not Your Job Title
 
 **Built on the COG engine (Cognition + Obsidian + Git)** — a self-evolving second brain powered by AI agents, markdown files, and version control. No database, no vendor lock-in — just `.md` files that think.
 

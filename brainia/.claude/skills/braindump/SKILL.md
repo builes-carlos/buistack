@@ -1,4 +1,4 @@
-﻿---
+---
 name: braindump
 description: Quick capture of raw thoughts with intelligent domain classification and competitive intelligence extraction
 front: all

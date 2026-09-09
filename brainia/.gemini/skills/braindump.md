@@ -1,4 +1,4 @@
-﻿# Brainia Braindump Playbook
+# Brainia Braindump Playbook
 
 ## Goal
 Capture raw thoughts and transform them into structured, classified intelligence.

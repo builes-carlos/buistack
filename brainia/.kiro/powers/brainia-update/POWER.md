@@ -1,4 +1,4 @@
-﻿---
+---
 name: "brainia-update"
 displayName: "Brainia Update"
 description: "Check for and apply upstream COG framework updates without touching personal content"

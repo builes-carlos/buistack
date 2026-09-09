@@ -1,4 +1,4 @@
-﻿---
+---
 name: auto-research
 description: Deep strategic research engine — decomposes questions into parallel research threads, spawns multiple agents, and synthesizes into actionable strategic analysis
 front: all

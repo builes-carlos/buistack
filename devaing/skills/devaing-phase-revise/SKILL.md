@@ -1,4 +1,4 @@
-﻿---
+---
 name: devaing-phase-revise
 description: Adjust the current phase or add a net-new feature area. Covers scope changes (issues wrong, missing, or excess), prototype revisions, business logic corrections, and adding functionality not in the original plan. Invoked with /devaing-phase-revise.
 ---

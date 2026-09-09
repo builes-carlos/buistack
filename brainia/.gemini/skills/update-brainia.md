@@ -1,4 +1,4 @@
-﻿# Brainia Update Playbook
+# Brainia Update Playbook
 
 ## Goal
 Update COG framework files (skills, docs, scripts) from the official upstream repo without touching personal content.

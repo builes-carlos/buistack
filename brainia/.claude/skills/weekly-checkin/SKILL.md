@@ -1,4 +1,4 @@
-﻿---
+---
 name: weekly-checkin
 description: Cross-domain pattern analysis and strategic reflection for weekly review
 front: all

@@ -1,4 +1,4 @@
-﻿---
+---
 name: create-user-story
 description: Create user stories with duplicate checking across any project tracker (Linear, GitHub Issues, Jira)
 front: work

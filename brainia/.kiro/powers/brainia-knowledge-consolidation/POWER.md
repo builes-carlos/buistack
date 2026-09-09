@@ -1,4 +1,4 @@
-﻿---
+---
 name: "brainia-knowledge-consolidation"
 displayName: "Brainia Knowledge Consolidation"
 description: "Build frameworks from scattered insights across all braindumps and notes"

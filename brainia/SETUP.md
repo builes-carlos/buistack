@@ -1,4 +1,4 @@
-﻿# Brainia Setup Guide
+# Brainia Setup Guide
 
 Complete step-by-step instructions for setting up your Brainia agentic second brain, running on the COG engine (Cognition + Obsidian + Git).
 

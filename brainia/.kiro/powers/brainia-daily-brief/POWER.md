@@ -1,4 +1,4 @@
-﻿---
+---
 name: "brainia-daily-brief"
 displayName: "Brainia Daily Brief"
 description: "Generate personalized news intelligence with verified sources and 7-day freshness requirement"
