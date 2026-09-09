@@ -24,6 +24,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # the leak check reads every commit message, not just the tip
 
       - uses: actions/setup-python@v5
         with:
@@ -39,7 +41,7 @@ jobs:
       - name: harnessing installer is runnable
         run: python harnessing/install.py --help
 
-      - name: Manifests parse
+      - name: Manifests parse and every plugin source resolves
         run: |
           python - <<'EOF'
           import json, sys, pathlib
@@ -63,42 +65,65 @@ jobs:
           print(f"manifests OK: {len(m['plugins'])} plugins, every source resolves")
           EOF
 
-      - name: No client names, and no byte order marks
+      - name: No byte order marks
         run: |
           python - <<'EOF'
           import pathlib, subprocess, sys
-          # These are the names that must never reach a public repository. The rules
-          # they produced live here de-identified; the incidents stay in a private
-          # instance. A grep over the working tree is not enough on its own: commit
-          # messages carry names too, and checking only files once let five of them
-          # through.
-          NAMES = ["a client project", "a client project", "a project", "a project", "a project", "a project",
-                   "<a path on another machine>", "brainia-alex"]
-          bad = []
+          # A BOM before YAML frontmatter makes a skill unparseable, and the parser that
+          # trips over it says nothing useful about why. PowerShell cmdlets write UTF-8
+          # with a BOM by default, so this comes back unless something watches for it.
+          bad = [f for f in subprocess.run(["git","ls-files"], capture_output=True, text=True).stdout.split()
+                 if pathlib.Path(f).is_file() and pathlib.Path(f).read_bytes().startswith(b"\xef\xbb\xbf")]
+          if bad:
+              print("byte order mark at the start of:"); print("\n".join(bad)); sys.exit(1)
+          print("no byte order marks")
+          EOF
 
-          files = subprocess.run(["git", "ls-files"], capture_output=True, text=True).stdout.split()
+      - name: Nothing private reaches a public repo
+        env:
+          # A comma-separated list of strings that must never appear here: client names,
+          # machine paths, a personal instance folder. It lives in a repository secret
+          # rather than in this file, because a public repository cannot carry the list
+          # of private names it is meant to keep out. The list would be the leak.
+          #
+          # Set it under Settings, Secrets and variables, Actions. Unset, this step
+          # reports that it is unconfigured and passes, so a fork is never blocked by
+          # someone else's list.
+          FORBIDDEN: ${{ secrets.FORBIDDEN_STRINGS }}
+        run: |
+          python - <<'EOF'
+          import os, pathlib, subprocess, sys
+          names = [n.strip() for n in os.environ.get("FORBIDDEN", "").split(",") if n.strip()]
+          if not names:
+              print("FORBIDDEN_STRINGS is not set, so there is nothing to check against.")
+              print("Set it if this repository must never mention certain names or paths.")
+              sys.exit(0)
+
+          bad = []
+          files = subprocess.run(["git","ls-files"], capture_output=True, text=True).stdout.split()
           for f in files:
               p = pathlib.Path(f)
               if not p.is_file():
                   continue
-              raw = p.read_bytes()
-              if raw.startswith(b"\xef\xbb\xbf"):
-                  bad.append(f"{f}: starts with a byte order mark")
               try:
-                  text = raw.decode("utf-8")
+                  text = p.read_bytes().decode("utf-8")
               except UnicodeDecodeError:
                   continue
-              for n in NAMES:
+              for n in names:
                   if n in text:
-                      bad.append(f"{f}: contains {n!r}")
+                      bad.append(f"{f} mentions a forbidden string")
 
-          log = subprocess.run(["git", "log", "--format=%s%n%b"],
+          # Commit messages are the half that gets forgotten. Checking only files once
+          # let five of them through, and an outside reader found them after publishing.
+          log = subprocess.run(["git","log","--format=%s%n%b"],
                                capture_output=True, text=True, encoding="utf-8").stdout
-          for n in NAMES:
+          for n in names:
               if n in log:
-                  bad.append(f"a commit message contains {n!r}")
+                  bad.append("a commit message mentions a forbidden string")
 
           if bad:
+              # Deliberately not printing which string matched: this output is public.
               print("\n".join(sorted(set(bad)))); sys.exit(1)
-          print(f"clean: {len(files)} tracked files and every commit message")
+          print(f"clean: {len(files)} tracked files and every commit message, "
+                f"against {len(names)} forbidden strings")
           EOF
