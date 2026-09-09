@@ -1,0 +1,104 @@
+name: gate
+
+# The doctrine in harnessing says instruction is not enforcement: a rule you have to
+# remember and a rule that auto-loads are both instruction, and both get skipped. The
+# only thing that guarantees anything is a deterministic check at a boundary that does
+# not depend on anyone remembering.
+#
+# This repository was published without one, which made that section a claim rather
+# than a practice. These are its teeth. They run with no agent session present, which
+# is the whole point.
+#
+# A red run does not block a merge on its own. It blocks only once it is a required
+# status check in branch protection, which is repository configuration and not
+# workflow configuration.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Documentation lint
+        run: python devaing/scripts/gate/doc_lint.py
+
+      - name: devaing skill integrity
+        working-directory: devaing
+        run: python scripts/check_integrity.py
+
+      - name: harnessing installer is runnable
+        run: python harnessing/install.py --help
+
+      - name: Manifests parse
+        run: |
+          python - <<'EOF'
+          import json, sys, pathlib
+          bad = []
+          for p in [".claude-plugin/marketplace.json",
+                    "harnessing/.claude-plugin/plugin.json",
+                    "devaing/.claude-plugin/plugin.json",
+                    "brainia/.claude-plugin/plugin.json",
+                    "brainia/marketplace-entry.json"]:
+              try:
+                  json.loads(pathlib.Path(p).read_text(encoding="utf-8"))
+              except Exception as e:
+                  bad.append(f"{p}: {e}")
+          m = json.loads(pathlib.Path(".claude-plugin/marketplace.json").read_text(encoding="utf-8"))
+          for plugin in m["plugins"]:
+              src = plugin["source"].lstrip("./")
+              if not pathlib.Path(src).is_dir():
+                  bad.append(f"marketplace names {plugin['name']} at {src}, which is not a directory")
+          if bad:
+              print("\n".join(bad)); sys.exit(1)
+          print(f"manifests OK: {len(m['plugins'])} plugins, every source resolves")
+          EOF
+
+      - name: No client names, and no byte order marks
+        run: |
+          python - <<'EOF'
+          import pathlib, subprocess, sys
+          # These are the names that must never reach a public repository. The rules
+          # they produced live here de-identified; the incidents stay in a private
+          # instance. A grep over the working tree is not enough on its own: commit
+          # messages carry names too, and checking only files once let five of them
+          # through.
+          NAMES = ["a client project", "a client project", "a project", "a project", "a project", "a project",
+                   "<a path on another machine>", "brainia-alex"]
+          bad = []
+
+          files = subprocess.run(["git", "ls-files"], capture_output=True, text=True).stdout.split()
+          for f in files:
+              p = pathlib.Path(f)
+              if not p.is_file():
+                  continue
+              raw = p.read_bytes()
+              if raw.startswith(b"\xef\xbb\xbf"):
+                  bad.append(f"{f}: starts with a byte order mark")
+              try:
+                  text = raw.decode("utf-8")
+              except UnicodeDecodeError:
+                  continue
+              for n in NAMES:
+                  if n in text:
+                      bad.append(f"{f}: contains {n!r}")
+
+          log = subprocess.run(["git", "log", "--format=%s%n%b"],
+                               capture_output=True, text=True, encoding="utf-8").stdout
+          for n in NAMES:
+              if n in log:
+                  bad.append(f"a commit message contains {n!r}")
+
+          if bad:
+              print("\n".join(sorted(set(bad)))); sys.exit(1)
+          print(f"clean: {len(files)} tracked files and every commit message")
+          EOF
