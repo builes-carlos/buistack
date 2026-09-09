@@ -153,9 +153,11 @@ else
   ok "Packaging docs consistently use AGENTS.md casing"
 fi
 
+# Exclude *.backup-<timestamp> copies left by brainia-update.sh: gitignored,
+# transient, and not part of the shipped surface a raw file count should see.
 kiro_count=$(find .kiro/powers -name POWER.md | wc -l | tr -d ' ')
-gemini_commands_count=$(find .gemini/commands -type f | wc -l | tr -d ' ')
-gemini_skills_count=$(find .gemini/skills -type f | wc -l | tr -d ' ')
+gemini_commands_count=$(find .gemini/commands -type f ! -name '*.backup-*' | wc -l | tr -d ' ')
+gemini_skills_count=$(find .gemini/skills -type f ! -name '*.backup-*' | wc -l | tr -d ' ')
 
 if [[ "$kiro_count" == "7" ]]; then
   ok "Kiro core surface count is $kiro_count"
@@ -383,6 +385,11 @@ for skills_dir in sorted(glob.glob("fronts/*/skills/*")):
 # role_id:/roles: keys, quoted literals, or front/skills-style paths.
 for path in sorted(glob.glob(".claude/skills/**/*", recursive=True)):
     if not os.path.isfile(path):
+        continue
+    # brainia-update.sh leaves a *.backup-<timestamp> copy of every file it
+    # overwrites, gitignored and transient. It is not part of the shipped
+    # core, so a retired identifier surviving inside one is not a real hit.
+    if ".backup-" in os.path.basename(path):
         continue
     text = read_text(path)
     for rid in RETIRED_ROLE_IDS:
