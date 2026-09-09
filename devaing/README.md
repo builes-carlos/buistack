@@ -10,6 +10,16 @@ Targets solo builders, dev pairs, and early-stage startups. Not Pocock (designed
 
 ---
 
+## Where the rules live
+
+[`DOCTRINE.md`](DOCTRINE.md) holds how software gets built here: risk and rigor,
+specification, slices, the three test layers, documentation, enforcement, git.
+
+It is the software half of a larger doctrine. The universal half, how anything gets
+dispatched to an agent at all, lives in [harnessing](../harnessing/) and is the
+authority for anything this file does not cover. devaing works without it. It works
+better with it.
+
 ## The core insight
 
 GitHub Issues is not bureaucracy. It is a **token rationalization system**.
