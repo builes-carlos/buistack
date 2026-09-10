@@ -1,0 +1,14 @@
+# Python bytecode. Machine-local, version-specific, and it has already slipped into a
+# commit once, in the very batch that added the hygiene checks.
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and backups
+*.log
+*.bak
+*~

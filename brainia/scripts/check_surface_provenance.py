@@ -17,6 +17,13 @@ and this fails, naming what changed and what has to be re-read. Fixing it means
 reviewing the adaptation and re-stamping with --update, which is a deliberate act
 rather than something that happens by forgetting.
 
+**This is one-directional, on purpose.** It watches the source and says nothing when an
+adaptation is edited on its own. `.claude/skills/` is where a skill is defined; the
+other surfaces are ports of it. Editing a port directly passes green, and that is the
+intended behaviour rather than a gap, because a port is allowed to be worded for its
+own runtime. If a change belongs in every surface, it goes into the Claude skill first
+and this check then names the ports that have to follow.
+
 Stdlib only, so it runs in CI with no install step.
 """
 

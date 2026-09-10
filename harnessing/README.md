@@ -94,9 +94,15 @@ on instinct.
 Counting the whole repository gives roughly 108,000 words, which is the wrong number:
 most of it is skill bodies, and a body only enters a window when its skill fires.
 
-Those three files have caps enforced in CI. If the doctrine grows past them the build
-fails, because a rule about not wasting context that quietly triples its own footprint
-is not a rule anyone should trust.
+Every row above has a cap enforced in CI: one per doctrine file, and one on the total
+words announced by every installed skill across all five surfaces, front packs
+included. If any of them grows past its cap the build fails, because a rule about not
+wasting context that quietly triples its own footprint is not a rule anyone should
+trust.
+
+The announced budget currently sits at 924 words against a cap of 1,000. That is 76
+words of headroom on purpose: adding a skill to the stack should require a decision
+about what it costs everyone, not just the person adding it.
 
 ## The contract between modules
 

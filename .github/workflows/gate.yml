@@ -115,10 +115,14 @@ jobs:
                       words += len(m.group(1).strip().strip('"').split())
               return words
 
+          # Front pack skills were missed by the first version of this list, which is
+          # the same omission one level in: activating a front adds seven more entries
+          # to the system prompt and nothing was watching them.
           surfaces = {"harnessing": "harnessing/skills/*/SKILL.md",
                       "devaing": "devaing/skills/*/SKILL.md",
                       "brainia": "brainia/.claude/skills/*/SKILL.md",
-                      "brainia agents": "brainia/.claude/agents/*.md"}
+                      "brainia agents": "brainia/.claude/agents/*.md",
+                      "brainia front packs": "brainia/fronts/*/skills/*/SKILL.md"}
           total = 0
           for label, pattern in surfaces.items():
               files = glob.glob(pattern)
@@ -134,6 +138,36 @@ jobs:
               for b in bad:
                   print(b)
               sys.exit(1)
+          EOF
+
+      - name: No compiled or binary files tracked
+        # Bytecode reached a commit once, in the batch that added these hygiene checks,
+        # and no ignore file covered it. Mechanically checkable, so it does not get to
+        # depend on anyone remembering.
+        run: |
+          python - <<'EOF'
+          import pathlib, subprocess, sys
+          BINARY_SUFFIXES = {".pyc",".pyo",".so",".dll",".dylib",".exe",".class",".o",".a"}
+          bad = []
+          for f in subprocess.run(["git","ls-files"], capture_output=True, text=True).stdout.split():
+              p = pathlib.Path(f)
+              if "__pycache__" in p.parts or p.suffix.lower() in BINARY_SUFFIXES:
+                  bad.append(f)
+                  continue
+              if not p.is_file():
+                  continue
+              # Catch anything else that is not text, images excepted.
+              if p.suffix.lower() in {".png",".jpg",".jpeg",".gif",".svg",".ico",".webp"}:
+                  continue
+              chunk = p.read_bytes()[:8000]
+              if bytes([0]) in chunk:
+                  bad.append(f"{f} (contains null bytes)")
+          if bad:
+              print("tracked files that should not be in a source repository:")
+              for b in bad:
+                  print(f"  {b}")
+              sys.exit(1)
+          print("no compiled or binary files tracked")
           EOF
 
       - name: No byte order marks
