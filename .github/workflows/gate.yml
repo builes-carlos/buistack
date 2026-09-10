@@ -190,46 +190,10 @@ jobs:
           # A comma-separated list of strings that must never appear here: client names,
           # machine paths, a personal instance folder. It lives in a repository secret
           # rather than in this file, because a public repository cannot carry the list
-          # of private names it is meant to keep out. The list would be the leak.
+          # of private names it is meant to keep out. The list would be the leak, and
+          # this workflow shipped that exact mistake once.
           #
-          # Set it under Settings, Secrets and variables, Actions. Unset, this step
-          # reports that it is unconfigured and passes, so a fork is never blocked by
-          # someone else's list.
-          FORBIDDEN: ${{ secrets.FORBIDDEN_STRINGS }}
-        run: |
-          python - <<'EOF'
-          import os, pathlib, subprocess, sys
-          names = [n.strip() for n in os.environ.get("FORBIDDEN", "").split(",") if n.strip()]
-          if not names:
-              print("FORBIDDEN_STRINGS is not set, so there is nothing to check against.")
-              print("Set it if this repository must never mention certain names or paths.")
-              sys.exit(0)
-
-          bad = []
-          files = subprocess.run(["git","ls-files"], capture_output=True, text=True).stdout.split()
-          for f in files:
-              p = pathlib.Path(f)
-              if not p.is_file():
-                  continue
-              try:
-                  text = p.read_bytes().decode("utf-8")
-              except UnicodeDecodeError:
-                  continue
-              for n in names:
-                  if n in text:
-                      bad.append(f"{f} mentions a forbidden string")
-
-          # Commit messages are the half that gets forgotten. Checking only files once
-          # let five of them through, and an outside reader found them after publishing.
-          log = subprocess.run(["git","log","--format=%s%n%b"],
-                               capture_output=True, text=True, encoding="utf-8").stdout
-          for n in names:
-              if n in log:
-                  bad.append("a commit message mentions a forbidden string")
-
-          if bad:
-              # Deliberately not printing which string matched: this output is public.
-              print("\n".join(sorted(set(bad)))); sys.exit(1)
-          print(f"clean: {len(files)} tracked files and every commit message, "
-                f"against {len(names)} forbidden strings")
-          EOF
+          # Unset, the check reports that it is unconfigured and passes, so a fork is
+          # never blocked by a list it cannot see.
+          FORBIDDEN_STRINGS: ${{ secrets.FORBIDDEN_STRINGS }}
+        run: python scripts/check_no_leaks.py
