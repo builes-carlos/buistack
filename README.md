@@ -57,6 +57,20 @@ framework.
 named `<framework>-<yourname>`, kept wherever you like. `harnessing-init` scaffolds it
 and stops, with no opinion about whether you version it, sync it, or leave it alone.
 
+## What checks itself
+
+The doctrine says instruction is not enforcement, so this repository runs a gate on
+every push rather than asking anyone to remember: the documentation lint, skill
+integrity, that the installer runs, that every manifest resolves, that the agent
+surfaces stay in step and that each adaptation was reviewed after its source changed,
+a cap on how much context the doctrine and the skill descriptions can cost, no tracked
+binaries, no byte order marks, and nothing private in any blob or message anywhere in
+history.
+
+Most of those exist because they caught something. The last one caught the worst of it:
+an early version of the gate carried the list of private names hardcoded, in a public
+repository.
+
 ## Versions
 
 Versioned per folder rather than collapsed into one number, with prefixed tags
