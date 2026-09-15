@@ -14,10 +14,16 @@ Three independent operations, each safe to re-run:
                         GEMINI.md at a given directory, between
                         `<!-- harnessing:start -->` / `<!-- harnessing:end -->`
                         markers, one file per agent detected on the machine.
-  3. SessionStart hook: registers a Claude Code hook that injects
-                        doctrine/condensed.md into context at the start of
-                        every session, regardless of which directory the
-                        agent was opened in.
+  3. Hooks: registers two Claude Code hooks. A SessionStart hook injects
+                        doctrine/condensed.md into context at the start of every
+                        session, regardless of which directory the agent was
+                        opened in. A PreToolUse hook matching the Agent tool
+                        enforces the two dispatch rules doctrine text alone
+                        wasn't enough for: it denies an Agent call for Faber,
+                        MarcoPolo or Testarossa that omits an explicit working
+                        model, and it asks (rather than silently allowing or
+                        blocking) when a role already dispatched this session is
+                        dispatched again.
 
 Stdlib only. Runs on Windows and Linux.
 
@@ -47,8 +53,7 @@ DOCTRINE_DIR = HERE / "doctrine"
 CONDENSED_DOCTRINE = DOCTRINE_DIR / "condensed.md"
 UNIVERSAL_DOCTRINE = DOCTRINE_DIR / "universal.md"
 SKILLS_DIR = HERE / "skills"
-HOOK_SCRIPT_SRC = HERE / "hooks" / "inject_doctrine.py"
-HOOK_SCRIPT_NAME = "harnessing_inject_doctrine.py"
+HOOKS_SRC_DIR = HERE / "hooks"
 
 MARKER_START = "<!-- harnessing:start -->"
 MARKER_END = "<!-- harnessing:end -->"
@@ -66,6 +71,35 @@ AGENT_HOME_MARKERS = {
 }
 
 SKILL_NAMES = ["harnessing-init", "harnessing-audit", "office-hours"]
+
+
+@dataclass
+class HookDef:
+    event: str                       # the Claude Code hook event this registers under
+    src: Path                        # source script in this clone
+    installed_name: str              # filename copied into ~/.claude/hooks/
+    matcher: str | None              # matcher value, or None to apply to every trigger
+    build_command: "Callable[[Path], str]"  # installed script path -> command string
+    prereq: Path | None = None       # a file that must exist for this hook to make sense
+
+
+HOOK_DEFS = [
+    HookDef(
+        event="SessionStart",
+        src=HOOKS_SRC_DIR / "inject_doctrine.py",
+        installed_name="harnessing_inject_doctrine.py",
+        matcher=None,
+        build_command=lambda dst: f'python "{dst.as_posix()}" "{CONDENSED_DOCTRINE.as_posix()}"',
+        prereq=CONDENSED_DOCTRINE,
+    ),
+    HookDef(
+        event="PreToolUse",
+        src=HOOKS_SRC_DIR / "guard_agent_dispatch.py",
+        installed_name="harnessing_guard_agent_dispatch.py",
+        matcher="Agent",
+        build_command=lambda dst: f'python "{dst.as_posix()}"',
+    ),
+]
 
 
 @dataclass
@@ -214,23 +248,15 @@ def install_skills(check: bool) -> list[Step]:
 
 
 def install_hook(check: bool) -> list[Step]:
+    """Register every hook in HOOK_DEFS. One settings.json read and (at most) one
+    write for the whole operation, so two hooks landing in the same run never
+    clobber each other's edit.
+    """
     steps: list[Step] = []
     claude_dir = Path.home() / ".claude"
     if not claude_dir.is_dir():
-        steps.append(Step("SessionStart hook", "skipped", "no ~/.claude on this machine"))
+        steps.append(Step("hooks", "skipped", "no ~/.claude on this machine"))
         return steps
-
-    if not HOOK_SCRIPT_SRC.is_file():
-        steps.append(Step("SessionStart hook", "missing", f"{HOOK_SCRIPT_SRC} not found"))
-        return steps
-    if not CONDENSED_DOCTRINE.is_file():
-        steps.append(Step("SessionStart hook", "missing",
-                           f"{CONDENSED_DOCTRINE} does not exist, nothing to inject"))
-        return steps
-
-    hooks_dir = claude_dir / "hooks"
-    dst = hooks_dir / HOOK_SCRIPT_NAME
-    script_current = dst.is_file() and dst.read_text(encoding="utf-8") == HOOK_SCRIPT_SRC.read_text(encoding="utf-8")
 
     settings_path = claude_dir / "settings.json"
     settings: dict = {}
@@ -238,37 +264,60 @@ def install_hook(check: bool) -> list[Step]:
         try:
             settings = json.loads(settings_path.read_text(encoding="utf-8"))
         except json.JSONDecodeError:
-            steps.append(Step("SessionStart hook", "missing",
+            steps.append(Step("hooks", "missing",
                                f"{settings_path} is not valid JSON, not touching it"))
             return steps
 
-    command = f'python "{dst.as_posix()}" "{CONDENSED_DOCTRINE.as_posix()}"'
+    hooks_dir = claude_dir / "hooks"
+    settings_changed = False
 
-    def points_at_hook(block: dict) -> bool:
-        return any(HOOK_SCRIPT_NAME in h.get("command", "") for h in block.get("hooks", []))
+    for hd in HOOK_DEFS:
+        label = f"{hd.event} hook"
 
-    session_start = settings.get("hooks", {}).get("SessionStart", [])
-    already_registered = any(points_at_hook(b) for b in session_start)
+        if not hd.src.is_file():
+            steps.append(Step(label, "missing", f"{hd.src} not found"))
+            continue
+        if hd.prereq is not None and not hd.prereq.is_file():
+            steps.append(Step(label, "missing",
+                               f"{hd.prereq} does not exist, nothing to inject"))
+            continue
 
-    if script_current and already_registered:
-        steps.append(Step("SessionStart hook", "ok", f"registered and current at {dst}"))
-        return steps
+        dst = hooks_dir / hd.installed_name
+        existed_before = dst.is_file()
+        script_current = existed_before and dst.read_text(encoding="utf-8") == hd.src.read_text(encoding="utf-8")
 
-    if check:
-        steps.append(Step("SessionStart hook", "missing",
-                           "would install/register the harnessing doctrine hook"))
-        return steps
+        def points_at_hook(block: dict, name: str = hd.installed_name) -> bool:
+            return any(name in h.get("command", "") for h in block.get("hooks", []))
 
-    hooks_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(HOOK_SCRIPT_SRC, dst)
+        event_entries = settings.get("hooks", {}).get(hd.event, [])
+        already_registered = any(points_at_hook(b) for b in event_entries)
 
-    hooks = settings.setdefault("hooks", {})
-    starts = hooks.setdefault("SessionStart", [])
-    starts[:] = [b for b in starts if not points_at_hook(b)]
-    starts.append({"hooks": [{"type": "command", "command": command}]})
+        if script_current and already_registered:
+            steps.append(Step(label, "ok", f"registered and current at {dst}"))
+            continue
 
-    settings_path.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
-    steps.append(Step("SessionStart hook", "written", f"installed at {dst}, registered in {settings_path}"))
+        if check:
+            steps.append(Step(label, "missing", f"would install/register the {hd.event} hook"))
+            continue
+
+        hooks_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(hd.src, dst)
+
+        hooks = settings.setdefault("hooks", {})
+        this_event = hooks.setdefault(hd.event, [])
+        this_event[:] = [b for b in this_event if not points_at_hook(b)]
+        entry: dict = {"hooks": [{"type": "command", "command": hd.build_command(dst)}]}
+        if hd.matcher is not None:
+            entry["matcher"] = hd.matcher
+        this_event.append(entry)
+        settings_changed = True
+
+        steps.append(Step(label, "updated" if existed_before else "written",
+                           f"installed at {dst}, registered in {settings_path}"))
+
+    if settings_changed:
+        settings_path.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
+
     return steps
 
 

@@ -39,7 +39,7 @@ itself.
 git clone https://github.com/builes-carlos/buistack.git
 cd buistack/harnessing
 python install.py --check     # see what's missing, writes nothing
-python install.py             # bootstrap: skills + doctrine pointer + hook
+python install.py             # bootstrap: skills + doctrine pointer + hooks
 ```
 
 Bare `install.py` is the idempotent primitive: it detects which agents are on
@@ -161,7 +161,10 @@ harnessing/
   README.md          this file
   doctrine/           the doctrine itself: universal.md, condensed.md, SOURCES.md
   install.py          idempotent installer, --check mode
-  hooks/              SessionStart hook script installed into ~/.claude/hooks/
+  hooks/              two hook scripts installed into ~/.claude/hooks/: SessionStart
+                      (injects doctrine/condensed.md) and PreToolUse on the Agent
+                      tool (denies a Faber/MarcoPolo/Testarossa dispatch with no
+                      explicit model, asks before a same-session role repeat)
   structure/          the .md hierarchy: layer contract and templates
   profile/            _template.md, so an instance can declare itself
   skills/

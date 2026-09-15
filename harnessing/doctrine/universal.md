@@ -182,9 +182,11 @@ you add up the bill.
 working model, and the reason is economic rather than ceremonial: what it produces is
 design decisions, and a bad one is paid for in build passes, not in reasoning tokens.
 
-**The other three run on the working model.** Reconnaissance, carpentry and
-verification do not improve by moving up a tier, and they are the ones dispatched many
-times over, so that is where the bill multiplies.
+**The other three run on the working model, and a dispatch cannot silently skip it.**
+Reconnaissance, carpentry and verification do not improve by moving up a tier, and they
+are the ones dispatched many times over, so that is where the bill multiplies. This is
+no longer a rule to remember: a `Faber`, `MarcoPolo` or `Testarossa` dispatch with no
+explicit model argument is refused before it runs, not caught after.
 
 Written by model tier and not by version name, because a pinned version name is stale
 within months.
@@ -200,9 +202,11 @@ The three below the lead keep their context until the lead kills them, and they 
 killed for three reasons and no others: the work moves to another zone, the agent
 starts rereading what it already read or going in circles, or it hangs.
 
-A new bug is not a new agent. The second bug goes to the same `Faber1` that did the
-first. And when a review has to be fresh it is a new `Testarossa`, not a new role.
-Inventing a name for that is exactly how one agent too many appears.
+**The tell:** about to write an `Agent` call and can't name the live agent of that
+role from this session? You haven't checked yet. Name it before the call, and say why
+it isn't the one to use — the zone changed, it's going in circles, or it hung. A fresh
+`Testarossa` for a fresh review still answers that; a new role name is how the check
+gets skipped.
 
 [Why: on one session, four files were touched by six different agents, each reading
 them from scratch. Per dispatch it looked reasonable. The waste only showed up when the

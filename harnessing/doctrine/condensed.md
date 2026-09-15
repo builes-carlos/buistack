@@ -30,10 +30,14 @@ who owns which stage. The full text is in `doctrine/universal.md`.
 
 ## Agents
 - An agent lives a slice, not a task. Reuse it. A new bug is not a new agent.
+- **The tell:** about to write an `Agent` call and can't name the live agent of that
+  role this session? You haven't checked. Name it before the call, and say why it
+  isn't the one to use.
 - Kill one for three reasons only: the zone changed, it is going in circles, it hung.
 - Fixed names by role: `Gaudi` architecture, `MarcoPolo` reconnaissance, `Faber`
   building, `Testarossa` verification. `Gaudi` on the top of the range, the rest on
-  the working model.
+  the working model, machine-enforced: no explicit model on the other three, no
+  dispatch.
 - Judgment, synthesis and architecture are not delegated. A wide sweep is, because its
   cost is context.
 - An agent never re-delegates.
