@@ -1,14 +1,21 @@
 #!/usr/bin/env python3
 """
-Tests for guard_agent_dispatch.py.
+Tests for guard_agent_dispatch.py, install.py's skill-linking, and
+inject_doctrine.py's drift check.
 
 No test convention exists in this repo yet (no unittest/pytest usage found anywhere
-under harnessing/ or devaing/'s own scripts) -- this is a new, stdlib-only unittest
-file, run directly:
+under harnessing/ or devaing/'s own scripts) -- this is one stdlib-only unittest
+file for the whole hooks+installer surface, extended rather than duplicated as
+each piece was added, run directly:
 
   python harnessing/hooks/test_guard_agent_dispatch.py
+
+Every test that touches "the machine" points HOME/USERPROFILE (or Path.home()
+via mock) at a temporary directory first. Nothing here ever writes to the real
+~/.claude.
 """
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -18,9 +25,16 @@ from pathlib import Path
 from unittest import mock
 
 HOOK_DIR = Path(__file__).resolve().parent
+HARNESSING_DIR = HOOK_DIR.parent
 sys.path.insert(0, str(HOOK_DIR))
+sys.path.insert(0, str(HARNESSING_DIR))
 
 import guard_agent_dispatch as guard  # noqa: E402
+import install as harnessing_install  # noqa: E402
+
+INJECT_DOCTRINE = HOOK_DIR / "inject_doctrine.py"
+CONDENSED = HARNESSING_DIR / "doctrine" / "condensed.md"
+INSTALL_PY = HARNESSING_DIR / "install.py"
 
 
 def agent_input(session_id="sess-1", description="Faber: issue 98 distributors",
@@ -213,6 +227,308 @@ class TestEndToEnd(unittest.TestCase):
         if result.stdout.strip():
             out = json.loads(result.stdout)
             self.assertNotEqual(out["hookSpecificOutput"]["permissionDecision"], "deny")
+
+
+class TestSkillLinking(unittest.TestCase):
+    """install.py's install-as-a-link machinery: _skill_state, _install_one_skill,
+    _remove_installed_skill. Real filesystem, temp directories only -- never the
+    real ~/.claude.
+    """
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp(prefix="linktest_"))
+        self.src = self.tmp / "src_skill"
+        self.src.mkdir()
+        (self.src / "SKILL.md").write_text("v1", encoding="utf-8")
+        self.dest = self.tmp / "dest" / "myskill"
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _content(self, path):
+        return (path / "SKILL.md").read_text(encoding="utf-8")
+
+    def test_link_created_from_absent(self):
+        step = harnessing_install._install_one_skill("myskill", self.src, self.dest, check=False)
+        self.assertEqual(step.status, "written")
+        self.assertTrue(self.dest.is_symlink() or harnessing_install._is_junction(self.dest))
+        self.assertEqual(self._content(self.dest), "v1")
+        # and it is live: editing the source is visible with no reinstall
+        (self.src / "SKILL.md").write_text("v2", encoding="utf-8")
+        self.assertEqual(self._content(self.dest), "v2")
+
+    def test_check_on_absent_reports_and_writes_nothing(self):
+        step = harnessing_install._install_one_skill("myskill", self.src, self.dest, check=True)
+        self.assertEqual(step.status, "missing")
+        self.assertFalse(self.dest.exists())
+
+    def test_second_run_is_ok_linked_and_resolving(self):
+        harnessing_install._install_one_skill("myskill", self.src, self.dest, check=False)
+        step = harnessing_install._install_one_skill("myskill", self.src, self.dest, check=False)
+        self.assertEqual(step.status, "ok")
+        self.assertIn("linked and resolving", step.detail)
+
+    def test_existing_copy_current_content_is_replaced_with_a_link(self):
+        self.dest.mkdir(parents=True)
+        (self.dest / "SKILL.md").write_text("v1", encoding="utf-8")  # matches src
+        state, _ = harnessing_install._skill_state(self.dest, self.src)
+        self.assertEqual(state, "copied_current")
+
+        check_step = harnessing_install._install_one_skill("myskill", self.src, self.dest, check=True)
+        self.assertEqual(check_step.status, "missing")
+        self.assertIn("copied and current", check_step.detail)
+        self.assertTrue(self.dest.is_dir() and not self.dest.is_symlink())  # --check wrote nothing
+
+        step = harnessing_install._install_one_skill("myskill", self.src, self.dest, check=False)
+        self.assertEqual(step.status, "updated")
+        self.assertTrue(self.dest.is_symlink() or harnessing_install._is_junction(self.dest))
+
+    def test_existing_copy_stale_content_is_replaced_with_a_link(self):
+        self.dest.mkdir(parents=True)
+        (self.dest / "SKILL.md").write_text("an old copy, repo moved on", encoding="utf-8")
+        state, _ = harnessing_install._skill_state(self.dest, self.src)
+        self.assertEqual(state, "copied_stale")
+
+        check_step = harnessing_install._install_one_skill("myskill", self.src, self.dest, check=True)
+        self.assertIn("copied and stale", check_step.detail)
+
+        step = harnessing_install._install_one_skill("myskill", self.src, self.dest, check=False)
+        self.assertEqual(step.status, "updated")
+        self.assertEqual(self._content(self.dest), "v1")
+
+    def test_source_missing_leaves_existing_copy_untouched(self):
+        self.dest.mkdir(parents=True)
+        (self.dest / "SKILL.md").write_text("whatever was copied here", encoding="utf-8")
+        shutil.rmtree(self.src)
+        step = harnessing_install._install_one_skill("myskill", self.src, self.dest, check=False)
+        self.assertEqual(step.status, "missing")
+        self.assertIn("leaving the existing", step.detail)
+        self.assertTrue(self.dest.is_dir() and not self.dest.is_symlink())
+        self.assertEqual(self._content(self.dest), "whatever was copied here")
+
+    def test_source_missing_leaves_existing_link_untouched(self):
+        harnessing_install._install_one_skill("myskill", self.src, self.dest, check=False)
+        shutil.rmtree(self.src)
+        step = harnessing_install._install_one_skill("myskill", self.src, self.dest, check=False)
+        self.assertEqual(step.status, "missing")
+        # the (now dangling) link must still be there -- never removed just because
+        # this run's source vanished
+        self.assertTrue(self.dest.is_symlink() or harnessing_install._is_junction(self.dest))
+
+    def test_dangling_link_is_detected_and_relinked_once_source_returns(self):
+        harnessing_install._install_one_skill("myskill", self.src, self.dest, check=False)
+        shutil.rmtree(self.src)
+        state, _ = harnessing_install._skill_state(self.dest, self.src)
+        self.assertEqual(state, "dangling")
+        check_step = harnessing_install._install_one_skill("myskill", self.src, self.dest, check=True)
+        self.assertEqual(check_step.status, "missing")
+        self.assertIn("dangling", check_step.detail)
+
+        # point dest at a different (new) source path -- a real relink, not a
+        # junction/symlink resolving again purely because the old path reappeared
+        new_src = self.tmp / "new_src"
+        new_src.mkdir()
+        (new_src / "SKILL.md").write_text("v-new", encoding="utf-8")
+        step = harnessing_install._install_one_skill("myskill", new_src, self.dest, check=False)
+        self.assertEqual(step.status, "updated")  # replacing a dangling link, not a fresh install
+        self.assertEqual(self._content(self.dest), "v-new")
+
+    def test_obstruction_is_never_removed(self):
+        self.dest.parent.mkdir(parents=True)
+        self.dest.write_text("not a skill, just a stray file", encoding="utf-8")
+        for check in (True, False):
+            step = harnessing_install._install_one_skill("myskill", self.src, self.dest, check=check)
+            self.assertEqual(step.status, "missing")
+            self.assertIn("not touching it", step.detail)
+        self.assertTrue(self.dest.is_file())
+        self.assertEqual(self.dest.read_text(encoding="utf-8"), "not a skill, just a stray file")
+
+    def test_fallback_to_copy_when_both_linking_methods_fail(self):
+        with mock.patch.object(os, "symlink", side_effect=OSError("no privilege")), \
+             mock.patch.object(harnessing_install.subprocess, "run") as mock_run:
+            mock_run.return_value = subprocess.CompletedProcess(args=[], returncode=1, stdout="", stderr="mklink denied")
+            method, note = harnessing_install._link_skill(self.src, self.dest)
+        self.assertEqual(method, "copy")
+        self.assertIn("no privilege", note)
+        self.assertTrue(self.dest.is_dir())
+        self.assertFalse(self.dest.is_symlink())
+        self.assertFalse(harnessing_install._is_junction(self.dest))
+        self.assertEqual(self._content(self.dest), "v1")
+
+    def test_install_one_skill_reports_fallback_to_copy_honestly(self):
+        with mock.patch.object(os, "symlink", side_effect=OSError("no privilege")), \
+             mock.patch.object(harnessing_install.subprocess, "run") as mock_run:
+            mock_run.return_value = subprocess.CompletedProcess(args=[], returncode=1, stdout="", stderr="mklink denied")
+            step = harnessing_install._install_one_skill("myskill", self.src, self.dest, check=False)
+        self.assertEqual(step.status, "written")
+        self.assertIn("copied", step.detail)
+        self.assertIn("linking failed", step.detail)
+
+
+class TestInstallSkillsIntegration(unittest.TestCase):
+    """install_skills()/--check against a fake HOME, end to end: confirms the
+    real machine ends up with links, not copies, and that --check distinguishes
+    the five states in its own output.
+    """
+
+    def setUp(self):
+        self.fake_home = Path(tempfile.mkdtemp(prefix="fakehome_link_"))
+        (self.fake_home / ".claude").mkdir(parents=True)
+        self.env = dict(os.environ)
+        self.env["HOME"] = str(self.fake_home)
+        self.env["USERPROFILE"] = str(self.fake_home)
+
+    def tearDown(self):
+        shutil.rmtree(self.fake_home, ignore_errors=True)
+
+    def _run(self, *args):
+        return subprocess.run([sys.executable, str(INSTALL_PY), *args], env=self.env,
+                               capture_output=True, text=True)
+
+    def test_fresh_install_produces_links_not_copies(self):
+        r = self._run()
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        for name in harnessing_install.SKILL_NAMES:
+            dest = self.fake_home / ".claude" / "skills" / name
+            self.assertTrue(dest.is_symlink() or harnessing_install._is_junction(dest),
+                             f"{name} should be installed as a link, not a copy")
+
+    def test_check_reports_all_five_distinct_states(self):
+        # absent
+        r = self._run("--check")
+        self.assertIn("would link", r.stdout)
+
+        # linked and resolving
+        self._run()
+        r = self._run("--check")
+        self.assertIn("linked and resolving", r.stdout)
+
+        # copied and current, then stale
+        name = harnessing_install.SKILL_NAMES[0]
+        dest = self.fake_home / ".claude" / "skills" / name
+        src = harnessing_install.SKILLS_DIR / name
+        harnessing_install._remove_installed_skill(dest)
+        dest.mkdir(parents=True)
+        for f in src.glob("*.md"):
+            shutil.copyfile(f, dest / f.name)
+        r = self._run("--check")
+        self.assertIn("copied and current", r.stdout)
+
+        (dest / next(src.glob("*.md")).name).write_text("stale content", encoding="utf-8")
+        r = self._run("--check")
+        self.assertIn("copied and stale", r.stdout)
+
+        # dangling and obstructed are exercised against temp directories in
+        # TestSkillLinking -- forcing "dangling" here would mean deleting a real
+        # skill directory out of this checkout, which is not a trade worth making
+        # just to repeat coverage this suite already has. Nothing above touched
+        # anything outside self.fake_home, which tearDown removes wholesale.
+
+
+class TestDriftCheck(unittest.TestCase):
+    """inject_doctrine.py's drift check: repairs hooks+links silently, reports
+    (never fixes) doctrine-pointer drift, fails open. All against fake homes.
+    """
+
+    def setUp(self):
+        self.fake_home = Path(tempfile.mkdtemp(prefix="drift_home_"))
+        (self.fake_home / ".claude").mkdir(parents=True)
+        self.project = Path(tempfile.mkdtemp(prefix="drift_proj_"))
+
+    def tearDown(self):
+        shutil.rmtree(self.fake_home, ignore_errors=True)
+        shutil.rmtree(self.project, ignore_errors=True)
+
+    def _run_hook(self, cwd_for_stdin=None, condensed=CONDENSED):
+        env = dict(os.environ)
+        env["HOME"] = str(self.fake_home)
+        env["USERPROFILE"] = str(self.fake_home)
+        stdin = json.dumps({"cwd": str(cwd_for_stdin)}) if cwd_for_stdin else ""
+        r = subprocess.run([sys.executable, str(INJECT_DOCTRINE), str(condensed)], input=stdin,
+                            capture_output=True, text=True, env=env)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        return json.loads(r.stdout)
+
+    def _install_pointer_for_real(self):
+        env = dict(os.environ)
+        env["HOME"] = str(self.fake_home)
+        env["USERPROFILE"] = str(self.fake_home)
+        r = subprocess.run([sys.executable, str(INSTALL_PY), "--path", str(self.project)],
+                            cwd=str(self.project), env=env, capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
+    def test_bare_home_repairs_hooks_and_links_reports_missing_pointer(self):
+        out = self._run_hook(self.project)
+        self.assertIn("systemMessage", out)
+        self.assertIn("repaired", out["systemMessage"])
+        self.assertIn("no doctrine pointer reaches", out["systemMessage"])
+        self.assertIn("harnessing install drift", out["hookSpecificOutput"]["additionalContext"])
+        self.assertTrue((self.fake_home / ".claude" / "hooks" / "harnessing_guard_agent_dispatch.py").is_file())
+        self.assertTrue((self.fake_home / ".claude" / "skills" / "harnessing-init").is_dir())
+
+    def test_nothing_drifted_is_silent(self):
+        self._run_hook(self.project)  # first pass repairs hooks/links
+        self._install_pointer_for_real()
+        out = self._run_hook(self.project)
+        self.assertNotIn("systemMessage", out)
+        self.assertEqual(out["hookSpecificOutput"]["additionalContext"], CONDENSED.read_text(encoding="utf-8"))
+
+    def test_stale_doctrine_pointer_is_reported_never_rewritten(self):
+        self._run_hook(self.project)
+        self._install_pointer_for_real()
+        claude_md = self.project / "CLAUDE.md"
+        original = claude_md.read_text(encoding="utf-8")
+        corrupted = original.replace("harnessing doctrine", "harnessing doctrine (hand-edited)")
+        claude_md.write_text(corrupted, encoding="utf-8")
+
+        out = self._run_hook(self.project)
+        self.assertIn("systemMessage", out)
+        self.assertIn("out of date", out["systemMessage"])
+        self.assertIn("install.py", out["systemMessage"])
+        self.assertIn("--path", out["systemMessage"])
+        self.assertEqual(claude_md.read_text(encoding="utf-8"), corrupted,
+                          "the hook must never rewrite the doctrine pointer itself")
+
+    def test_missing_hook_registration_is_silently_repaired(self):
+        self._run_hook(self.project)
+        self._install_pointer_for_real()
+        settings_path = self.fake_home / ".claude" / "settings.json"
+        settings = json.loads(settings_path.read_text(encoding="utf-8"))
+        del settings["hooks"]["PreToolUse"]
+        settings_path.write_text(json.dumps(settings), encoding="utf-8")
+
+        out = self._run_hook(self.project)
+        self.assertIn("systemMessage", out)
+        self.assertIn("PreToolUse", out["systemMessage"])
+        self.assertIn("repaired", out["systemMessage"])
+        settings_after = json.loads(settings_path.read_text(encoding="utf-8"))
+        self.assertIn("PreToolUse", settings_after["hooks"])
+
+        out2 = self._run_hook(self.project)
+        self.assertNotIn("systemMessage", out2, "repair must be idempotent: nothing left to fix")
+
+    def test_fails_open_when_install_py_is_not_alongside_condensed(self):
+        lonely = Path(tempfile.mkdtemp(prefix="lonely_"))
+        try:
+            lonely_doctrine = lonely / "doctrine"
+            lonely_doctrine.mkdir()
+            lonely_condensed = lonely_doctrine / "condensed.md"
+            lonely_condensed.write_text("some doctrine text", encoding="utf-8")
+            out = self._run_hook(self.project, condensed=lonely_condensed)
+            self.assertNotIn("systemMessage", out)
+            self.assertEqual(out["hookSpecificOutput"]["additionalContext"], "some doctrine text")
+        finally:
+            shutil.rmtree(lonely, ignore_errors=True)
+
+    def test_malformed_stdin_fails_open(self):
+        env = dict(os.environ)
+        env["HOME"] = str(self.fake_home)
+        env["USERPROFILE"] = str(self.fake_home)
+        r = subprocess.run([sys.executable, str(INJECT_DOCTRINE), str(CONDENSED)], input="{not json",
+                            capture_output=True, text=True, env=env)
+        self.assertEqual(r.returncode, 0)
+        out = json.loads(r.stdout)
+        self.assertEqual(out["hookSpecificOutput"]["hookEventName"], "SessionStart")
 
 
 if __name__ == "__main__":

@@ -4,12 +4,18 @@ Idempotent installer for harnessing.
 
 Three independent operations, each safe to re-run:
 
-  1. Skills bootstrap: copies the three harnessing skills into
-                        ~/.claude/skills/ so /harnessing-init, /harnessing-audit
-                        and /office-hours exist as slash commands. Claude Code
-                        only, Codex and Gemini have no equivalent skill
-                        mechanism in this stack, they get the doctrine pointer
-                        instead (operation 2).
+  1. Skills bootstrap: links the three harnessing skills into ~/.claude/skills/
+                        so /harnessing-init, /harnessing-audit and /office-hours
+                        exist as slash commands, and so the installed skill IS
+                        the clone rather than a snapshot of it -- a `git pull`
+                        updates the machine, nothing to fall out of date. A
+                        symlink on Linux; a directory junction (`mklink /J`) on
+                        Windows, since `os.symlink` there needs Developer Mode
+                        or admin and can't be relied on. If neither linking
+                        method works, falls back to a plain copy and says so.
+                        Claude Code only, Codex and Gemini have no equivalent
+                        skill mechanism in this stack, they get the doctrine
+                        pointer instead (operation 2).
   2. Doctrine pointer: writes a short block into AGENTS.md, CLAUDE.md and
                         GEMINI.md at a given directory, between
                         `<!-- harnessing:start -->` / `<!-- harnessing:end -->`
@@ -43,7 +49,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
+import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -209,6 +217,148 @@ def install_doctrine_pointer(target_dir: Path, agents: dict[str, bool], check: b
     return steps
 
 
+def _is_junction(path: Path) -> bool:
+    """Path.is_junction() is 3.12+. Older interpreters just never see a junction,
+    which degrades to treating it as a plain directory -- wrong shape, but not
+    a reason to crash an installer that declares no minimum version.
+    """
+    try:
+        return path.is_junction()
+    except AttributeError:
+        return False
+
+
+def _skill_state(dest: Path, src: Path) -> tuple[str, str]:
+    """Classify what is currently at `dest`, without changing anything.
+
+    Returns (state, detail) where state is one of:
+      absent, linked, dangling, copied_current, copied_stale, obstructed
+    """
+    if dest.is_symlink() or _is_junction(dest):
+        if dest.exists():  # follows the link/junction; True means the target resolves
+            return "linked", ""
+        try:
+            target = os.readlink(dest)
+        except OSError:
+            target = "unreadable target"
+        return "dangling", target
+
+    if dest.is_dir():
+        same = all(
+            (dest / f.name).is_file()
+            and (dest / f.name).read_text(encoding="utf-8") == f.read_text(encoding="utf-8")
+            for f in src.glob("*.md")
+        )
+        return ("copied_current" if same else "copied_stale"), ""
+
+    if dest.exists():
+        return "obstructed", ""
+
+    return "absent", ""
+
+
+def _remove_installed_skill(dest: Path) -> None:
+    """Remove whatever this installer put at `dest`, using the operation that
+    matches what it actually is. Never shutil.rmtree a symlink or junction --
+    that walks through the reparse point and would delete the repo's own
+    source files instead of just detaching the pointer. Callers are expected
+    to have already verified `dest` is one of the shapes this function knows
+    how to remove; it raises rather than guess on anything else.
+    """
+    if dest.is_symlink():
+        # Windows requires RemoveDirectory (rmdir), not DeleteFile (unlink), for
+        # any directory reparse point, including a directory symlink.
+        dest.rmdir() if os.name == "nt" else dest.unlink()
+    elif _is_junction(dest):
+        dest.rmdir()
+    elif dest.is_dir():
+        shutil.rmtree(dest)
+    elif dest.is_file():
+        raise RuntimeError(f"refusing to remove {dest}: it is a file, not a link, "
+                            f"junction, or directory this installer owns")
+
+
+def _link_skill(src: Path, dest: Path) -> tuple[str, str]:
+    """Try a portable symlink, then (Windows only) a directory junction via the
+    `mklink /J` shell built-in -- there is no public stdlib API for a junction.
+    Falls back to a plain copy if both fail, rather than leaving no skill at
+    all. Returns (method, note); note is empty on a clean symlink/junction and
+    otherwise explains what was tried and why it fell through.
+    """
+    try:
+        os.symlink(src, dest, target_is_directory=True)
+        return "symlink", ""
+    except OSError as e:
+        symlink_err = str(e)  # `e` itself is unbound once the except clause ends
+
+    if os.name == "nt":
+        result = subprocess.run(
+            ["cmd", "/c", "mklink", "/J", str(dest), str(src)],
+            capture_output=True, text=True,
+        )
+        if result.returncode == 0:
+            return "junction", ""
+        junction_err = (result.stderr or result.stdout or f"mklink exited {result.returncode}").strip()
+        note = f"symlink failed ({symlink_err}); junction failed ({junction_err})"
+    else:
+        note = f"symlink failed ({symlink_err})"
+
+    dest.mkdir(parents=True, exist_ok=True)
+    for f in src.glob("*.md"):
+        shutil.copyfile(f, dest / f.name)
+    return "copy", note
+
+
+def _install_one_skill(name: str, src: Path, dest: Path, check: bool) -> Step:
+    # Classify what's at `dest` before asking whether `src` exists: a dangling
+    # link and an already-good link are dest-only facts, true whether or not
+    # this run's source is present, and "linked" / "obstructed" are terminal
+    # either way.
+    state, extra = _skill_state(dest, src)
+
+    if state == "linked":
+        return Step(name, "ok", f"linked and resolving at {dest}")
+
+    if state == "obstructed":
+        return Step(name, "missing",
+                     f"{dest} exists and is not a directory, link, or junction this "
+                     f"installer owns -- not touching it")
+
+    if not src.is_dir():
+        # Verify the source before removing anything, per the rule this whole
+        # branch exists for: no source means no basis to touch what's already
+        # there, whatever shape it is in. A stale skill beats no skill.
+        if state == "absent":
+            return Step(name, "missing", f"{src} not found in this clone")
+        leave_alone = {
+            "dangling": f"linked but dangling (target: {extra}), and {src} is also "
+                        f"missing -- leaving the broken link rather than guessing",
+            "copied_current": f"{src} not found in this clone; leaving the existing copy at {dest} alone",
+            "copied_stale": f"{src} not found in this clone; leaving the existing (stale) copy at {dest} alone",
+        }[state]
+        return Step(name, "missing", leave_alone)
+
+    action = {
+        "absent": f"would link {dest} -> {src}",
+        "dangling": f"linked but dangling (target: {extra}); would relink {dest} -> {src}",
+        "copied_current": f"copied and current at {dest}; would replace with a link to {src}",
+        "copied_stale": f"copied and stale at {dest}; would replace with a current link to {src}",
+    }[state]
+
+    if check:
+        return Step(name, "missing", action)
+
+    if dest.exists() or dest.is_symlink() or _is_junction(dest):
+        _remove_installed_skill(dest)
+
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    method, note = _link_skill(src, dest)
+    status = "written" if state == "absent" else "updated"
+    if method == "copy":
+        return Step(name, status, f"copied to {dest} (linking failed -- {note})")
+    return Step(name, status, f"linked ({method}) {dest} -> {src}")
+
+
 def install_skills(check: bool) -> list[Step]:
     steps: list[Step] = []
     claude_skills_dir = Path.home() / ".claude" / "skills"
@@ -218,32 +368,8 @@ def install_skills(check: bool) -> list[Step]:
 
     for name in SKILL_NAMES:
         src = SKILLS_DIR / name
-        if not src.is_dir():
-            steps.append(Step(name, "missing", f"{src} not found in this clone"))
-            continue
-
         dest = claude_skills_dir / name
-        needs_write = True
-        if dest.is_dir():
-            same = all(
-                (dest / f.name).is_file()
-                and (dest / f.name).read_text(encoding="utf-8") == f.read_text(encoding="utf-8")
-                for f in src.glob("*.md")
-            )
-            needs_write = not same
-
-        if not needs_write:
-            steps.append(Step(name, "ok", f"already up to date at {dest}"))
-            continue
-
-        if check:
-            steps.append(Step(name, "missing", f"would copy to {dest}"))
-            continue
-
-        dest.mkdir(parents=True, exist_ok=True)
-        for f in src.glob("*.md"):
-            shutil.copyfile(f, dest / f.name)
-        steps.append(Step(name, "written", f"copied to {dest}"))
+        steps.append(_install_one_skill(name, src, dest, check))
     return steps
 
 
