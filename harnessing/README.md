@@ -24,6 +24,10 @@ not care whether that work is a software feature or a personal errand.
 - **The module contract.** devaing and brainia implement this doctrine in
   their own domain. harnessing does not require either to function, and
   neither requires harnessing.
+- **The install contract.** What any module's own install step has to
+  guarantee (idempotent, a `--check` that writes nothing, no network,
+  non-interactive, per-item reporting) so "what of mine is out of date" has
+  one honest answer across all three. See `install-contract.md`.
 
 ## What it does not govern
 
@@ -172,8 +176,10 @@ one: `write-a-skill`, `find-skills`, `caveman`, `zoom-out`.
 ```
 harnessing/
   README.md          this file
+  install-contract.md what any module's own install step has to guarantee
   doctrine/           the doctrine itself: universal.md, condensed.md, SOURCES.md
-  install.py          idempotent installer, --check mode
+  install.py          idempotent installer, --check mode; the contract's reference
+                      implementation
   hooks/              two hook scripts installed into ~/.claude/hooks/: SessionStart
                       (injects doctrine/condensed.md, and self-repairs hook
                       registrations and skill links every session -- reports,
