@@ -37,7 +37,8 @@ Two independent checks, deliberately different strengths:
      names roles by tier, not by pinned version, and a hardcoded model name here
      would go stale the same way a hardcoded version name would in the doctrine.
 
-  2. Reuse (asks). A per-session, append-only register under
+  2. Reuse (asks), for the roles whose reuse is the default. A per-session,
+     append-only register under
      ~/.claude/harnessing/agent-dispatch-register/<session_id>.jsonl records every
      recognised-role dispatch this hook has let through. A second dispatch of a
      role already in that session's register does not get silently allowed or
@@ -45,6 +46,15 @@ Two independent checks, deliberately different strengths:
      zone changed, it is going in circles, it hung) are real and this hook cannot
      tell them apart from a redundant one, so it asks, naming the previous
      dispatch of that role, when it fired, and what its description said.
+
+     MarcoPolo is deliberately outside this check, and that is a rule rather than
+     an exemption. Its deliverable is a written finding, so it is one per
+     question and ends when the finding is written: a second, third and eighth
+     dispatch in a session are the intended shape, not a smell. Asking on each
+     would push exactly the behaviour the doctrine now forbids, one recon agent
+     kept alive across every question until it carries several zones at once.
+     Its dispatches are still recorded, so the register stays a full account of
+     what the session opened.
 
 The register only ever grows within a session and is never consulted for
 liveness -- this hook has no way to know whether a previously dispatched agent is
@@ -66,6 +76,9 @@ from pathlib import Path
 
 ROLE_NAMES = ("Gaudi", "MarcoPolo", "Faber", "Testarossa")
 WORKING_MODEL_ROLES = ("Faber", "MarcoPolo", "Testarossa")
+# The roles whose reuse is the default, and so the only ones a second dispatch is
+# worth asking about. MarcoPolo is absent on purpose: see the module docstring.
+REUSE_DEFAULT_ROLES = ("Gaudi", "Faber", "Testarossa")
 
 _CANON = {name.lower(): name for name in ROLE_NAMES}
 _ROLE_ALTERNATION = "|".join(ROLE_NAMES)
@@ -160,7 +173,8 @@ def build_ask_reason(role: str, prior_entries: list[dict]) -> str:
     return (
         f'This session already dispatched {role} at {when}: "{what}".{extra} '
         f'An agent lives a slice, not a task -- reuse it unless the zone changed, '
-        f'it is going in circles, or it hung. Dispatch a new {role} anyway?'
+        f'it is going in circles, it hung, or what it holds is finished work. '
+        f'Dispatch a new {role} anyway?'
     )
 
 
@@ -171,7 +185,7 @@ def decide(role: str, tool_input: dict, prior_entries: list[dict]) -> tuple[str 
         if not isinstance(model, str) or not model.strip():
             return "deny", build_deny_reason(role)
 
-    if any(e.get("role") == role for e in prior_entries):
+    if role in REUSE_DEFAULT_ROLES and any(e.get("role") == role for e in prior_entries):
         return "ask", build_ask_reason(role, prior_entries)
 
     return None, None

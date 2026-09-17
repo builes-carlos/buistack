@@ -174,8 +174,8 @@ you add up the bill.
 | Role | What it does | How many | Model |
 |---|---|---|---|
 | `Gaudi` | Architecture. The memory of the design: why what was decided was decided, what was discarded, which invariant the work is built against | one, lasts the whole session | the top of the range |
-| `MarcoPolo` | Exploration and reconnaissance | `MarcoPolo1`, and a second only if it is genuinely needed | the working model |
-| `Faber` | Building. The craftsman: in Latin, the one who makes. Runs its own gates before handing anything over | `Faber1`, `Faber2` | the working model |
+| `MarcoPolo` | Exploration and reconnaissance | one per question, as many as there are questions. It ends when the finding is written | the working model |
+| `Faber` | Building. The craftsman: in Latin, the one who makes. Runs its own gates before handing anything over | one per zone, `Faber1`, `Faber2`. It ends when the slice closes | the working model |
 | `Testarossa` | Verification against the requirement, never against the implementation | `Testarossa1`, and `Testarossa2` when the review has to happen in fresh context | the working model |
 
 **`Gaudi` runs on the top of the range.** It is the only one that does not run on the
@@ -231,6 +231,39 @@ not the agent's context occupancy, so it does not even measure what it is taken 
 measure. The lead has no direct view of a subagent's context either way, which is
 exactly why the signals above are the instrument.
 
+**Reconnaissance and building are not reused on the same terms.** `MarcoPolo`'s
+deliverable is a written finding, and once it is written the context that produced it is
+spent: the value already moved to the document. So it is one per question and it ends
+there, and its cheapness is the point, because a recon agent kept alive to answer the
+next eight questions is how a single agent ends up carrying eight zones. `Faber` is the
+opposite. What it holds is decisions in flight that are in no document yet, which is
+what makes reuse worth paying for, and is also what says when it stops being worth it:
+the slice closes, what it held is written down, nothing is in flight.
+
+**Closing at the boundary is a cadence, not a signal to wait for.** All four kill
+reasons are reactive, and an agent doing legitimate new work, one question after the
+next, trips none of them while it grows without limit. So the slice closing is itself
+the moment. This adds no fifth reason: it is the fourth one applied on time instead of
+late, since at a closed and documented slice everything the agent holds is finished
+work by definition. It is the cheapest cut there is and the only one that loses
+nothing.
+
+**Compacting an agent is not the way out.** What compaction destroys is exactly what
+reuse was for: the located knowledge, which file, which line, which path was already
+ruled out and why. What survives is a summary, and the lead can write that summary as a
+handoff for less, choosing what goes in. The handoff is the compaction, done by hand and
+auditable.
+
+**Reuse is worth most while the agent is small.** Early on, rereading the world is the
+dominant cost and reuse is obvious. Far along, that same reread is a small fraction of
+what the agent is carrying, and it is competing against the quality of the reasoning in
+the stretch where the window is already degraded. The argument for reuse weakens on its
+own as the agent grows, which is why forcing it hardest at the end is backwards.
+
+[Why: recon and build agents were being reused until they were several hundred thousand
+tokens heavy, at which point reuse was declared not to apply any more. Reuse was not the
+part that failed. Nothing said when a healthy agent should end.]
+
 **The tell:** about to write an `Agent` call and can't name the live agent of that
 role from this session? You haven't checked yet. Name it before the call, and say why
 it isn't the one to use: the zone changed, it's going in circles, it hung, or what it
@@ -284,8 +317,9 @@ The lead's context is the scarce resource, and the topology is chosen to protect
 starts to feel off. Quality peaks through the first 30% of the window, rushes past 50%,
 and hallucinates past 70%.
 
-**Reusing an agent is the main form of compression.** Not paying twice to read the same
-files beats any summary.
+**Reusing a builder is the main form of compression.** Not paying twice to read the same
+files beats any summary. For reconnaissance the compression is the finding written down,
+not the agent kept alive to remember it.
 
 **When a slice closes, take a fresh session.** What survives is what was written, not
 what was remembered.

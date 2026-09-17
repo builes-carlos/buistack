@@ -120,6 +120,29 @@ class TestDecide(unittest.TestCase):
         decision, reason = guard.decide("Faber", {"model": "sonnet"}, prior)
         self.assertIsNone(decision)
 
+    def test_second_marcopolo_dispatch_does_not_ask(self):
+        """One per question is MarcoPolo's shape, so a second one is not a smell."""
+        prior = [{"role": "MarcoPolo", "description": "recon on the sync", "timestamp": "2026-09-15T10:00:00+00:00"}]
+        decision, reason = guard.decide("MarcoPolo", {"model": "sonnet"}, prior)
+        self.assertIsNone(decision)
+
+    def test_marcopolo_without_model_still_denies(self):
+        """Exempt from the reuse check, never from the model check."""
+        prior = [{"role": "MarcoPolo", "description": "recon", "timestamp": "2026-09-15T10:00:00+00:00"}]
+        decision, reason = guard.decide("MarcoPolo", {}, prior)
+        self.assertEqual(decision, "deny")
+
+    def test_second_gaudi_dispatch_asks(self):
+        prior = [{"role": "Gaudi", "description": "design the migration", "timestamp": "2026-09-15T10:00:00+00:00"}]
+        decision, reason = guard.decide("Gaudi", {}, prior)
+        self.assertEqual(decision, "ask")
+        self.assertIn("design the migration", reason)
+
+    def test_second_testarossa_dispatch_asks(self):
+        prior = [{"role": "Testarossa", "description": "verify slice 5", "timestamp": "2026-09-15T10:00:00+00:00"}]
+        decision, reason = guard.decide("Testarossa", {"model": "sonnet"}, prior)
+        self.assertEqual(decision, "ask")
+
 
 class TestRegisterIO(unittest.TestCase):
     def setUp(self):
@@ -193,6 +216,16 @@ class TestEndToEnd(unittest.TestCase):
         out = json.loads(result.stdout)
         self.assertEqual(out["hookSpecificOutput"]["permissionDecision"], "ask")
         self.assertIn("issue 98 distributors", out["hookSpecificOutput"]["permissionDecisionReason"])
+
+    def test_repeated_marcopolo_is_silent_and_still_recorded(self):
+        for n in (1, 2, 3):
+            result = run_hook(agent_input(session_id="sess-mp",
+                                          description=f"MarcoPolo: question {n}",
+                                          prompt="You are MarcoPolo, doing reconnaissance.",
+                                          model="sonnet"), self.tmp)
+            self.assertEqual(result.stdout.strip(), "", f"dispatch {n} should be silent")
+        entries = guard.load_register(self.tmp / "sess-mp.jsonl")
+        self.assertEqual([e["role"] for e in entries], ["MarcoPolo"] * 3)
 
     def test_same_role_different_session_does_not_ask(self):
         run_hook(agent_input(session_id="sess-a", description="Faber: issue 98 distributors", model="sonnet"), self.tmp)
