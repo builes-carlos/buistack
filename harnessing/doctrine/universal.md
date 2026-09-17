@@ -248,11 +248,19 @@ late, since at a closed and documented slice everything the agent holds is finis
 work by definition. It is the cheapest cut there is and the only one that loses
 nothing.
 
-**Compacting an agent is not the way out.** What compaction destroys is exactly what
-reuse was for: the located knowledge, which file, which line, which path was already
-ruled out and why. What survives is a summary, and the lead can write that summary as a
-handoff for less, choosing what goes in. The handoff is the compaction, done by hand and
-auditable.
+**Compaction is not a choice, so it is not the way out either.** An agent that fills its
+window compacts on its own, and the lead does not see it happen: what comes back looks
+exactly the same and the agent goes on answering. What compaction destroys is precisely
+what reuse was for, the located knowledge of which file, which line, which path was
+already ruled out and why. So the question is never whether to compact. It is whether
+anything that mattered was still living only inside that agent when it did.
+
+**Which is why the handoff is written as the work happens, not when the agent dies.** A
+handoff written at the kill has already lost the race, because the compaction came
+first and announced nothing. A finding written the moment it appears costs the same and
+cannot be taken away. Once nothing of value lives only in an agent's head, a compaction
+costs nothing, the kill is bookkeeping, and how heavy an agent has become stops being a
+question worth asking.
 
 **Reuse is worth most while the agent is small.** Early on, rereading the world is the
 dominant cost and reuse is obvious. Far along, that same reread is a small fraction of

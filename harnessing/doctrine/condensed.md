@@ -34,8 +34,9 @@ who owns which stage. The full text is in `doctrine/universal.md`.
 - Recon and building end differently. `MarcoPolo` is one per question and ends when the
   finding is written. `Faber` is one per zone and ends when the slice closes, by
   cadence, not when something looks wrong.
-- Never compact an agent to keep it alive: that throws away the located knowledge reuse
-  was for. The handoff is the compaction.
+- Compaction is not a choice: an agent that fills its window compacts silently and the
+  lead never sees it. So the handoff is written as the work happens, never at the kill,
+  which always arrives after the compaction that already took the located knowledge.
 - **The tell:** about to write an `Agent` call and can't name the live agent of that
   role this session? You haven't checked. Name it before the call, and say why it
   isn't the one to use.
