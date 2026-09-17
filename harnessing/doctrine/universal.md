@@ -198,15 +198,44 @@ reads the world before writing a line: the instruction chain, the context docume
 area docs, and only then the code. That is tens of thousands of tokens per agent before
 any work happens. One agent per task pays that bill once per task.
 
+**Reuse holds while the zone holds.** The one that came off web research is not the one
+to read CSS, alive or not. There a fresh agent is genuinely cheaper, because it drags
+none of the useless context behind it. Reuse is the default inside a zone and stops
+being the default the moment the zone changes.
+
 The three below the lead keep their context until the lead kills them, and they get
-killed for three reasons and no others: the work moves to another zone, the agent
-starts rereading what it already read or going in circles, or it hangs.
+killed for four reasons and no others: the work moves to another zone, the agent starts
+rereading what it already read or going in circles, it hangs, or most of what it is
+holding is finished work rather than work in flight.
+
+**The fourth is a variant of the first.** A builder carrying the original brief that has
+since been replaced, two decisions that were discarded and an architecture that no
+longer exists is holding dead history. Whatever in there still matters for the next
+stretch is already written into the project's documents, so a fresh one reads it back
+in for less than the old one spends reasoning around the rest.
+
+**The signals are worth more than any threshold.** It rereads files it already read, or
+asks for something it was already told. It starts breaking constraints it used to
+respect, or reintroduces something that had been taken out, and that is the clearest
+sign of degradation there is. Or it closed a stretch and the stretch is documented,
+which is the cheapest moment of all, because nothing half done gets lost.
+
+**The counterweight, so they do not get killed too readily.** A large agent that knows
+its zone intimately and is halfway through a stretch is worth more than a fresh one,
+however expensive it looks. Killing it there costs the handoff plus the relearning, and
+it risks the new one undoing decisions nobody wrote down.
+
+**The criterion is never a token count.** It is how useful the agent still is, not how
+heavy it is. And the token figure reported when a run ends is that run's consumption,
+not the agent's context occupancy, so it does not even measure what it is taken to
+measure. The lead has no direct view of a subagent's context either way, which is
+exactly why the signals above are the instrument.
 
 **The tell:** about to write an `Agent` call and can't name the live agent of that
 role from this session? You haven't checked yet. Name it before the call, and say why
-it isn't the one to use — the zone changed, it's going in circles, or it hung. A fresh
-`Testarossa` for a fresh review still answers that; a new role name is how the check
-gets skipped.
+it isn't the one to use: the zone changed, it's going in circles, it hung, or what it
+holds is finished work. A fresh `Testarossa` for a fresh review still answers that; a
+new role name is how the check gets skipped.
 
 [Why: on one session, four files were touched by six different agents, each reading
 them from scratch. Per dispatch it looked reasonable. The waste only showed up when the
