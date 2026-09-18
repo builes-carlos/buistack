@@ -29,11 +29,26 @@ who owns which stage. The full text is in `doctrine/universal.md`.
 - Size verification to the change, never to the project.
 
 ## Agents
-- An agent lives a slice, not a task. Reuse it. A new bug is not a new agent.
-- Kill one for three reasons only: the zone changed, it is going in circles, it hung.
+- An agent lives a slice, not a task. Reuse it while the zone is the same. A new bug is
+  not a new agent.
+- Recon and building end differently. `MarcoPolo` is one per question and ends when the
+  finding is written. `Faber` is one per zone and ends when the slice closes, by
+  cadence, not when something looks wrong.
+- Compaction is not a choice: an agent that fills its window compacts silently and the
+  lead never sees it. So the handoff is written as the work happens, never at the kill,
+  which always arrives after the compaction that already took the located knowledge.
+- **The tell:** about to write an `Agent` call and can't name the live agent of that
+  role this session? You haven't checked. Name it before the call, and say why it
+  isn't the one to use.
+- Kill one for four reasons only: the zone changed, it is going in circles, it hung, or
+  most of what it holds is finished work. Breaking a constraint it used to respect is
+  the clearest signal.
+- The criterion is usefulness, never a token count. Mid stretch, the one that knows the
+  zone beats a fresh one.
 - Fixed names by role: `Gaudi` architecture, `MarcoPolo` reconnaissance, `Faber`
   building, `Testarossa` verification. `Gaudi` on the top of the range, the rest on
-  the working model.
+  the working model, machine-enforced: the dispatch names the model or the role
+  carries it, never inherited from the lead.
 - Judgment, synthesis and architecture are not delegated. A wide sweep is, because its
   cost is context.
 - An agent never re-delegates.

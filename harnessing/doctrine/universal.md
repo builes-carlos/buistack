@@ -174,17 +174,22 @@ you add up the bill.
 | Role | What it does | How many | Model |
 |---|---|---|---|
 | `Gaudi` | Architecture. The memory of the design: why what was decided was decided, what was discarded, which invariant the work is built against | one, lasts the whole session | the top of the range |
-| `MarcoPolo` | Exploration and reconnaissance | `MarcoPolo1`, and a second only if it is genuinely needed | the working model |
-| `Faber` | Building. The craftsman: in Latin, the one who makes. Runs its own gates before handing anything over | `Faber1`, `Faber2` | the working model |
+| `MarcoPolo` | Exploration and reconnaissance | one per question, as many as there are questions. It ends when the finding is written | the working model |
+| `Faber` | Building. The craftsman: in Latin, the one who makes. Runs its own gates before handing anything over | one per zone, `Faber1`, `Faber2`. It ends when the slice closes | the working model |
 | `Testarossa` | Verification against the requirement, never against the implementation | `Testarossa1`, and `Testarossa2` when the review has to happen in fresh context | the working model |
 
 **`Gaudi` runs on the top of the range.** It is the only one that does not run on the
 working model, and the reason is economic rather than ceremonial: what it produces is
 design decisions, and a bad one is paid for in build passes, not in reasoning tokens.
 
-**The other three run on the working model.** Reconnaissance, carpentry and
-verification do not improve by moving up a tier, and they are the ones dispatched many
-times over, so that is where the bill multiplies.
+**The other three run on the working model, and a dispatch cannot silently skip it.**
+Reconnaissance, carpentry and verification do not improve by moving up a tier, and they
+are the ones dispatched many times over, so that is where the bill multiplies. This is
+no longer a rule to remember: a `Faber`, `MarcoPolo` or `Testarossa` dispatch that
+leaves the model to inheritance is refused before it runs, not caught after. Naming it
+on the call and carrying it on the role itself both satisfy that, and the second is
+better where the tooling allows it, because a role that owns its model cannot be
+dispatched onto the wrong one by someone who forgot.
 
 Written by model tier and not by version name, because a pinned version name is stale
 within months.
@@ -196,13 +201,85 @@ reads the world before writing a line: the instruction chain, the context docume
 area docs, and only then the code. That is tens of thousands of tokens per agent before
 any work happens. One agent per task pays that bill once per task.
 
-The three below the lead keep their context until the lead kills them, and they get
-killed for three reasons and no others: the work moves to another zone, the agent
-starts rereading what it already read or going in circles, or it hangs.
+**Reuse holds while the zone holds.** The one that came off web research is not the one
+to read CSS, alive or not. There a fresh agent is genuinely cheaper, because it drags
+none of the useless context behind it. Reuse is the default inside a zone and stops
+being the default the moment the zone changes.
 
-A new bug is not a new agent. The second bug goes to the same `Faber1` that did the
-first. And when a review has to be fresh it is a new `Testarossa`, not a new role.
-Inventing a name for that is exactly how one agent too many appears.
+The three below the lead keep their context until the lead kills them, and they get
+killed for four reasons and no others: the work moves to another zone, the agent starts
+rereading what it already read or going in circles, it hangs, or most of what it is
+holding is finished work rather than work in flight.
+
+**The fourth is a variant of the first.** A builder carrying the original brief that has
+since been replaced, two decisions that were discarded and an architecture that no
+longer exists is holding dead history. Whatever in there still matters for the next
+stretch is already written into the project's documents, so a fresh one reads it back
+in for less than the old one spends reasoning around the rest.
+
+**The signals are worth more than any threshold.** It rereads files it already read, or
+asks for something it was already told. It starts breaking constraints it used to
+respect, or reintroduces something that had been taken out, and that is the clearest
+sign of degradation there is. Or it closed a stretch and the stretch is documented,
+which is the cheapest moment of all, because nothing half done gets lost.
+
+**The counterweight, so they do not get killed too readily.** A large agent that knows
+its zone intimately and is halfway through a stretch is worth more than a fresh one,
+however expensive it looks. Killing it there costs the handoff plus the relearning, and
+it risks the new one undoing decisions nobody wrote down.
+
+**The criterion is never a token count.** It is how useful the agent still is, not how
+heavy it is. And the token figure reported when a run ends is that run's consumption,
+not the agent's context occupancy, so it does not even measure what it is taken to
+measure. The lead has no direct view of a subagent's context either way, which is
+exactly why the signals above are the instrument.
+
+**Reconnaissance and building are not reused on the same terms.** `MarcoPolo`'s
+deliverable is a written finding, and once it is written the context that produced it is
+spent: the value already moved to the document. So it is one per question and it ends
+there, and its cheapness is the point, because a recon agent kept alive to answer the
+next eight questions is how a single agent ends up carrying eight zones. `Faber` is the
+opposite. What it holds is decisions in flight that are in no document yet, which is
+what makes reuse worth paying for, and is also what says when it stops being worth it:
+the slice closes, what it held is written down, nothing is in flight.
+
+**Closing at the boundary is a cadence, not a signal to wait for.** All four kill
+reasons are reactive, and an agent doing legitimate new work, one question after the
+next, trips none of them while it grows without limit. So the slice closing is itself
+the moment. This adds no fifth reason: it is the fourth one applied on time instead of
+late, since at a closed and documented slice everything the agent holds is finished
+work by definition. It is the cheapest cut there is and the only one that loses
+nothing.
+
+**Compaction is not a choice, so it is not the way out either.** An agent that fills its
+window compacts on its own, and the lead does not see it happen: what comes back looks
+exactly the same and the agent goes on answering. What compaction destroys is precisely
+what reuse was for, the located knowledge of which file, which line, which path was
+already ruled out and why. So the question is never whether to compact. It is whether
+anything that mattered was still living only inside that agent when it did.
+
+**Which is why the handoff is written as the work happens, not when the agent dies.** A
+handoff written at the kill has already lost the race, because the compaction came
+first and announced nothing. A finding written the moment it appears costs the same and
+cannot be taken away. Once nothing of value lives only in an agent's head, a compaction
+costs nothing, the kill is bookkeeping, and how heavy an agent has become stops being a
+question worth asking.
+
+**Reuse is worth most while the agent is small.** Early on, rereading the world is the
+dominant cost and reuse is obvious. Far along, that same reread is a small fraction of
+what the agent is carrying, and it is competing against the quality of the reasoning in
+the stretch where the window is already degraded. The argument for reuse weakens on its
+own as the agent grows, which is why forcing it hardest at the end is backwards.
+
+[Why: recon and build agents were being reused until they were several hundred thousand
+tokens heavy, at which point reuse was declared not to apply any more. Reuse was not the
+part that failed. Nothing said when a healthy agent should end.]
+
+**The tell:** about to write an `Agent` call and can't name the live agent of that
+role from this session? You haven't checked yet. Name it before the call, and say why
+it isn't the one to use: the zone changed, it's going in circles, it hung, or what it
+holds is finished work. A fresh `Testarossa` for a fresh review still answers that; a
+new role name is how the check gets skipped.
 
 [Why: on one session, four files were touched by six different agents, each reading
 them from scratch. Per dispatch it looked reasonable. The waste only showed up when the
@@ -251,8 +328,9 @@ The lead's context is the scarce resource, and the topology is chosen to protect
 starts to feel off. Quality peaks through the first 30% of the window, rushes past 50%,
 and hallucinates past 70%.
 
-**Reusing an agent is the main form of compression.** Not paying twice to read the same
-files beats any summary.
+**Reusing a builder is the main form of compression.** Not paying twice to read the same
+files beats any summary. For reconnaissance the compression is the finding written down,
+not the agent kept alive to remember it.
 
 **When a slice closes, take a fresh session.** What survives is what was written, not
 what was remembered.

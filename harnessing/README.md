@@ -24,6 +24,10 @@ not care whether that work is a software feature or a personal errand.
 - **The module contract.** devaing and brainia implement this doctrine in
   their own domain. harnessing does not require either to function, and
   neither requires harnessing.
+- **The install contract.** What any module's own install step has to
+  guarantee (idempotent, a `--check` that writes nothing, no network,
+  non-interactive, per-item reporting) so "what of mine is out of date" has
+  one honest answer across all three. See `install-contract.md`.
 
 ## What it does not govern
 
@@ -39,13 +43,26 @@ itself.
 git clone https://github.com/builes-carlos/buistack.git
 cd buistack/harnessing
 python install.py --check     # see what's missing, writes nothing
-python install.py             # bootstrap: skills + doctrine pointer + hook
+python install.py             # bootstrap: skills + doctrine pointer + hooks
 ```
 
 Bare `install.py` is the idempotent primitive: it detects which agents are on
 the machine (`~/.claude`, `~/.codex`, `~/.gemini`) and writes only to those,
 never overwrites a file it does not already own a marked block in, and
 prints what it wrote, what it skipped, and why.
+
+**Skills install as links into this clone, not copies of it.** A copy is a
+snapshot: the moment the repo moves on, the installed copy is stale and
+nothing says so. A link has no version to fall behind, because the installed
+skill *is* the clone -- `git pull` is the update. A symlink on Linux; on
+Windows, `os.symlink` needs Developer Mode or admin and can't be relied on, so
+`install.py` falls back to a directory junction (`mklink /J`, the one stdlib-free
+route to one), and only falls back to a plain copy, with a note saying so, if
+both linking methods fail. **The failure mode a link introduces that a copy
+never had: it can dangle.** If this clone moves or is deleted, the installed
+link resolves to nothing and the skill silently disappears -- `install.py
+--check` reports that state distinctly from "not installed at all", because
+the fix is different (restore or re-clone, not just reinstall).
 
 Most people should not call it directly. Run the setup skill instead, once
 the bootstrap above has put it on the machine:
@@ -159,9 +176,23 @@ one: `write-a-skill`, `find-skills`, `caveman`, `zoom-out`.
 ```
 harnessing/
   README.md          this file
+  install-contract.md what any module's own install step has to guarantee
   doctrine/           the doctrine itself: universal.md, condensed.md, SOURCES.md
-  install.py          idempotent installer, --check mode
-  hooks/              SessionStart hook script installed into ~/.claude/hooks/
+  install.py          idempotent installer, --check mode; the contract's reference
+                      implementation
+  hooks/              two hook scripts installed into ~/.claude/hooks/: SessionStart
+                      (injects doctrine/condensed.md, and self-repairs hook
+                      registrations and skill links every session -- reports,
+                      but never fixes, a stale doctrine pointer block, since
+                      only a person knows which directory it belongs at) and
+                      PreToolUse on the Agent tool (denies a
+                      Faber/MarcoPolo/Testarossa dispatch that leaves the model
+                      to inheritance, asks before a same-session role repeat)
+  agents/             the four crew roles as agent types, copied into
+                      ~/.claude/agents/. The role stops being a string inside a
+                      prompt: the model comes from the definition, and usage is
+                      attributed per role instead of landing in one anonymous
+                      general-purpose bucket
   structure/          the .md hierarchy: layer contract and templates
   profile/            _template.md, so an instance can declare itself
   skills/

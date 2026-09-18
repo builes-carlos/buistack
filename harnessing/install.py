@@ -2,22 +2,44 @@
 """
 Idempotent installer for harnessing.
 
-Three independent operations, each safe to re-run:
+Four independent operations, each safe to re-run:
 
-  1. Skills bootstrap: copies the three harnessing skills into
-                        ~/.claude/skills/ so /harnessing-init, /harnessing-audit
-                        and /office-hours exist as slash commands. Claude Code
-                        only, Codex and Gemini have no equivalent skill
-                        mechanism in this stack, they get the doctrine pointer
-                        instead (operation 2).
+  1. Skills bootstrap: links the three harnessing skills into ~/.claude/skills/
+                        so /harnessing-init, /harnessing-audit and /office-hours
+                        exist as slash commands, and so the installed skill IS
+                        the clone rather than a snapshot of it -- a `git pull`
+                        updates the machine, nothing to fall out of date. A
+                        symlink on Linux; a directory junction (`mklink /J`) on
+                        Windows, since `os.symlink` there needs Developer Mode
+                        or admin and can't be relied on. If neither linking
+                        method works, falls back to a plain copy and says so.
+                        Claude Code only, Codex and Gemini have no equivalent
+                        skill mechanism in this stack, they get the doctrine
+                        pointer instead (operation 2).
+  1b. Role agents:      copies the four crew roles into ~/.claude/agents/ as agent
+                        types, so `Gaudi`, `MarcoPolo`, `Faber` and `Testarossa` are
+                        names the harness itself knows rather than strings living
+                        inside a prompt. Two things follow from that and neither is
+                        cosmetic: the model each role runs on comes from its
+                        definition instead of every call having to remember it, and
+                        usage gets attributed per role, so the bill says which role
+                        spent it. Copied rather than linked: these are single files,
+                        and the linking used for skills is directory-only on Windows.
+                        Claude Code only.
   2. Doctrine pointer: writes a short block into AGENTS.md, CLAUDE.md and
                         GEMINI.md at a given directory, between
                         `<!-- harnessing:start -->` / `<!-- harnessing:end -->`
                         markers, one file per agent detected on the machine.
-  3. SessionStart hook: registers a Claude Code hook that injects
-                        doctrine/condensed.md into context at the start of
-                        every session, regardless of which directory the
-                        agent was opened in.
+  3. Hooks: registers two Claude Code hooks. A SessionStart hook injects
+                        doctrine/condensed.md into context at the start of every
+                        session, regardless of which directory the agent was
+                        opened in. A PreToolUse hook matching the Agent tool
+                        enforces the two dispatch rules doctrine text alone
+                        wasn't enough for: it denies an Agent call for Faber,
+                        MarcoPolo or Testarossa that omits an explicit working
+                        model, and it asks (rather than silently allowing or
+                        blocking) when a role already dispatched this session is
+                        dispatched again.
 
 Stdlib only. Runs on Windows and Linux.
 
@@ -26,6 +48,7 @@ Usage:
   python install.py                      # run all three operations at cwd
   python install.py --path <dir>         # write the doctrine pointer at <dir> instead of cwd
   python install.py --skip-skills
+  python install.py --skip-agents
   python install.py --skip-doctrine
   python install.py --skip-hook
 
@@ -37,7 +60,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
+import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -47,8 +72,8 @@ DOCTRINE_DIR = HERE / "doctrine"
 CONDENSED_DOCTRINE = DOCTRINE_DIR / "condensed.md"
 UNIVERSAL_DOCTRINE = DOCTRINE_DIR / "universal.md"
 SKILLS_DIR = HERE / "skills"
-HOOK_SCRIPT_SRC = HERE / "hooks" / "inject_doctrine.py"
-HOOK_SCRIPT_NAME = "harnessing_inject_doctrine.py"
+AGENTS_DIR = HERE / "agents"
+HOOKS_SRC_DIR = HERE / "hooks"
 
 MARKER_START = "<!-- harnessing:start -->"
 MARKER_END = "<!-- harnessing:end -->"
@@ -66,6 +91,38 @@ AGENT_HOME_MARKERS = {
 }
 
 SKILL_NAMES = ["harnessing-init", "harnessing-audit", "office-hours"]
+# The four crew roles, as agent types. Lowercase because that is what a
+# `subagent_type` argument carries; the doctrine names them capitalised.
+ROLE_AGENT_NAMES = ["gaudi", "marcopolo", "faber", "testarossa"]
+
+
+@dataclass
+class HookDef:
+    event: str                       # the Claude Code hook event this registers under
+    src: Path                        # source script in this clone
+    installed_name: str              # filename copied into ~/.claude/hooks/
+    matcher: str | None              # matcher value, or None to apply to every trigger
+    build_command: "Callable[[Path], str]"  # installed script path -> command string
+    prereq: Path | None = None       # a file that must exist for this hook to make sense
+
+
+HOOK_DEFS = [
+    HookDef(
+        event="SessionStart",
+        src=HOOKS_SRC_DIR / "inject_doctrine.py",
+        installed_name="harnessing_inject_doctrine.py",
+        matcher=None,
+        build_command=lambda dst: f'python "{dst.as_posix()}" "{CONDENSED_DOCTRINE.as_posix()}"',
+        prereq=CONDENSED_DOCTRINE,
+    ),
+    HookDef(
+        event="PreToolUse",
+        src=HOOKS_SRC_DIR / "guard_agent_dispatch.py",
+        installed_name="harnessing_guard_agent_dispatch.py",
+        matcher="Agent",
+        build_command=lambda dst: f'python "{dst.as_posix()}"',
+    ),
+]
 
 
 @dataclass
@@ -175,6 +232,148 @@ def install_doctrine_pointer(target_dir: Path, agents: dict[str, bool], check: b
     return steps
 
 
+def _is_junction(path: Path) -> bool:
+    """Path.is_junction() is 3.12+. Older interpreters just never see a junction,
+    which degrades to treating it as a plain directory -- wrong shape, but not
+    a reason to crash an installer that declares no minimum version.
+    """
+    try:
+        return path.is_junction()
+    except AttributeError:
+        return False
+
+
+def _skill_state(dest: Path, src: Path) -> tuple[str, str]:
+    """Classify what is currently at `dest`, without changing anything.
+
+    Returns (state, detail) where state is one of:
+      absent, linked, dangling, copied_current, copied_stale, obstructed
+    """
+    if dest.is_symlink() or _is_junction(dest):
+        if dest.exists():  # follows the link/junction; True means the target resolves
+            return "linked", ""
+        try:
+            target = os.readlink(dest)
+        except OSError:
+            target = "unreadable target"
+        return "dangling", target
+
+    if dest.is_dir():
+        same = all(
+            (dest / f.name).is_file()
+            and (dest / f.name).read_text(encoding="utf-8") == f.read_text(encoding="utf-8")
+            for f in src.glob("*.md")
+        )
+        return ("copied_current" if same else "copied_stale"), ""
+
+    if dest.exists():
+        return "obstructed", ""
+
+    return "absent", ""
+
+
+def _remove_installed_skill(dest: Path) -> None:
+    """Remove whatever this installer put at `dest`, using the operation that
+    matches what it actually is. Never shutil.rmtree a symlink or junction --
+    that walks through the reparse point and would delete the repo's own
+    source files instead of just detaching the pointer. Callers are expected
+    to have already verified `dest` is one of the shapes this function knows
+    how to remove; it raises rather than guess on anything else.
+    """
+    if dest.is_symlink():
+        # Windows requires RemoveDirectory (rmdir), not DeleteFile (unlink), for
+        # any directory reparse point, including a directory symlink.
+        dest.rmdir() if os.name == "nt" else dest.unlink()
+    elif _is_junction(dest):
+        dest.rmdir()
+    elif dest.is_dir():
+        shutil.rmtree(dest)
+    elif dest.is_file():
+        raise RuntimeError(f"refusing to remove {dest}: it is a file, not a link, "
+                            f"junction, or directory this installer owns")
+
+
+def _link_skill(src: Path, dest: Path) -> tuple[str, str]:
+    """Try a portable symlink, then (Windows only) a directory junction via the
+    `mklink /J` shell built-in -- there is no public stdlib API for a junction.
+    Falls back to a plain copy if both fail, rather than leaving no skill at
+    all. Returns (method, note); note is empty on a clean symlink/junction and
+    otherwise explains what was tried and why it fell through.
+    """
+    try:
+        os.symlink(src, dest, target_is_directory=True)
+        return "symlink", ""
+    except OSError as e:
+        symlink_err = str(e)  # `e` itself is unbound once the except clause ends
+
+    if os.name == "nt":
+        result = subprocess.run(
+            ["cmd", "/c", "mklink", "/J", str(dest), str(src)],
+            capture_output=True, text=True,
+        )
+        if result.returncode == 0:
+            return "junction", ""
+        junction_err = (result.stderr or result.stdout or f"mklink exited {result.returncode}").strip()
+        note = f"symlink failed ({symlink_err}); junction failed ({junction_err})"
+    else:
+        note = f"symlink failed ({symlink_err})"
+
+    dest.mkdir(parents=True, exist_ok=True)
+    for f in src.glob("*.md"):
+        shutil.copyfile(f, dest / f.name)
+    return "copy", note
+
+
+def _install_one_skill(name: str, src: Path, dest: Path, check: bool) -> Step:
+    # Classify what's at `dest` before asking whether `src` exists: a dangling
+    # link and an already-good link are dest-only facts, true whether or not
+    # this run's source is present, and "linked" / "obstructed" are terminal
+    # either way.
+    state, extra = _skill_state(dest, src)
+
+    if state == "linked":
+        return Step(name, "ok", f"linked and resolving at {dest}")
+
+    if state == "obstructed":
+        return Step(name, "missing",
+                     f"{dest} exists and is not a directory, link, or junction this "
+                     f"installer owns -- not touching it")
+
+    if not src.is_dir():
+        # Verify the source before removing anything, per the rule this whole
+        # branch exists for: no source means no basis to touch what's already
+        # there, whatever shape it is in. A stale skill beats no skill.
+        if state == "absent":
+            return Step(name, "missing", f"{src} not found in this clone")
+        leave_alone = {
+            "dangling": f"linked but dangling (target: {extra}), and {src} is also "
+                        f"missing -- leaving the broken link rather than guessing",
+            "copied_current": f"{src} not found in this clone; leaving the existing copy at {dest} alone",
+            "copied_stale": f"{src} not found in this clone; leaving the existing (stale) copy at {dest} alone",
+        }[state]
+        return Step(name, "missing", leave_alone)
+
+    action = {
+        "absent": f"would link {dest} -> {src}",
+        "dangling": f"linked but dangling (target: {extra}); would relink {dest} -> {src}",
+        "copied_current": f"copied and current at {dest}; would replace with a link to {src}",
+        "copied_stale": f"copied and stale at {dest}; would replace with a current link to {src}",
+    }[state]
+
+    if check:
+        return Step(name, "missing", action)
+
+    if dest.exists() or dest.is_symlink() or _is_junction(dest):
+        _remove_installed_skill(dest)
+
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    method, note = _link_skill(src, dest)
+    status = "written" if state == "absent" else "updated"
+    if method == "copy":
+        return Step(name, status, f"copied to {dest} (linking failed -- {note})")
+    return Step(name, status, f"linked ({method}) {dest} -> {src}")
+
+
 def install_skills(check: bool) -> list[Step]:
     steps: list[Step] = []
     claude_skills_dir = Path.home() / ".claude" / "skills"
@@ -184,53 +383,63 @@ def install_skills(check: bool) -> list[Step]:
 
     for name in SKILL_NAMES:
         src = SKILLS_DIR / name
-        if not src.is_dir():
-            steps.append(Step(name, "missing", f"{src} not found in this clone"))
-            continue
-
         dest = claude_skills_dir / name
-        needs_write = True
-        if dest.is_dir():
-            same = all(
-                (dest / f.name).is_file()
-                and (dest / f.name).read_text(encoding="utf-8") == f.read_text(encoding="utf-8")
-                for f in src.glob("*.md")
-            )
-            needs_write = not same
+        steps.append(_install_one_skill(name, src, dest, check))
+    return steps
 
-        if not needs_write:
-            steps.append(Step(name, "ok", f"already up to date at {dest}"))
+
+def install_role_agents(check: bool) -> list[Step]:
+    """Copy each role definition into ~/.claude/agents/, skipping one already
+    identical. A copy rather than a link: these are single files, and _link_skill's
+    Windows fallback (`mklink /J`) makes directory junctions only.
+    """
+    steps: list[Step] = []
+    claude_dir = Path.home() / ".claude"
+    if not claude_dir.is_dir():
+        steps.append(Step("role agents", "skipped", "no ~/.claude on this machine"))
+        return steps
+
+    dest_dir = claude_dir / "agents"
+    for name in ROLE_AGENT_NAMES:
+        label = f"agent {name}"
+        src = AGENTS_DIR / f"{name}.md"
+        dest = dest_dir / f"{name}.md"
+
+        if not src.is_file():
+            steps.append(Step(label, "missing", f"{src} not found"))
+            continue
+        if dest.exists() and not dest.is_file():
+            steps.append(Step(label, "missing",
+                               f"{dest} exists and is not a file, leaving it alone"))
             continue
 
+        wanted = src.read_text(encoding="utf-8")
+        if dest.is_file() and dest.read_text(encoding="utf-8") == wanted:
+            steps.append(Step(label, "ok", f"current at {dest}"))
+            continue
+
+        status = "updated" if dest.is_file() else "written"
         if check:
-            steps.append(Step(name, "missing", f"would copy to {dest}"))
+            steps.append(Step(label, "missing",
+                               f"would {'update' if status == 'updated' else 'write'} {dest}"))
             continue
 
-        dest.mkdir(parents=True, exist_ok=True)
-        for f in src.glob("*.md"):
-            shutil.copyfile(f, dest / f.name)
-        steps.append(Step(name, "written", f"copied to {dest}"))
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        dest.write_text(wanted, encoding="utf-8")
+        steps.append(Step(label, status, f"copied {src.name} to {dest}"))
     return steps
 
 
 def install_hook(check: bool) -> list[Step]:
+    """Register every hook in HOOK_DEFS. One settings.json read and (at most) one
+    write for the whole operation, so two hooks landing in the same run never
+    clobber each other's edit.
+    """
     steps: list[Step] = []
     claude_dir = Path.home() / ".claude"
     if not claude_dir.is_dir():
-        steps.append(Step("SessionStart hook", "skipped", "no ~/.claude on this machine"))
+        steps.append(Step("hooks", "skipped", "no ~/.claude on this machine"))
         return steps
-
-    if not HOOK_SCRIPT_SRC.is_file():
-        steps.append(Step("SessionStart hook", "missing", f"{HOOK_SCRIPT_SRC} not found"))
-        return steps
-    if not CONDENSED_DOCTRINE.is_file():
-        steps.append(Step("SessionStart hook", "missing",
-                           f"{CONDENSED_DOCTRINE} does not exist, nothing to inject"))
-        return steps
-
-    hooks_dir = claude_dir / "hooks"
-    dst = hooks_dir / HOOK_SCRIPT_NAME
-    script_current = dst.is_file() and dst.read_text(encoding="utf-8") == HOOK_SCRIPT_SRC.read_text(encoding="utf-8")
 
     settings_path = claude_dir / "settings.json"
     settings: dict = {}
@@ -238,37 +447,60 @@ def install_hook(check: bool) -> list[Step]:
         try:
             settings = json.loads(settings_path.read_text(encoding="utf-8"))
         except json.JSONDecodeError:
-            steps.append(Step("SessionStart hook", "missing",
+            steps.append(Step("hooks", "missing",
                                f"{settings_path} is not valid JSON, not touching it"))
             return steps
 
-    command = f'python "{dst.as_posix()}" "{CONDENSED_DOCTRINE.as_posix()}"'
+    hooks_dir = claude_dir / "hooks"
+    settings_changed = False
 
-    def points_at_hook(block: dict) -> bool:
-        return any(HOOK_SCRIPT_NAME in h.get("command", "") for h in block.get("hooks", []))
+    for hd in HOOK_DEFS:
+        label = f"{hd.event} hook"
 
-    session_start = settings.get("hooks", {}).get("SessionStart", [])
-    already_registered = any(points_at_hook(b) for b in session_start)
+        if not hd.src.is_file():
+            steps.append(Step(label, "missing", f"{hd.src} not found"))
+            continue
+        if hd.prereq is not None and not hd.prereq.is_file():
+            steps.append(Step(label, "missing",
+                               f"{hd.prereq} does not exist, nothing to inject"))
+            continue
 
-    if script_current and already_registered:
-        steps.append(Step("SessionStart hook", "ok", f"registered and current at {dst}"))
-        return steps
+        dst = hooks_dir / hd.installed_name
+        existed_before = dst.is_file()
+        script_current = existed_before and dst.read_text(encoding="utf-8") == hd.src.read_text(encoding="utf-8")
 
-    if check:
-        steps.append(Step("SessionStart hook", "missing",
-                           "would install/register the harnessing doctrine hook"))
-        return steps
+        def points_at_hook(block: dict, name: str = hd.installed_name) -> bool:
+            return any(name in h.get("command", "") for h in block.get("hooks", []))
 
-    hooks_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(HOOK_SCRIPT_SRC, dst)
+        event_entries = settings.get("hooks", {}).get(hd.event, [])
+        already_registered = any(points_at_hook(b) for b in event_entries)
 
-    hooks = settings.setdefault("hooks", {})
-    starts = hooks.setdefault("SessionStart", [])
-    starts[:] = [b for b in starts if not points_at_hook(b)]
-    starts.append({"hooks": [{"type": "command", "command": command}]})
+        if script_current and already_registered:
+            steps.append(Step(label, "ok", f"registered and current at {dst}"))
+            continue
 
-    settings_path.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
-    steps.append(Step("SessionStart hook", "written", f"installed at {dst}, registered in {settings_path}"))
+        if check:
+            steps.append(Step(label, "missing", f"would install/register the {hd.event} hook"))
+            continue
+
+        hooks_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(hd.src, dst)
+
+        hooks = settings.setdefault("hooks", {})
+        this_event = hooks.setdefault(hd.event, [])
+        this_event[:] = [b for b in this_event if not points_at_hook(b)]
+        entry: dict = {"hooks": [{"type": "command", "command": hd.build_command(dst)}]}
+        if hd.matcher is not None:
+            entry["matcher"] = hd.matcher
+        this_event.append(entry)
+        settings_changed = True
+
+        steps.append(Step(label, "updated" if existed_before else "written",
+                           f"installed at {dst}, registered in {settings_path}"))
+
+    if settings_changed:
+        settings_path.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
+
     return steps
 
 
@@ -278,6 +510,7 @@ def main() -> int:
     parser.add_argument("--path", type=Path, default=Path.cwd(),
                          help="directory to write the doctrine pointer at (default: cwd)")
     parser.add_argument("--skip-skills", action="store_true")
+    parser.add_argument("--skip-agents", action="store_true")
     parser.add_argument("--skip-doctrine", action="store_true")
     parser.add_argument("--skip-hook", action="store_true")
     args = parser.parse_args()
@@ -289,6 +522,8 @@ def main() -> int:
     all_steps: list[Step] = []
     if not args.skip_skills:
         all_steps += install_skills(args.check)
+    if not args.skip_agents:
+        all_steps += install_role_agents(args.check)
     if not args.skip_doctrine:
         all_steps += install_doctrine_pointer(args.path.resolve(), agents, args.check)
     if not args.skip_hook:

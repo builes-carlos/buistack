@@ -42,6 +42,17 @@ jobs:
       - name: harnessing installer is runnable
         run: python harnessing/install.py --help
 
+      - name: Every module's installer conforms to harnessing/install-contract.md
+        # A contract nobody checks is instruction, not enforcement -- the same failure
+        # this workflow exists to close off, aimed at the document that says so. This
+        # runs each module's installer against a fake Claude home (never this runner's
+        # real one, which doesn't exist here anyway) through the sequence that actually
+        # proves the check mode is honest and the second run is idempotent, rather than
+        # assuming either. The contract's other requirements -- no network, no
+        # interaction, never destroying what it does not own -- are not asserted here;
+        # they are still read by a person against install-contract.md.
+        run: python scripts/check_install_contract.py
+
       - name: Manifests parse and every plugin source resolves
         run: |
           python - <<'EOF'
