@@ -2,7 +2,7 @@
 """
 Idempotent installer for harnessing.
 
-Three independent operations, each safe to re-run:
+Four independent operations, each safe to re-run:
 
   1. Skills bootstrap: links the three harnessing skills into ~/.claude/skills/
                         so /harnessing-init, /harnessing-audit and /office-hours
@@ -16,6 +16,16 @@ Three independent operations, each safe to re-run:
                         Claude Code only, Codex and Gemini have no equivalent
                         skill mechanism in this stack, they get the doctrine
                         pointer instead (operation 2).
+  1b. Role agents:      copies the four crew roles into ~/.claude/agents/ as agent
+                        types, so `Gaudi`, `MarcoPolo`, `Faber` and `Testarossa` are
+                        names the harness itself knows rather than strings living
+                        inside a prompt. Two things follow from that and neither is
+                        cosmetic: the model each role runs on comes from its
+                        definition instead of every call having to remember it, and
+                        usage gets attributed per role, so the bill says which role
+                        spent it. Copied rather than linked: these are single files,
+                        and the linking used for skills is directory-only on Windows.
+                        Claude Code only.
   2. Doctrine pointer: writes a short block into AGENTS.md, CLAUDE.md and
                         GEMINI.md at a given directory, between
                         `<!-- harnessing:start -->` / `<!-- harnessing:end -->`
@@ -38,6 +48,7 @@ Usage:
   python install.py                      # run all three operations at cwd
   python install.py --path <dir>         # write the doctrine pointer at <dir> instead of cwd
   python install.py --skip-skills
+  python install.py --skip-agents
   python install.py --skip-doctrine
   python install.py --skip-hook
 
@@ -61,6 +72,7 @@ DOCTRINE_DIR = HERE / "doctrine"
 CONDENSED_DOCTRINE = DOCTRINE_DIR / "condensed.md"
 UNIVERSAL_DOCTRINE = DOCTRINE_DIR / "universal.md"
 SKILLS_DIR = HERE / "skills"
+AGENTS_DIR = HERE / "agents"
 HOOKS_SRC_DIR = HERE / "hooks"
 
 MARKER_START = "<!-- harnessing:start -->"
@@ -79,6 +91,9 @@ AGENT_HOME_MARKERS = {
 }
 
 SKILL_NAMES = ["harnessing-init", "harnessing-audit", "office-hours"]
+# The four crew roles, as agent types. Lowercase because that is what a
+# `subagent_type` argument carries; the doctrine names them capitalised.
+ROLE_AGENT_NAMES = ["gaudi", "marcopolo", "faber", "testarossa"]
 
 
 @dataclass
@@ -373,6 +388,48 @@ def install_skills(check: bool) -> list[Step]:
     return steps
 
 
+def install_role_agents(check: bool) -> list[Step]:
+    """Copy each role definition into ~/.claude/agents/, skipping one already
+    identical. A copy rather than a link: these are single files, and _link_skill's
+    Windows fallback (`mklink /J`) makes directory junctions only.
+    """
+    steps: list[Step] = []
+    claude_dir = Path.home() / ".claude"
+    if not claude_dir.is_dir():
+        steps.append(Step("role agents", "skipped", "no ~/.claude on this machine"))
+        return steps
+
+    dest_dir = claude_dir / "agents"
+    for name in ROLE_AGENT_NAMES:
+        label = f"agent {name}"
+        src = AGENTS_DIR / f"{name}.md"
+        dest = dest_dir / f"{name}.md"
+
+        if not src.is_file():
+            steps.append(Step(label, "missing", f"{src} not found"))
+            continue
+        if dest.exists() and not dest.is_file():
+            steps.append(Step(label, "missing",
+                               f"{dest} exists and is not a file, leaving it alone"))
+            continue
+
+        wanted = src.read_text(encoding="utf-8")
+        if dest.is_file() and dest.read_text(encoding="utf-8") == wanted:
+            steps.append(Step(label, "ok", f"current at {dest}"))
+            continue
+
+        status = "updated" if dest.is_file() else "written"
+        if check:
+            steps.append(Step(label, "missing",
+                               f"would {'update' if status == 'updated' else 'write'} {dest}"))
+            continue
+
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        dest.write_text(wanted, encoding="utf-8")
+        steps.append(Step(label, status, f"copied {src.name} to {dest}"))
+    return steps
+
+
 def install_hook(check: bool) -> list[Step]:
     """Register every hook in HOOK_DEFS. One settings.json read and (at most) one
     write for the whole operation, so two hooks landing in the same run never
@@ -453,6 +510,7 @@ def main() -> int:
     parser.add_argument("--path", type=Path, default=Path.cwd(),
                          help="directory to write the doctrine pointer at (default: cwd)")
     parser.add_argument("--skip-skills", action="store_true")
+    parser.add_argument("--skip-agents", action="store_true")
     parser.add_argument("--skip-doctrine", action="store_true")
     parser.add_argument("--skip-hook", action="store_true")
     args = parser.parse_args()
@@ -464,6 +522,8 @@ def main() -> int:
     all_steps: list[Step] = []
     if not args.skip_skills:
         all_steps += install_skills(args.check)
+    if not args.skip_agents:
+        all_steps += install_role_agents(args.check)
     if not args.skip_doctrine:
         all_steps += install_doctrine_pointer(args.path.resolve(), agents, args.check)
     if not args.skip_hook:

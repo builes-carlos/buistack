@@ -185,8 +185,11 @@ design decisions, and a bad one is paid for in build passes, not in reasoning to
 **The other three run on the working model, and a dispatch cannot silently skip it.**
 Reconnaissance, carpentry and verification do not improve by moving up a tier, and they
 are the ones dispatched many times over, so that is where the bill multiplies. This is
-no longer a rule to remember: a `Faber`, `MarcoPolo` or `Testarossa` dispatch with no
-explicit model argument is refused before it runs, not caught after.
+no longer a rule to remember: a `Faber`, `MarcoPolo` or `Testarossa` dispatch that
+leaves the model to inheritance is refused before it runs, not caught after. Naming it
+on the call and carrying it on the role itself both satisfy that, and the second is
+better where the tooling allows it, because a role that owns its model cannot be
+dispatched onto the wrong one by someone who forgot.
 
 Written by model tier and not by version name, because a pinned version name is stale
 within months.

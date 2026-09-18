@@ -186,8 +186,13 @@ harnessing/
                       but never fixes, a stale doctrine pointer block, since
                       only a person knows which directory it belongs at) and
                       PreToolUse on the Agent tool (denies a
-                      Faber/MarcoPolo/Testarossa dispatch with no explicit
-                      model, asks before a same-session role repeat)
+                      Faber/MarcoPolo/Testarossa dispatch that leaves the model
+                      to inheritance, asks before a same-session role repeat)
+  agents/             the four crew roles as agent types, copied into
+                      ~/.claude/agents/. The role stops being a string inside a
+                      prompt: the model comes from the definition, and usage is
+                      attributed per role instead of landing in one anonymous
+                      general-purpose bucket
   structure/          the .md hierarchy: layer contract and templates
   profile/            _template.md, so an instance can declare itself
   skills/

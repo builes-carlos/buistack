@@ -29,13 +29,17 @@ Contract, verified against https://code.claude.com/docs/en/hooks (fetched
 
 Two independent checks, deliberately different strengths:
 
-  1. Model (denies). Faber, MarcoPolo and Testarossa must carry an explicit
-     `model` argument on the Agent call. No judgment is involved -- a missing one
-     is refused outright, with the reason saying exactly what to add. Gaudi is
+  1. Model (denies). Faber, MarcoPolo and Testarossa must run on the working
+     model, and the dispatch has to say so somewhere. There are two ways to say
+     it and they are equally good: an explicit `model` argument on the call, or
+     dispatching through that role's agent type (`subagent_type: "faber"`),
+     whose definition in ~/.claude/agents/ carries the model already. Neither
+     present is refused outright, with the reason saying what to add. Gaudi is
      the one role allowed to run with no override, on the top of the range. This
-     is not a check on which model was passed, only that one was: the doctrine
-     names roles by tier, not by pinned version, and a hardcoded model name here
-     would go stale the same way a hardcoded version name would in the doctrine.
+     is not a check on which model was passed, only that one is determined: the
+     doctrine names roles by tier, not by pinned version, and a hardcoded model
+     name here would go stale the same way a hardcoded version name would in the
+     doctrine.
 
   2. Reuse (asks), for the roles whose reuse is the default. A per-session,
      append-only register under
@@ -89,6 +93,10 @@ _DESC_RE = re.compile(r"^\s*(" + _ROLE_ALTERNATION + r")\d*\s*:", re.IGNORECASE)
 # Fallback: scan the prompt's opening for "You are <Role>", the convention every
 # subagent prompt in this stack is written with.
 _PROMPT_RE = re.compile(r"\byou are\s+(" + _ROLE_ALTERNATION + r")\d*\b", re.IGNORECASE)
+# The role agent types installed under ~/.claude/agents/ (install.py's
+# ROLE_AGENT_NAMES). A dispatch through one of these carries its model in the
+# definition, so the call itself does not have to repeat it.
+_ROLE_AGENT_TYPES = {name.lower() for name in ROLE_NAMES}
 _PROMPT_WINDOW = 1000
 _DESCRIPTION_KEPT = 300
 _REASON_DESCRIPTION_SHOWN = 150
@@ -96,12 +104,19 @@ _REASON_DESCRIPTION_SHOWN = 150
 REGISTER_DIR = Path.home() / ".claude" / "harnessing" / "agent-dispatch-register"
 
 
-def extract_role(description: str, prompt: str) -> str | None:
-    """Read the role from the dispatch description, falling back to the prompt.
+def extract_role(description: str, prompt: str, subagent_type: str = "") -> str | None:
+    """Read the role from the agent type first, then the description, then the
+    prompt.
 
-    Never guesses a role that is not one of the four -- both patterns only match
+    The agent type is checked first because it is the only one of the three that
+    is structural: `subagent_type: "faber"` names a definition on disk, while a
+    description prefix is a convention someone can forget to type.
+
+    Never guesses a role that is not one of the four -- every pattern only matches
     ROLE_NAMES literally, case-insensitively.
     """
+    if subagent_type and subagent_type.strip().lower() in _ROLE_AGENT_TYPES:
+        return _CANON[subagent_type.strip().lower()]
     if description:
         m = _DESC_RE.match(description)
         if m:
@@ -156,11 +171,12 @@ def _trim(text: str, limit: int) -> str:
 
 def build_deny_reason(role: str) -> str:
     return (
-        f'{role} must carry an explicit working-model argument on this Agent call '
-        f'(e.g. model: "sonnet") -- add `model` and retry. No judgment is needed '
-        f'here: the doctrine reserves the top of the range for Gaudi alone, and '
-        f'{role} always runs on the working model, named on the call rather than '
-        f'inherited from the lead.'
+        f'{role} must run on the working model, and this call says so nowhere. Either '
+        f'add an explicit model argument (e.g. model: "sonnet"), or dispatch through '
+        f'the role agent type (subagent_type: "{role.lower()}"), whose definition '
+        f'already carries it. No judgment is needed here: the doctrine reserves the top '
+        f'of the range for Gaudi alone, and {role} never inherits the model of the lead '
+        f'by omission.'
     )
 
 
@@ -182,7 +198,9 @@ def decide(role: str, tool_input: dict, prior_entries: list[dict]) -> tuple[str 
     """Return (permissionDecision, reason). (None, None) means allow, silently."""
     if role in WORKING_MODEL_ROLES:
         model = tool_input.get("model")
-        if not isinstance(model, str) or not model.strip():
+        agent_type = tool_input.get("subagent_type") or ""
+        from_definition = agent_type.strip().lower() in _ROLE_AGENT_TYPES
+        if not from_definition and (not isinstance(model, str) or not model.strip()):
             return "deny", build_deny_reason(role)
 
     if role in REUSE_DEFAULT_ROLES and any(e.get("role") == role for e in prior_entries):
@@ -218,7 +236,7 @@ def main() -> int:
         description = tool_input.get("description") or ""
         prompt = tool_input.get("prompt") or ""
 
-        role = extract_role(description, prompt)
+        role = extract_role(description, prompt, tool_input.get("subagent_type") or "")
         if role is None:
             return 0  # no recognisable role: not this hook's business
 
@@ -236,6 +254,7 @@ def main() -> int:
             "role": role,
             "description": description[:_DESCRIPTION_KEPT],
             "model": tool_input.get("model"),
+            "subagent_type": tool_input.get("subagent_type"),
             "timestamp": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         }
         try:

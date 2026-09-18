@@ -38,7 +38,8 @@ INSTALL_PY = HARNESSING_DIR / "install.py"
 
 
 def agent_input(session_id="sess-1", description="Faber: issue 98 distributors",
-                 prompt="You are Faber, the builder.", model="sonnet", tool_name="Agent"):
+                 prompt="You are Faber, the builder.", model="sonnet", tool_name="Agent",
+                 subagent_type="general-purpose"):
     return json.dumps({
         "session_id": session_id,
         "tool_name": tool_name,
@@ -46,7 +47,7 @@ def agent_input(session_id="sess-1", description="Faber: issue 98 distributors",
             "description": description,
             "prompt": prompt,
             "model": model,
-            "subagent_type": "general-purpose",
+            "subagent_type": subagent_type,
         },
     })
 
@@ -84,6 +85,17 @@ class TestRoleExtraction(unittest.TestCase):
                                    "You are MarcoPolo, doing reconnaissance.")
         self.assertEqual(role, "MarcoPolo")
 
+    def test_role_read_from_agent_type(self):
+        role = guard.extract_role("", "", "faber")
+        self.assertEqual(role, "Faber")
+
+    def test_agent_type_wins_over_a_description_that_names_nothing(self):
+        role = guard.extract_role("build the thing", "generic prompt", "marcopolo")
+        self.assertEqual(role, "MarcoPolo")
+
+    def test_non_role_agent_type_is_ignored(self):
+        self.assertIsNone(guard.extract_role("", "", "general-purpose"))
+
     def test_unrecognised_role_returns_none(self):
         self.assertIsNone(guard.extract_role("code-reviewer: look at this", "You are a helpful reviewer."))
 
@@ -102,6 +114,17 @@ class TestDecide(unittest.TestCase):
         decision, reason = guard.decide("Faber", {"model": "sonnet"}, [])
         self.assertIsNone(decision)
         self.assertIsNone(reason)
+
+    def test_role_agent_type_supplies_the_model(self):
+        """A dispatch through the role agent type carries its model in the
+        definition, so the call does not have to repeat it."""
+        decision, reason = guard.decide("Faber", {"subagent_type": "faber"}, [])
+        self.assertIsNone(decision)
+
+    def test_generic_agent_type_without_model_still_denies(self):
+        decision, reason = guard.decide("Faber", {"subagent_type": "general-purpose"}, [])
+        self.assertEqual(decision, "deny")
+        self.assertIn("subagent_type", reason)
 
     def test_gaudi_without_model_allows(self):
         decision, reason = guard.decide("Gaudi", {}, [])
@@ -231,6 +254,17 @@ class TestEndToEnd(unittest.TestCase):
         run_hook(agent_input(session_id="sess-a", description="Faber: issue 98 distributors", model="sonnet"), self.tmp)
         result = run_hook(agent_input(session_id="sess-b", description="Faber: issue 101 quotations", model="sonnet"), self.tmp)
         self.assertEqual(result.stdout.strip(), "")
+
+    def test_dispatch_through_role_agent_type_needs_no_model(self):
+        stdin = agent_input(description="build the slice", prompt="do the work",
+                             subagent_type="faber")
+        payload = json.loads(stdin)
+        del payload["tool_input"]["model"]
+        result = run_hook(json.dumps(payload), self.tmp)
+        self.assertEqual(result.stdout.strip(), "", "should be allowed silently")
+        entries = guard.load_register(self.tmp / "sess-1.jsonl")
+        self.assertEqual(entries[0]["role"], "Faber")
+        self.assertEqual(entries[0]["subagent_type"], "faber")
 
     def test_unrecognised_role_is_allowed_untouched(self):
         result = run_hook(agent_input(description="code-reviewer: look at this diff",
@@ -456,6 +490,79 @@ class TestInstallSkillsIntegration(unittest.TestCase):
         # skill directory out of this checkout, which is not a trade worth making
         # just to repeat coverage this suite already has. Nothing above touched
         # anything outside self.fake_home, which tearDown removes wholesale.
+
+
+class TestRoleAgentsInstall(unittest.TestCase):
+    """install_role_agents() against a fake HOME. Only this operation runs, so
+    nothing here writes a doctrine pointer or touches settings.json.
+    """
+    ONLY_AGENTS = ("--skip-doctrine", "--skip-hook", "--skip-skills")
+
+    def setUp(self):
+        self.fake_home = Path(tempfile.mkdtemp(prefix="fakehome_agents_"))
+        (self.fake_home / ".claude").mkdir(parents=True)
+        self.env = dict(os.environ)
+        self.env["HOME"] = str(self.fake_home)
+        self.env["USERPROFILE"] = str(self.fake_home)
+
+    def tearDown(self):
+        shutil.rmtree(self.fake_home, ignore_errors=True)
+
+    def _run(self, *args):
+        return subprocess.run([sys.executable, str(INSTALL_PY), *self.ONLY_AGENTS, *args],
+                               env=self.env, capture_output=True, text=True)
+
+    def _dest(self, name):
+        return self.fake_home / ".claude" / "agents" / f"{name}.md"
+
+    def test_check_on_absent_reports_and_writes_nothing(self):
+        r = self._run("--check")
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("would write", r.stdout)
+        self.assertFalse((self.fake_home / ".claude" / "agents").exists())
+
+    def test_fresh_install_writes_all_four_verbatim(self):
+        r = self._run()
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        for name in harnessing_install.ROLE_AGENT_NAMES:
+            src = harnessing_install.AGENTS_DIR / f"{name}.md"
+            self.assertEqual(self._dest(name).read_text(encoding="utf-8"),
+                              src.read_text(encoding="utf-8"))
+
+    def test_every_definition_declares_a_name_and_a_model(self):
+        """A definition missing either key loads wrong or not at all, and the
+        model is the whole point of routing a role through its agent type."""
+        for name in harnessing_install.ROLE_AGENT_NAMES:
+            text = (harnessing_install.AGENTS_DIR / f"{name}.md").read_text(encoding="utf-8")
+            self.assertTrue(text.lstrip().startswith("---"), f"{name}: no frontmatter block")
+            front = text.split("---", 2)[1]
+            self.assertIn(f"name: {name}", front)
+            self.assertRegex(front, r"model: \S+")
+
+    def test_second_run_is_ok_and_changes_nothing(self):
+        self._run()
+        before = self._dest("faber").stat().st_mtime_ns
+        r = self._run()
+        self.assertEqual(r.returncode, 0)
+        self.assertIn("current at", r.stdout)
+        self.assertEqual(self._dest("faber").stat().st_mtime_ns, before)
+
+    def test_stale_copy_is_refreshed(self):
+        self._run()
+        self._dest("faber").write_text("stale", encoding="utf-8")
+        r = self._run("--check")
+        self.assertIn("would update", r.stdout)
+        self._run()
+        self.assertEqual(self._dest("faber").read_text(encoding="utf-8"),
+                          (harnessing_install.AGENTS_DIR / "faber.md").read_text(encoding="utf-8"))
+
+    def test_a_directory_in_the_way_is_left_alone(self):
+        self._dest("faber").parent.mkdir(parents=True)
+        self._dest("faber").mkdir()
+        r = self._run()
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("is not a file", r.stdout)
+        self.assertTrue(self._dest("faber").is_dir())
 
 
 class TestDriftCheck(unittest.TestCase):

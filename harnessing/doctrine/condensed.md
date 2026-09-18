@@ -47,8 +47,8 @@ who owns which stage. The full text is in `doctrine/universal.md`.
   zone beats a fresh one.
 - Fixed names by role: `Gaudi` architecture, `MarcoPolo` reconnaissance, `Faber`
   building, `Testarossa` verification. `Gaudi` on the top of the range, the rest on
-  the working model, machine-enforced: no explicit model on the other three, no
-  dispatch.
+  the working model, machine-enforced: the dispatch names the model or the role
+  carries it, never inherited from the lead.
 - Judgment, synthesis and architecture are not delegated. A wide sweep is, because its
   cost is context.
 - An agent never re-delegates.
